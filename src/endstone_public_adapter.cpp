@@ -1,7 +1,7 @@
 #include <format>
-#ifndef format_context
-#define format_context std::format_context
-#endif
+namespace std {
+typedef std::format_context format_context;
+}
 
 #include "endstone_blockdata/endstone_adapter.h"
 #include <endstone/endstone.hpp>
