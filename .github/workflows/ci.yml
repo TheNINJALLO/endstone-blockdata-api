@@ -83,7 +83,9 @@ jobs:
             chmod +x llvm.sh
             sudo ./llvm.sh 18
           fi
-          sudo apt-get install -y ninja-build libc++-18-dev libc++abi-18-dev
+          sudo apt-get install -y ninja-build clang-tools-18 libc++-18-dev libc++abi-18-dev
+          sudo update-alternatives --install /usr/bin/clang-scan-deps clang-scan-deps /usr/bin/clang-scan-deps-18 100 || true
+          echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
           clang-18 --version
           clang++-18 --version
           cmake --version
