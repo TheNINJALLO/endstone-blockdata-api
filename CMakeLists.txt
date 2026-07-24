@@ -74,8 +74,14 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
 
     if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/server/commands/command_registry.h")
         file(READ "${endstone_SOURCE_DIR}/src/bedrock/server/commands/command_registry.h" ENDSTONE_CMD_REG_CONTENT)
-        string(REPLACE "R\"(, \"children\": {})\", *it->child)" "R\"(, \"children\": {})\", 0)" ENDSTONE_CMD_REG_CONTENT "${ENDSTONE_CMD_REG_CONTENT}")
+        string(REPLACE "R\"(, \"children\": {})\", *it->child)" "R\"(, \"children\": \"\")\"" ENDSTONE_CMD_REG_CONTENT "${ENDSTONE_CMD_REG_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/server/commands/command_registry.h" "${ENDSTONE_CMD_REG_CONTENT}")
+    endif()
+
+    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h")
+        file(READ "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" ENDSTONE_RESULT_H_CONTENT)
+        string(REPLACE "std::format(\"Error: {}\\nCall stack:{}\", error, call_stack)" "std::string(\"Error: \") + error" ENDSTONE_RESULT_H_CONTENT "${ENDSTONE_RESULT_H_CONTENT}")
+        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
     endif()
 
 
