@@ -128,7 +128,28 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         )
         FetchContent_MakeAvailable(pybind11_live)
         pybind11_add_module(_endstone_blockdata_live MODULE src/live_python_bindings.cpp)
-        target_link_libraries(_endstone_blockdata_live PRIVATE endstone_blockdata_core fmt::fmt)
+        target_link_libraries(_endstone_blockdata_live PRIVATE
+            endstone_blockdata_core
+            aklomp::base64
+            boost::boost
+            concurrentqueue::concurrentqueue
+            cpptrace::cpptrace
+            date::date
+            EnTT::EnTT
+            nonstd::expected-lite
+            fmt::fmt
+            funchook::funchook
+            glm::glm
+            magic_enum::magic_enum
+            Microsoft.GSL::GSL
+            nlohmann_json::nlohmann_json
+            raknet::raknet
+            replxx::replxx
+            sentry::sentry
+            spdlog::spdlog
+            tomlplusplus::tomlplusplus
+            zstr::zstr
+        )
         target_include_directories(_endstone_blockdata_live PRIVATE
             include
             ${CMAKE_CURRENT_BINARY_DIR}/include
