@@ -118,6 +118,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     endif()
 
     install(TARGETS blockdata_api
+        DESTINATION plugins
         RUNTIME DESTINATION plugins
         LIBRARY DESTINATION plugins
         ARCHIVE DESTINATION lib
