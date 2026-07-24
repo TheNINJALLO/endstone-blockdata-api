@@ -47,10 +47,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             platform: linux-x64
             bds: "1.26.32"
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             platform: linux-x64
             bds: "1.26.33"
           - os: windows-2022
@@ -69,7 +69,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Conan dependency manager
-        run: python -m pip install "conan>=2.18,<3"
+        run: python -m pip install "conan>=2.0,<3.0"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -77,7 +77,13 @@ jobs:
         run: |
           set -euxo pipefail
           sudo apt-get update
-          sudo apt-get install -y ninja-build clang-18 libc++-18-dev libc++abi-18-dev
+          sudo apt-get install -y lsb-release wget software-properties-common gnupg
+          if ! command -v clang-18 &> /dev/null; then
+            wget https://apt.llvm.org/llvm.sh
+            chmod +x llvm.sh
+            sudo ./llvm.sh 18
+          fi
+          sudo apt-get install -y ninja-build libc++-18-dev libc++abi-18-dev
           clang-18 --version
           clang++-18 --version
           cmake --version
