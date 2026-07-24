@@ -118,12 +118,12 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     endif()
 
     install(TARGETS blockdata_api
-        DESTINATION plugins
         RUNTIME DESTINATION plugins
         LIBRARY DESTINATION plugins
         ARCHIVE DESTINATION lib
         COMPONENT blockdata_package
     )
+    install(FILES $<TARGET_FILE:blockdata_api> DESTINATION plugins COMPONENT blockdata_package)
 
     if(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON)
         FetchContent_Declare(pybind11_live
