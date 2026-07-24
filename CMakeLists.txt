@@ -89,7 +89,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     )
     target_link_libraries(blockdata_api PRIVATE
         endstone_blockdata_core
-        bedrock::bedrock
         aklomp::base64
         boost::boost
         concurrentqueue::concurrentqueue
