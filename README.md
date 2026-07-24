@@ -1,10 +1,10 @@
 # Endstone BlockData API
 
-[![Version](https://img.shields.io/badge/version-v0.4.5--beta.1-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.1)
+[![Version](https://img.shields.io/badge/version-v0.4.5--beta.2-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.2)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.5%20%7C%20v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
 [![BDS Version](https://img.shields.io/badge/BDS-1.26.32%20%7C%201.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta1)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta2)
 [![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
 
@@ -16,19 +16,19 @@ Designed for complex inventory handling, container snapshots, anti-grief transac
 
 ## 📚 Documentation & Technical Wiki
 
-Comprehensive guides, architecture diagrams, container audit tutorials, and full API specifications are available on the [**Docsify Documentation Site**](docs/README.md)
+Comprehensive guides, architecture diagrams, container audit tutorials, and full API specifications are available on the [**Docsify Documentation Site**](docs/README.md).
 
 ---
 
-## 📦 Direct Release Downloads (`v0.4.5-beta.1`)
+## 📦 Direct Release Downloads (`v0.4.5-beta.2`)
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Windows x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-windows-x64.dll) |
-| **Windows x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-windows-x64.dll) |
-| **Linux x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-linux-x64.so) |
-| **Linux x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-linux-x64.so) |
-| **Python Wheel** | `Universal` | `endstone_blockdata_inspector-0.4.5b1-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone_blockdata_inspector-0.4.5b1-py3-none-any.whl) |
+| **Windows x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.2/endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.32-windows-x64.dll) |
+| **Windows x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.2/endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.33-windows-x64.dll) |
+| **Linux x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.2/endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.32-linux-x64.so) |
+| **Linux x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.2/endstone-blockdata-api-v0.4.5-beta.2-bds-1.26.33-linux-x64.so) |
+| **Python Wheel** | `Universal` | `endstone_blockdata_inspector-0.4.5b2-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.2/endstone_blockdata_inspector-0.4.5b2-py3-none-any.whl) |
 
 ---
 

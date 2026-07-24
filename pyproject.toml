@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "endstone-blockdata-api"
-version = "0.4.5b1"
+version = "0.4.5b2"
 description = "Detached block state, block entity and NBT API for Endstone"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
