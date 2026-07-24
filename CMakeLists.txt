@@ -121,6 +121,8 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     )
     if(UNIX)
         target_compile_options(blockdata_api PRIVATE -fms-extensions)
+    elseif(WIN32)
+        target_link_options(blockdata_api PRIVATE "/FORCE:UNRESOLVED")
     endif()
 
     install(TARGETS blockdata_api
