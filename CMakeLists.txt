@@ -74,6 +74,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
 
     endstone_add_plugin(blockdata_api ${BLOCKDATA_PLUGIN_SOURCES})
     set_target_properties(blockdata_api PROPERTIES
+        PREFIX ""
         OUTPUT_NAME "endstone_blockdata_bds_${ENDSTONE_BDS_BUILD_FILE}"
     )
     target_include_directories(blockdata_api PRIVATE
@@ -127,7 +128,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         )
         FetchContent_MakeAvailable(pybind11_live)
         pybind11_add_module(_endstone_blockdata_live MODULE src/live_python_bindings.cpp)
-        target_link_libraries(_endstone_blockdata_live PRIVATE endstone_blockdata_core)
+        target_link_libraries(_endstone_blockdata_live PRIVATE endstone_blockdata_core fmt::fmt)
         target_include_directories(_endstone_blockdata_live PRIVATE
             include
             ${CMAKE_CURRENT_BINARY_DIR}/include

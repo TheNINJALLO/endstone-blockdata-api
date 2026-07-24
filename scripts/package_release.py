@@ -49,11 +49,10 @@ def main() -> int:
     if not stage.is_dir():
         raise SystemExit(f"Install stage does not exist: {stage}")
 
-    plugin_dir = stage / "plugins"
     suffixes = (".dll", ".so", ".dylib")
     candidates = [
         path
-        for path in plugin_dir.rglob("*")
+        for path in stage.rglob("*")
         if path.is_file()
         and path.suffix.lower() in suffixes
         and info["plugin_prefix"] in path.name
