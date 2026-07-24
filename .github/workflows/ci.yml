@@ -123,6 +123,13 @@ jobs:
           ninja --version
           python scripts\build_exact.py --bds "${{ matrix.bds }}" --platform "${{ matrix.platform }}" --parallel 2
 
+      - name: Build test plugin wheel
+        run: |
+          python -m pip install build wheel
+          if [ -d examples/python/block_data_inspector_plugin ]; then
+            python -m build --wheel examples/python/block_data_inspector_plugin -o dist/release
+          fi
+
       - name: Verify release assets
         run: >-
           python scripts/verify_release_assets.py
@@ -137,25 +144,24 @@ jobs:
           name: ${{ env.PROJECT_SLUG }}-exact-${{ matrix.bds }}-${{ matrix.platform }}
           path: dist/release/*
           if-no-files-found: error
-          retention-days: 30
-          compression-level: 0
+          retention-days: 14
 
-      - name: Upload failed-build diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
+  diagnostics:
+    name: Upload failed-build diagnostics
+    needs: [exact]
+    if: failure()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.PROJECT_SLUG }}-diagnostics-${{ matrix.bds }}-${{ matrix.platform }}
+          name: ${{ env.PROJECT_SLUG }}-diagnostics
           path: |
-            build-exact/**/CMakeCache.txt
             build-exact/**/CMakeFiles/CMakeOutput.log
             build-exact/**/CMakeFiles/CMakeError.log
             build-exact/**/*.log
             dist/**/*.json
             dist/diagnostics/**/*.log
-            .conan2-ci/**/profiles/*
-            build-exact/**/conan/**/*.log
-          if-no-files-found: warn
-          retention-days: 14
 
   release:
     name: Publish GitHub Release
@@ -188,7 +194,9 @@ jobs:
         working-directory: release-assets
         shell: bash
         run: |
-          find . -maxdepth 1 -type f \( -name '*.dll' -o -name '*.so' -o -name '*.zip' \) -print0             | sort -z             | xargs -0 -r sha256sum > SHA256SUMS.txt
+          find . -maxdepth 1 -type f \( -name '*.dll' -o -name '*.so' -o -name '*.zip' -o -name '*.whl' \) -print0 \
+            | sort -z \
+            | xargs -0 -r sha256sum > SHA256SUMS.txt
           test -s SHA256SUMS.txt
       - name: Create or update GitHub Release
         env:
