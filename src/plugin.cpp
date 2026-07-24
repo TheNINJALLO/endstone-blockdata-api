@@ -43,8 +43,8 @@ private:
     std::shared_ptr<endstone_blockdata::LiveBlockDataServiceProvider> provider_;
 };
 
-ENDSTONE_PLUGIN("endstone_blockdata", ENDSTONE_BLOCKDATA_VERSION, BlockDataPlugin) {
-    prefix = "BlockData";
+ENDSTONE_PLUGIN("blockdata_api", ENDSTONE_BLOCKDATA_VERSION, BlockDataPlugin) {
+    prefix = "BlockDataAPI";
     description = "Live block-state, block-actor and container NBT service for Endstone";
     website = "https://github.com/TheNINJALLO/endstone-blockdata-api";
     authors = {"Ninj-OS contributors"};
