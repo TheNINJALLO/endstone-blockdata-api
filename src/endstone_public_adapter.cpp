@@ -1,6 +1,11 @@
 #include <format>
 namespace std {
-typedef std::format_context format_context;
+#if defined(_LIBCPP_VERSION)
+inline namespace __1 {
+typedef ::std::format_context format_context;
+}
+#endif
+typedef ::std::format_context format_context;
 }
 
 #include "endstone_blockdata/endstone_adapter.h"
