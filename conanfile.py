@@ -8,7 +8,6 @@ class ExactEndstoneDependencies(ConanFile):
         "boost/*:header_only": True,
         "date/*:header_only": True,
         "raknet/*:minecraft_version": "r26u3",
-        "spdlog/*:use_std_fmt": True,
     }
 
     def requirements(self):
