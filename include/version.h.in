@@ -1,0 +1,2 @@
+#pragma once
+#define ENDSTONE_BLOCKDATA_VERSION "@PROJECT_VERSION@"

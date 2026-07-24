@@ -1,0 +1,51 @@
+{
+  "schema": 3,
+  "project": "endstone-blockdata-api",
+  "api": "0.4.1",
+  "adapter_family": "minecraft-bedrock-26.30",
+  "adapters": [
+    {
+      "bds": "1.26.32",
+      "endstone": "0.11.5",
+      "status": "source-adapter",
+      "features": [
+        "block_states",
+        "block_writes",
+        "block_actor_metadata",
+        "canonical_block_actor_nbt",
+        "complete_container_items",
+        "nested_item_user_nbt",
+        "container_save_nbt",
+        "inventory_writes",
+        "dirty_marking",
+        "client_updates",
+        "endstone_service",
+        "live_python_bridge"
+      ]
+    },
+    {
+      "bds": "1.26.33",
+      "endstone": "0.11.6",
+      "status": "source-adapter",
+      "features": [
+        "block_states",
+        "block_writes",
+        "block_actor_metadata",
+        "canonical_block_actor_nbt",
+        "complete_container_items",
+        "nested_item_user_nbt",
+        "container_save_nbt",
+        "inventory_writes",
+        "dirty_marking",
+        "client_updates",
+        "endstone_service",
+        "live_python_bridge"
+      ]
+    }
+  ],
+  "not_claimed": [
+    "byte-identical hidden general BlockActor::save/load ABI",
+    "unverified arbitrary non-container actor NBT replacement"
+  ],
+  "policy": "fail-closed; exact runtime BDS build match required"
+}

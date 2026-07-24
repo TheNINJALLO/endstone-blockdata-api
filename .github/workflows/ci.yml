@@ -1,0 +1,205 @@
+name: Build and Release v0.4.5
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blockdata-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RELEASE_VERSION: 0.4.5-alpha.9
+  PROJECT_SLUG: endstone-blockdata-api
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  portable:
+    name: Portable tests v0.4.5 (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python package
+        run: python -m pip install -e .
+      - name: Configure portable build
+        run: cmake -S . -B build -DENDSTONE_BLOCKDATA_BUILD_TESTS=ON -DENDSTONE_BLOCKDATA_BUILD_PLUGIN=OFF
+      - name: Build portable targets
+        run: cmake --build build --config Release --parallel
+      - name: Run C++ tests
+        run: ctest --test-dir build -C Release --output-on-failure
+      - name: Run Python tests
+        run: python -m unittest discover -s tests/python -v
+
+  exact:
+    name: Exact v0.4.5 - BDS ${{ matrix.bds }} (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x64
+            bds: "1.26.32"
+          - os: ubuntu-24.04
+            platform: linux-x64
+            bds: "1.26.33"
+          - os: windows-2022
+            platform: windows-x64
+            bds: "1.26.32"
+          - os: windows-2022
+            platform: windows-x64
+            bds: "1.26.33"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan dependency manager
+        run: python -m pip install "conan>=2.18,<3"
+
+      - name: Install Linux compiler toolchain
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-18 libc++-18-dev libc++abi-18-dev
+          clang-18 --version
+          clang++-18 --version
+          cmake --version
+          ninja --version
+
+      - name: Locate Windows toolchains
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --global core.longpaths true
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { throw "vswhere.exe was not found at $vswhere" }
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "Visual Studio 2022 C++ tools were not found" }
+          "VS_PATH=$vs" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          $llvm = "C:\Program Files\LLVM\bin"
+          if (-not (Test-Path (Join-Path $llvm "clang-cl.exe"))) {
+            choco install llvm -y --no-progress
+          }
+          if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+            choco install ninja -y --no-progress
+          }
+          $llvm | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          cmake --version
+
+      - name: Build and package exact plugin on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python scripts/build_exact.py             --bds "${{ matrix.bds }}"             --platform "${{ matrix.platform }}"             --parallel 2
+
+      - name: Build and package exact plugin on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call "%VS_PATH%\Common7\Tools\VsDevCmd.bat" -arch=x64 -host_arch=x64
+          set "PATH=C:\Program Files\LLVM\bin;%PATH%"
+          clang-cl --version
+          lld-link --version
+          ninja --version
+          python scripts\build_exact.py --bds "${{ matrix.bds }}" --platform "${{ matrix.platform }}" --parallel 2
+
+      - name: Verify release assets
+        run: >-
+          python scripts/verify_release_assets.py
+          --slug "${{ env.PROJECT_SLUG }}"
+          --version "${{ env.RELEASE_VERSION }}"
+          --bds "${{ matrix.bds }}"
+          --platform "${{ matrix.platform }}"
+
+      - name: Upload compiled plugin package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_SLUG }}-exact-${{ matrix.bds }}-${{ matrix.platform }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+
+      - name: Upload failed-build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_SLUG }}-diagnostics-${{ matrix.bds }}-${{ matrix.platform }}
+          path: |
+            build-exact/**/CMakeCache.txt
+            build-exact/**/CMakeFiles/CMakeOutput.log
+            build-exact/**/CMakeFiles/CMakeError.log
+            build-exact/**/*.log
+            dist/**/*.json
+            dist/diagnostics/**/*.log
+            .conan2-ci/**/profiles/*
+            build-exact/**/conan/**/*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [portable, exact]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify release tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          python - <<'PYTAG'
+          import json, os
+          version = json.load(open('SOURCE_RELEASE.json', encoding='utf-8'))['version']
+          expected = f'v{version}'
+          actual = os.environ['RELEASE_TAG']
+          if actual != expected:
+              raise SystemExit(f'Release tag must be {expected}, got {actual}')
+          PYTAG
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ env.PROJECT_SLUG }}-exact-*
+          path: release-assets
+          merge-multiple: true
+      - name: Generate combined checksums
+        working-directory: release-assets
+        shell: bash
+        run: |
+          find . -maxdepth 1 -type f \( -name '*.dll' -o -name '*.so' -o -name '*.zip' \) -print0             | sort -z             | xargs -0 -r sha256sum > SHA256SUMS.txt
+          test -s SHA256SUMS.txt
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          prerelease=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then prerelease+=(--prerelease); fi
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release-assets/*               --verify-tag --generate-notes               --title "Endstone BlockData API $RELEASE_TAG"               "${prerelease[@]}"
+          fi

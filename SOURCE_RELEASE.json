@@ -1,0 +1,31 @@
+{
+  "name": "endstone-blockdata-api",
+  "version": "0.4.5-alpha.9",
+  "adapter_family": "Minecraft Bedrock 26.30",
+  "supported_bds": [
+    "1.26.32",
+    "1.26.33"
+  ],
+  "endstone_tags": [
+    "v0.11.5",
+    "v0.11.6"
+  ],
+  "portable_tests": "included in GitHub Actions",
+  "native_validation": "exact adapter build matrix; stage-server runtime validation required",
+  "github_actions": {
+    "push_artifacts": true,
+    "tagged_releases": true,
+    "platforms": [
+      "linux-x64",
+      "windows-x64"
+    ],
+    "bds": [
+      "1.26.32",
+      "1.26.33"
+    ],
+    "linux_runner": "ubuntu-24.04 + clang-18 + libc++18 + Ninja",
+    "windows_toolchain": "Visual Studio environment + clang-cl + lld-link + Ninja + Conan 2",
+    "failure_diagnostics": true,
+    "dependency_source": "Endstone Cloudsmith Conan remote + Conan Center"
+  }
+}
