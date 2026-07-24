@@ -81,6 +81,9 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         include
         ${CMAKE_CURRENT_BINARY_DIR}/include
         ${endstone_SOURCE_DIR}/src
+        ${endstone_SOURCE_DIR}/include
+        ${endstone_BINARY_DIR}/include
+        ${endstone_BINARY_DIR}/include/generated
     )
     target_compile_definitions(blockdata_api PRIVATE
         ENDSTONE_BLOCKDATA_NATIVE_2630=$<BOOL:${ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630}>
@@ -155,6 +158,8 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
             ${CMAKE_CURRENT_BINARY_DIR}/include
             ${endstone_SOURCE_DIR}/include
             ${endstone_SOURCE_DIR}/src
+            ${endstone_BINARY_DIR}/include
+            ${endstone_BINARY_DIR}/include/generated
         )
         install(TARGETS _endstone_blockdata_live
             RUNTIME DESTINATION python
