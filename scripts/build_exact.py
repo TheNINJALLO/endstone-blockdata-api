@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-VERSION = "0.4.5-beta.6"
+VERSION = "0.4.5-beta.7"
 PROJECT = "blockdata"
 PROJECT_SLUG = "endstone-blockdata-api"
 SUPPORTED_BDS = {"1.26.32", "1.26.33"}
