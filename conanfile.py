@@ -14,6 +14,7 @@ class ExactEndstoneDependencies(ConanFile):
         # Endstone v0.11.5 and v0.11.6.
         self.requires("base64/0.5.2")
         self.requires("boost/1.86.0")
+        self.requires("date/3.0.3")
         self.requires("entt/3.15.0")
         self.requires("expected-lite/0.8.0")
         self.requires("fmt/11.2.0")
@@ -24,4 +25,7 @@ class ExactEndstoneDependencies(ConanFile):
 
     def generate(self):
         CMakeDeps(self).generate()
-        CMakeToolchain(self).generate()
+        tc = CMakeToolchain(self)
+        tc.preprocessor_definitions["ENTT_SPARSE_PAGE"] = 2048
+        tc.preprocessor_definitions["ENTT_NO_MIXIN"] = ""
+        tc.generate()
