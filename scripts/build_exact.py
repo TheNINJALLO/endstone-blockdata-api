@@ -121,7 +121,7 @@ def main() -> int:
     # Endstone publishes its patched RakNet recipe on this public Conan remote.
     run([conan, "remote", "add", "endstone", "https://conan.cloudsmith.io/endstone/conan/", "--force"],
         env=env, log_file=log_file)
-    run([conan, "remote", "add", "conancenter", "https://center.conan.io", "--force"],
+    run([conan, "remote", "add", "conancenter", "https://center2.conan.io", "--force"],
         env=env, log_file=log_file)
     run([conan, "profile", "detect", "--force", "--name", "exact"], env=env, log_file=log_file)
 
