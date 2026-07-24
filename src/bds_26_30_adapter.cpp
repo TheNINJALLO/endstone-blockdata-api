@@ -21,6 +21,9 @@
 #include <type_traits>
 #include <vector>
 
+void Tag::print(PrintStream &) const {}
+void Tag::print(const std::string &, PrintStream &) const {}
+
 namespace endstone_blockdata {
 namespace {
 std::string blockActorTypeName(BlockActorType type) {
@@ -247,7 +250,7 @@ struct ActorAccess {
 std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLocation &location) {
     auto *level = server.getLevel();
     auto *dimension = level ? level->getDimension(location.dimension) : nullptr;
-    auto *exact_dimension = dynamic_cast<endstone::core::EndstoneDimension *>(dimension);
+    auto *exact_dimension = static_cast<endstone::core::EndstoneDimension *>(dimension);
     if (!exact_dimension) return std::nullopt;
 
     auto &source = exact_dimension->getHandle().getBlockSourceFromMainChunkSource();

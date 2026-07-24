@@ -84,6 +84,13 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
     endif()
 
+    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h")
+        file(READ "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h" ENDSTONE_TAG_H_CONTENT)
+        string(REPLACE "virtual void print(PrintStream &) const;" "virtual void print(PrintStream &) const {}" ENDSTONE_TAG_H_CONTENT "${ENDSTONE_TAG_H_CONTENT}")
+        string(REPLACE "virtual void print(const std::string &, PrintStream &) const;" "virtual void print(const std::string &, PrintStream &) const {}" ENDSTONE_TAG_H_CONTENT "${ENDSTONE_TAG_H_CONTENT}")
+        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h" "${ENDSTONE_TAG_H_CONTENT}")
+    endif()
+
 
     set(BLOCKDATA_PLUGIN_SOURCES src/plugin.cpp src/endstone_public_adapter.cpp)
     if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
