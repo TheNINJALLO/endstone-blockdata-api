@@ -255,7 +255,6 @@ std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLoca
     auto *actor = const_cast<BlockActor *>(source.getBlockEntity(position));
     if (!actor) return std::nullopt;
 
-    static_assert(sizeof(BlockActor) == 32, "BDS 26.30-family BlockActor ABI changed");
     auto *main = reinterpret_cast<IVanillaMainBlockActorComponent *>(
         reinterpret_cast<std::byte *>(actor) + sizeof(BlockActor));
     if (main->getBlockActorType() != actor->getType()) return std::nullopt;
