@@ -21,11 +21,12 @@ class ExactEndstoneDependencies(ConanFile):
         self.requires("glm/1.0.1")
         self.requires("magic_enum/0.9.7")
         self.requires("ms-gsl/4.2.0")
+        self.requires("nlohmann_json/3.11.3")
         self.requires("raknet/4.081-mojang")
 
     def generate(self):
         CMakeDeps(self).generate()
         tc = CMakeToolchain(self)
         tc.preprocessor_definitions["ENTT_SPARSE_PAGE"] = 2048
-        tc.preprocessor_definitions["ENTT_NO_MIXIN"] = ""
+        tc.preprocessor_definitions["ENTT_NO_MIXIN"] = "1"
         tc.generate()
