@@ -124,6 +124,7 @@ jobs:
           python scripts\build_exact.py --bds "${{ matrix.bds }}" --platform "${{ matrix.platform }}" --parallel 2
 
       - name: Build test plugin wheel
+        shell: bash
         run: |
           python -m pip install build wheel
           if [ -d examples/python/block_data_inspector_plugin ]; then
