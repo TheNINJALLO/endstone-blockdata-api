@@ -4,4 +4,4 @@ from .model import (BlockLocation, BlockSnapshot, BlockEntitySnapshot, Inventory
                     InventoryChange, BlockEntityAuditDelta)
 from .service import BlockDataService, InMemoryAdapter, ContainerView
 __all__ = [name for name in globals() if not name.startswith("_")]
-__version__ = "0.4.5b2"
+__version__ = "0.4.5b3"

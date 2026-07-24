@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.5-beta.2
+  RELEASE_VERSION: 0.4.5-beta.3
   PROJECT_SLUG: endstone-blockdata-api
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
