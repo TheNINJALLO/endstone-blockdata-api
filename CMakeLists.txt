@@ -66,6 +66,12 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     )
     FetchContent_MakeAvailable(endstone)
 
+    if(EXISTS "${endstone_SOURCE_DIR}/include/endstone/identifier.h")
+        file(READ "${endstone_SOURCE_DIR}/include/endstone/identifier.h" ENDSTONE_IDENTIFIER_H_CONTENT)
+        string(REPLACE "-> format_context::iterator" "-> typename FormatContext::iterator" ENDSTONE_IDENTIFIER_H_CONTENT "${ENDSTONE_IDENTIFIER_H_CONTENT}")
+        file(WRITE "${endstone_SOURCE_DIR}/include/endstone/identifier.h" "${ENDSTONE_IDENTIFIER_H_CONTENT}")
+    endif()
+
 
     set(BLOCKDATA_PLUGIN_SOURCES src/plugin.cpp src/endstone_public_adapter.cpp)
     if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)

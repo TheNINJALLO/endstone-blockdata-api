@@ -1,13 +1,3 @@
-#include <format>
-namespace std {
-#if defined(_LIBCPP_VERSION)
-inline namespace __1 {
-typedef ::std::format_context format_context;
-}
-#endif
-typedef ::std::format_context format_context;
-}
-
 #include <endstone/endstone.hpp>
 #include <endstone/plugin/service_manager.h>
 #include <endstone/plugin/service_priority.h>
