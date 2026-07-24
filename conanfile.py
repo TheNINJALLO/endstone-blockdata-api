@@ -20,7 +20,7 @@ class ExactEndstoneDependencies(ConanFile):
         self.requires("date/3.0.3")
         self.requires("entt/3.15.0")
         self.requires("expected-lite/0.8.0")
-        self.requires("fmt/11.2.0")
+        self.requires("fmt/12.1.0", override=True)
         self.requires("funchook/1.1.3")
         self.requires("glm/1.0.1")
         self.requires("magic_enum/0.9.7")
