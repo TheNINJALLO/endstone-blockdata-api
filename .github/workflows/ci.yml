@@ -205,15 +205,13 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
-          prerelease=()
-          if [[ "$RELEASE_TAG" == *-* ]]; then prerelease+=(--prerelease); fi
           mkdir -p streamlined-release
           cp release-assets/*.dll release-assets/*.so release-assets/*.whl streamlined-release/ 2>/dev/null || true
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" streamlined-release/* --clobber
+            gh release edit "$RELEASE_TAG" --prerelease=false --latest
           else
             gh release create "$RELEASE_TAG" streamlined-release/* \
-              --verify-tag --generate-notes \
-              --title "Endstone BlockData API $RELEASE_TAG" \
-              "${prerelease[@]}"
+              --verify-tag --generate-notes --latest \
+              --title "Endstone BlockData API $RELEASE_TAG"
           fi
