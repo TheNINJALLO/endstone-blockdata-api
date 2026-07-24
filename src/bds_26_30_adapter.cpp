@@ -123,7 +123,9 @@ NbtValue fromNativeTag(const Tag &tag) {
     case Tag::Type::Compound: {
         const auto &compound = static_cast<const CompoundTag &>(tag);
         NbtCompound out;
-        for (const auto &[key, entry] : compound) if (entry) out.emplace(key, fromNativeTag(*entry));
+        for (const auto &[key, entry] : compound) {
+            if (const auto *t = entry.get()) out.emplace(key, fromNativeTag(*t));
+        }
         return NbtValue::compound(std::move(out));
     }
     default: return {};
@@ -183,12 +185,16 @@ CompoundTag makeItemTag(int slot, const ItemStack &item) {
 
     if (!item.getCanPlaceOn().empty()) {
         ListTag list;
-        for (const auto &name : item.getCanPlaceOn()) list.add(std::make_unique<StringTag>(name));
+        for (const auto &type : item.getCanPlaceOn()) {
+            if (type) list.add(std::make_unique<StringTag>(type->getName().getString()));
+        }
         out.put("CanPlaceOn", list.copy());
     }
     if (!item.getCanDestroy().empty()) {
         ListTag list;
-        for (const auto &name : item.getCanDestroy()) list.add(std::make_unique<StringTag>(name));
+        for (const auto &type : item.getCanDestroy()) {
+            if (type) list.add(std::make_unique<StringTag>(type->getName().getString()));
+        }
         out.put("CanDestroy", list.copy());
     }
     return out;
