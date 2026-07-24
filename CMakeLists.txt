@@ -41,13 +41,23 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     # Conan generates these package configs from the exact versions pinned in conanfile.py.
     find_package(base64 REQUIRED)
     find_package(Boost REQUIRED)
+    find_package(concurrentqueue REQUIRED)
+    find_package(cpptrace REQUIRED)
     find_package(date REQUIRED)
     find_package(EnTT REQUIRED)
+    find_package(expected-lite REQUIRED)
+    find_package(fmt REQUIRED)
+    find_package(funchook REQUIRED)
     find_package(glm REQUIRED)
     find_package(magic_enum REQUIRED)
     find_package(Microsoft.GSL REQUIRED)
     find_package(nlohmann_json REQUIRED)
     find_package(raknet REQUIRED)
+    find_package(replxx REQUIRED)
+    find_package(sentry REQUIRED)
+    find_package(spdlog REQUIRED)
+    find_package(tomlplusplus REQUIRED)
+    find_package(zstr REQUIRED)
 
     include(FetchContent)
     FetchContent_Declare(endstone
@@ -81,13 +91,23 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         endstone_blockdata_core
         aklomp::base64
         boost::boost
+        concurrentqueue::concurrentqueue
+        cpptrace::cpptrace
         date::date
         EnTT::EnTT
+        nonstd::expected-lite
+        fmt::fmt
+        funchook::funchook
         glm::glm
         magic_enum::magic_enum
         Microsoft.GSL::GSL
         nlohmann_json::nlohmann_json
         raknet::raknet
+        replxx::replxx
+        sentry::sentry
+        spdlog::spdlog
+        tomlplusplus::tomlplusplus
+        zstr::zstr
     )
     if(UNIX)
         target_compile_options(blockdata_api PRIVATE -fms-extensions)
