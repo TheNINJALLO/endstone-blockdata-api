@@ -1,39 +1,34 @@
 # Endstone BlockData API
 
-[![Version](https://img.shields.io/badge/version-v0.4.5--alpha.9-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-alpha.9)
+[![Version](https://img.shields.io/badge/version-v0.4.5--beta.1-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.1)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.5%20%7C%20v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
-[![BDS Support](https://img.shields.io/badge/BDS-1.26.32%20%7C%201.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
+[![BDS Version](https://img.shields.io/badge/BDS-1.26.32%20%7C%201.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20x64-orange.svg?style=for-the-badge)](#installation)
-[![Language](https://img.shields.io/badge/c%2B%2B-20-blue.svg?style=for-the-badge)](#)
-[![Python](https://img.shields.io/badge/python-3.9%2B-yellow.svg?style=for-the-badge)](#)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta1)
+[![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-> High-performance, native Bedrock block state mutation, canonical container NBT inspection, and transaction audit engine for **Endstone Minecraft Bedrock Edition** servers.
+A high-performance, detached **Block State**, **Block Entity**, and **Canonical NBT** manipulation API for Endstone Bedrock Dedicated Servers (BDS).
+
+Designed for complex inventory handling, container snapshots, anti-grief transaction diffing, and live block trait modification without risking world corruption or looper thread lockups.
 
 ---
 
-## 🚀 Key Features
+## 📚 Documentation & Technical Wiki
 
-- **⚡ Zero-Allocation State Mutations**: Atomic block state patching with optimistic revision collision policies (`FAIL_IF_CHANGED`, `FORCE`).
-- **📦 Canonical Container NBT Engine**: Direct reading & writing of container block entity NBT tags (`CustomName`, items, enchantments, lore).
-- **🛡️ Container Audit & Anti-Grief Recorder**: Snapshot diff engine that detects item additions, removals, swaps, and quantity changes.
-- **🌐 Dual C++20 & Python 3.9+ API**: Native C++ service bindings registered in Endstone `ServiceManager` alongside clean Python interfaces.
-- **🎮 In-Game Interactive Inspector**: Includes built-in `/bd` command suite for live in-game testing.
+Comprehensive guides, architecture diagrams, container audit tutorials, and full API specifications are available on the [**Docsify Documentation Site**](docs/README.md)
 
 ---
 
-## 📦 Direct Release Downloads (`v0.4.5-alpha.9`)
+## 📦 Direct Release Downloads (`v0.4.5-beta.1`)
 
-Download official pre-compiled binaries matching your target server OS and BDS version:
-
-| Target Platform | BDS Version | Plugin Binary Asset | Download |
+| Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Windows x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-alpha.9/endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.32-windows-x64.dll) |
-| **Windows x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-alpha.9/endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.33-windows-x64.dll) |
-| **Linux x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-alpha.9/endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.32-linux-x64.so) |
-| **Linux x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-alpha.9/endstone-blockdata-api-v0.4.5-alpha.9-bds-1.26.33-linux-x64.so) |
-| **Python Wheel** | `Universal` | `endstone_blockdata_inspector-0.4.5a9-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-alpha.9/endstone_blockdata_inspector-0.4.5a9-py3-none-any.whl) |
+| **Windows x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-windows-x64.dll) |
+| **Windows x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-windows-x64.dll) |
+| **Linux x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.32-linux-x64.so) |
+| **Linux x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone-blockdata-api-v0.4.5-beta.1-bds-1.26.33-linux-x64.so) |
+| **Python Wheel** | `Universal` | `endstone_blockdata_inspector-0.4.5b1-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.1/endstone_blockdata_inspector-0.4.5b1-py3-none-any.whl) |
 
 ---
 
