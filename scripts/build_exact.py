@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-VERSION = "0.4.5-beta.3"
+VERSION = "0.4.5-beta.4"
 PROJECT = "blockdata"
 PROJECT_SLUG = "endstone-blockdata-api"
 SUPPORTED_BDS = {"1.26.32", "1.26.33"}
@@ -154,7 +154,7 @@ def main() -> int:
         f"-DCMAKE_INSTALL_PREFIX={stage_dir}",
         "-DENDSTONE_BLOCKDATA_BUILD_TESTS=OFF",
         "-DENDSTONE_BLOCKDATA_BUILD_PLUGIN=ON",
-        "-DENDSTONE_BLOCKDATA_BUILD_NATIVE_2630=OFF",
+        "-DENDSTONE_BLOCKDATA_BUILD_NATIVE_2630=ON",
         f"-DENDSTONE_BDS_BUILD={args.bds}",
     ]
     configure.append("-DENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON=ON")
