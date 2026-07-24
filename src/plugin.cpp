@@ -1,3 +1,20 @@
+#include <format>
+#include <string_view>
+
+namespace endstone {
+template <typename T> class Identifier;
+}
+
+namespace std {
+template <typename T>
+struct formatter<endstone::Identifier<T>> : std::formatter<std::string_view> {
+    template <typename FormatContext>
+    auto format(const endstone::Identifier<T> &id, FormatContext &ctx) const {
+        return std::format_to(ctx.out(), "{}:{}", id.getNamespace(), id.getKey());
+    }
+};
+}
+
 #include <endstone/endstone.hpp>
 #include <endstone/plugin/service_manager.h>
 #include <endstone/plugin/service_priority.h>
