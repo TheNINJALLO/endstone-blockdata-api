@@ -16,7 +16,7 @@ from endstone_blockdata import BlockDataService
 class BlockDataTestPlugin(Plugin):
     api_version = "0.4"
     name = "BlockDataTestPlugin"
-    version = "0.4.5-beta.15"
+    version = "0.4.5-beta.16"
     description = "In-game validation test suite for Endstone BlockData API"
 
     commands = {
