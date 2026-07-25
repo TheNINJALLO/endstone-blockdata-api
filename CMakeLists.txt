@@ -108,8 +108,8 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
 
     if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h")
         file(READ "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h" ENDSTONE_HASHED_STRING_H_CONTENT)
-        string(REPLACE "HashedString(char const *str);" "HashedString(char const *str) : hash_(computeHash(str ? str : \"\")), str_(str ? str : \"\") {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
-        string(REPLACE "HashedString(const std::string &str);" "HashedString(const std::string &str) : hash_(computeHash(str)), str_(str) {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
+        string(REPLACE "HashedString(char const *str);" "HashedString(char const *str) : str_hash_(computeHash(str)), str_(str ? str : \"\") {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
+        string(REPLACE "HashedString(const std::string &str);" "HashedString(const std::string &str) : str_hash_(computeHash(str)), str_(str) {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h" "${ENDSTONE_HASHED_STRING_H_CONTENT}")
     endif()
 
