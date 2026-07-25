@@ -21,9 +21,6 @@
 #include <type_traits>
 #include <vector>
 
-void Tag::print(PrintStream &) const {}
-void Tag::print(const std::string &, PrintStream &) const {}
-
 namespace endstone_blockdata {
 namespace {
 std::string blockActorTypeName(BlockActorType type) {
