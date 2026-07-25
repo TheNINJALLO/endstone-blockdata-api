@@ -14,9 +14,9 @@ from endstone.command import Command, CommandSender
 from endstone_blockdata import BlockDataService
 
 class BlockDataTestPlugin(Plugin):
-    api_version = "0.4"
+    api_version = "0.5"
     name = "BlockDataTestPlugin"
-    version = "0.4.5-beta.27"
+    version = "0.4.5-beta.28"
     description = "In-game validation test suite for Endstone BlockData API"
 
     commands = {
@@ -24,6 +24,12 @@ class BlockDataTestPlugin(Plugin):
             "description": "Run in-game validation suite for BlockData API",
             "usages": ["/testblockdata [x: int] [y: int] [z: int]"],
             "permissions": ["blockdatatest.admin"],
+        }
+    }
+
+    permissions = {
+        "blockdatatest.admin": {
+            "description": "Allows execution of BlockData test commands",
             "default": "op",
         }
     }

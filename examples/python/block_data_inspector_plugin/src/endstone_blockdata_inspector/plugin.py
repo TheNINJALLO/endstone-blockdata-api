@@ -17,9 +17,9 @@ from endstone_blockdata import (
 )
 
 class BlockDataInspectorPlugin(Plugin):
-    api_version = "0.4"
+    api_version = "0.5"
     name = "BlockDataInspectorPlugin"
-    version = "0.4.5-beta.27"
+    version = "0.4.5-beta.28"
     description = "Interactive In-Game Container, NBT, and Block State Test Suite"
 
     commands = {
@@ -27,6 +27,17 @@ class BlockDataInspectorPlugin(Plugin):
             "description": "BlockData Inspector & Container NBT Test Suite",
             "usages": ["/bd <locate|inspect|item|audit|state> [args...]"],
             "permissions": ["bd.admin"],
+        },
+        "blockdata": {
+            "description": "BlockData Inspector & Container NBT Test Suite",
+            "usages": ["/blockdata <locate|inspect|item|audit|state> [args...]"],
+            "permissions": ["bd.admin"],
+        }
+    }
+
+    permissions = {
+        "bd.admin": {
+            "description": "Allows access to BlockData Inspector commands",
             "default": "op",
         }
     }
