@@ -55,6 +55,23 @@ extern "C" {
     __attribute__((weak)) void *_ZTI3Tag[8] = {0};
     __attribute__((weak)) void *_ZTIN8endstone4core17EndstoneDimensionE[8] = {0};
 
+    // ItemStack and ItemStackBase constructor & assignment weak stubs
+    __attribute__((weak)) void _ZN13ItemStackBaseC1ERKS_() {}
+    __attribute__((weak)) void _ZN13ItemStackBaseC2ERKS_() {}
+    __attribute__((weak)) void _ZN13ItemStackBaseaSERKS_() {}
+    __attribute__((weak)) void _ZN13ItemStackBaseC1Ev() {}
+    __attribute__((weak)) void _ZN13ItemStackBaseC2Ev() {}
+
+    __attribute__((weak)) void _ZN9ItemStackC1ERKS_() {}
+    __attribute__((weak)) void _ZN9ItemStackC2ERKS_() {}
+    __attribute__((weak)) void _ZN9ItemStackaSERKS_() {}
+    __attribute__((weak)) void _ZN9ItemStackC1Ev() {}
+    __attribute__((weak)) void _ZN9ItemStackC2Ev() {}
+
+    __attribute__((weak)) void _ZN12ItemInstanceC1ERKS_() {}
+    __attribute__((weak)) void _ZN12ItemInstanceC2ERKS_() {}
+    __attribute__((weak)) void _ZN12ItemInstanceaSERKS_() {}
+
     // CompoundTag method weak stubs (both libc++ std::__1 and libstdc++ std::__cxx11)
     __attribute__((weak)) void _ZN11CompoundTag9putStringENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES6_() {}
     __attribute__((weak)) void _ZN11CompoundTag9putStringENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES5_() {}
