@@ -1,4 +1,4 @@
-#if defined(__linux__) || defined(__GNUC__)
+#if defined(__linux__) && !defined(_WIN32)
 extern "C" {
     // Weak object stubs for Bedrock Tag vtables & typeinfo
     __attribute__((weak)) void *_ZTV7ListTag[32] = {0};
