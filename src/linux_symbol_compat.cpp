@@ -199,6 +199,13 @@ extern "C" {
     __attribute__((weak)) void _ZNK7ListTag7getByteEi() {}
     __attribute__((weak)) void _ZNK7ListTag8getShortEi() {}
     __attribute__((weak)) void _ZNK7ListTag9getInt64Ei() {}
+    __attribute__((weak)) void _ZNK7ListTag5beginEv() {}
+    __attribute__((weak)) void _ZN7ListTag5beginEv() {}
+    __attribute__((weak)) void _ZNK7ListTag3endEv() {}
+    __attribute__((weak)) void _ZN7ListTag3endEv() {}
+    __attribute__((weak)) void _ZNK7ListTag5cbeginEv() {}
+    __attribute__((weak)) void _ZNK7ListTag4cendEv() {}
+    __attribute__((weak)) void _ZNK7ListTag5emptyEv() {}
 
     // CompoundTag method weak stubs (both libc++ std::__1 and libstdc++ std::__cxx11)
     __attribute__((weak)) void _ZN11CompoundTag9putStringENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES6_() {}
@@ -231,6 +238,44 @@ extern "C" {
     __attribute__((weak)) void _ZNK11CompoundTag9getInt64ESt17basic_string_viewIcSt11char_traitsIcEE() {}
     __attribute__((weak)) void _ZNK11CompoundTag8getFloatESt17basic_string_viewIcSt11char_traitsIcEE() {}
     __attribute__((weak)) void _ZNK11CompoundTag9getDoubleESt17basic_string_viewIcSt11char_traitsIcEE() {}
+
+    // CompoundTag iteration and utility methods
+    __attribute__((weak)) void _ZNK11CompoundTag5beginEv() {}
+    __attribute__((weak)) void _ZN11CompoundTag5beginEv() {}
+    __attribute__((weak)) void _ZNK11CompoundTag3endEv() {}
+    __attribute__((weak)) void _ZN11CompoundTag3endEv() {}
+    __attribute__((weak)) void _ZNK11CompoundTag5cbeginEv() {}
+    __attribute__((weak)) void _ZNK11CompoundTag4cendEv() {}
+    __attribute__((weak)) void _ZNK11CompoundTag4sizeEv() {}
+    __attribute__((weak)) void _ZNK11CompoundTag7isEmptyEv() {}
+    __attribute__((weak)) void _ZN11CompoundTag5clearEv() {}
+    __attribute__((weak)) void _ZN11CompoundTag6appendERKS_() {}
+    __attribute__((weak)) void _ZN11CompoundTag8deepCopyERKS_() {}
+    __attribute__((weak)) void _ZNK11CompoundTag4hashEv() {}
+
+    // CompoundTag getTag methods
+    __attribute__((weak)) void _ZNK11CompoundTag11getByteTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag11getByteTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag12getShortTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag12getShortTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag10getIntTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag10getIntTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag12getInt64TagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag12getInt64TagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag12getFloatTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag12getFloatTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag13getDoubleTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag13getDoubleTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag13getStringTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag13getStringTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag15getByteArrayTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag15getByteArrayTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag14getIntArrayTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZN11CompoundTag14getIntArrayTagESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag10getBooleanESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag7getVec3ESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag12getByteArrayESt17basic_string_viewIcSt11char_traitsIcEE() {}
+    __attribute__((weak)) void _ZNK11CompoundTag11getIntArrayESt17basic_string_viewIcSt11char_traitsIcEE() {}
 
     // Tag subclass copy methods
     __attribute__((weak)) void _ZNK11CompoundTag4copyEv() {}

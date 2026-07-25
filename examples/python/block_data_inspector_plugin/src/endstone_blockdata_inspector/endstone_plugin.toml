@@ -1,5 +1,5 @@
 name = "BlockDataInspectorPlugin"
-version = "0.4.5-beta.26"
+version = "0.4.5-beta.27"
 api-version = "0.4"
 description = "Interactive In-Game Container, NBT, and Block State Test Suite"
 main = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
