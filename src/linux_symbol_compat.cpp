@@ -55,6 +55,24 @@ extern "C" {
     __attribute__((weak)) void *_ZTI3Tag[8] = {0};
     __attribute__((weak)) void *_ZTIN8endstone4core17EndstoneDimensionE[8] = {0};
 
+    // CompoundTag method weak stubs (both libc++ std::__1 and libstdc++ std::__cxx11)
+    __attribute__((weak)) void _ZN11CompoundTag9putStringENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEES6_() {}
+    __attribute__((weak)) void _ZN11CompoundTag9putStringENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES5_() {}
+    __attribute__((weak)) void _ZN11CompoundTag6putIntENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEi() {}
+    __attribute__((weak)) void _ZN11CompoundTag6putIntENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEi() {}
+    __attribute__((weak)) void _ZN11CompoundTag7putByteENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEh() {}
+    __attribute__((weak)) void _ZN11CompoundTag7putByteENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEh() {}
+    __attribute__((weak)) void _ZN11CompoundTag8putShortENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEs() {}
+    __attribute__((weak)) void _ZN11CompoundTag8putShortENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEs() {}
+    __attribute__((weak)) void _ZN11CompoundTag9putInt64ENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEl() {}
+    __attribute__((weak)) void _ZN11CompoundTag9putInt64ENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEl() {}
+    __attribute__((weak)) void _ZN11CompoundTag8putFloatENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEf() {}
+    __attribute__((weak)) void _ZN11CompoundTag8putFloatENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEf() {}
+    __attribute__((weak)) void _ZN11CompoundTag9putDoubleENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEd() {}
+    __attribute__((weak)) void _ZN11CompoundTag9putDoubleENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEd() {}
+    __attribute__((weak)) void _ZN11CompoundTag10putBooleanENSt3__112basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEEb() {}
+    __attribute__((weak)) void _ZN11CompoundTag10putBooleanENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEb() {}
+
     // Weak function stubs for missing BDS/Endstone internal functions
     __attribute__((weak)) void _ZN12HashedStringC1EPKc() {}
     __attribute__((weak)) void _ZN12HashedStringC2EPKc() {}
