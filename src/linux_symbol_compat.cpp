@@ -95,6 +95,13 @@ extern "C" {
     __attribute__((weak)) void _ZNK13ItemStackBase10canDestroyEPK5Block() {}
     __attribute__((weak)) void _ZN13ItemStackBase14setWasPickedUpEb() {}
     __attribute__((weak)) void _ZNK13ItemStackBase14getWasPickedUpEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase13getCanPlaceOnEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase13getCanDestroyEv() {}
+    __attribute__((weak)) void _ZN13ItemStackBase13setCanPlaceOnERKNSt7__cxx116vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS6_EEE() {}
+    __attribute__((weak)) void _ZN13ItemStackBase13setCanPlaceOnERKNSt3__16vectorINS0_12basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEENS5_IS7_EEEE() {}
+    __attribute__((weak)) void _ZN13ItemStackBase13setCanDestroyERKNSt7__cxx116vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS6_EEE() {}
+    __attribute__((weak)) void _ZN13ItemStackBase13setCanDestroyERKNSt3__16vectorINS0_12basic_stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEENS5_IS7_EEEE() {}
+    __attribute__((weak)) void _ZN13ItemStackBase22deserializeComponentsER10IDataInput() {}
 
     __attribute__((weak)) void _ZN9ItemStackC1Ev() {}
     __attribute__((weak)) void _ZN9ItemStackC2Ev() {}
@@ -109,6 +116,23 @@ extern "C" {
     __attribute__((weak)) void _ZN12ItemInstanceC1ERKS_() {}
     __attribute__((weak)) void _ZN12ItemInstanceC2ERKS_() {}
     __attribute__((weak)) void _ZN12ItemInstanceaSERKS_() {}
+
+    // Item method weak stubs
+    __attribute__((weak)) void _ZNK4Item5getIdEv() {}
+    __attribute__((weak)) void _ZNK4Item15getFullItemNameEv() {}
+    __attribute__((weak)) void _ZNK4Item15getFullNameHashEv() {}
+    __attribute__((weak)) void _ZNK4Item17getSerializedNameEv() {}
+    __attribute__((weak)) void _ZNK4Item26getRequiredBaseGameVersionEv() {}
+    __attribute__((weak)) void _ZNK4Item12getBlockTypeEv() {}
+    __attribute__((weak)) void _ZNK4Item6hasTagERK14VanillaItemTag() {}
+    __attribute__((weak)) void _ZNK4Item7getTagsEv() {}
+    __attribute__((weak)) void _ZNK4Item31getFurnaceBurnIntervalMultiplerEv() {}
+    __attribute__((weak)) void _ZNK4Item16getCreativeGroupEv() {}
+    __attribute__((weak)) void _ZNK4Item19getCreativeCategoryEv() {}
+    __attribute__((weak)) void _ZNK4Item14getDamageValueEPK11CompoundTag() {}
+    __attribute__((weak)) void _ZNK4Item14hasDamageValueEPK11CompoundTag() {}
+    __attribute__((weak)) void _ZNK4Item17removeDamageValueER13ItemStackBase() {}
+    __attribute__((weak)) void _ZNK4Item14setDamageValueER13ItemStackBases() {}
 
     // Block method weak stubs
     __attribute__((weak)) void _ZNK5Block11hasPropertyE13BlockProperty() {}
