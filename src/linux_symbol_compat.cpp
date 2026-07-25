@@ -1,9 +1,29 @@
 #if defined(__linux__) && !defined(_WIN32)
 extern "C" {
-    // Weak object stubs for Bedrock Tag vtables, typeinfo, and static constants
+    // Weak object stubs for Bedrock item stack static constants
     __attribute__((weak)) char _ZN9ItemStack10EMPTY_ITEME[256] = {0};
     __attribute__((weak)) char _ZN13ItemStackBase10EMPTY_ITEME[256] = {0};
 
+    // Weak object stubs for Bedrock Item/Block vtables & typeinfo
+    __attribute__((weak)) void *_ZTV9ItemStack[32] = {0};
+    __attribute__((weak)) void *_ZTV13ItemStackBase[32] = {0};
+    __attribute__((weak)) void *_ZTV12ItemInstance[32] = {0};
+    __attribute__((weak)) void *_ZTV4Item[32] = {0};
+    __attribute__((weak)) void *_ZTV5Block[32] = {0};
+    __attribute__((weak)) void *_ZTV11BlockLegacy[32] = {0};
+    __attribute__((weak)) void *_ZTV9BlockActor[32] = {0};
+    __attribute__((weak)) void *_ZTV10BlockSource[32] = {0};
+
+    __attribute__((weak)) void *_ZTI9ItemStack[8] = {0};
+    __attribute__((weak)) void *_ZTI13ItemStackBase[8] = {0};
+    __attribute__((weak)) void *_ZTI12ItemInstance[8] = {0};
+    __attribute__((weak)) void *_ZTI4Item[8] = {0};
+    __attribute__((weak)) void *_ZTI5Block[8] = {0};
+    __attribute__((weak)) void *_ZTI11BlockLegacy[8] = {0};
+    __attribute__((weak)) void *_ZTI9BlockActor[8] = {0};
+    __attribute__((weak)) void *_ZTI10BlockSource[8] = {0};
+
+    // Weak object stubs for Bedrock Tag vtables & typeinfo
     __attribute__((weak)) void *_ZTV7ListTag[32] = {0};
     __attribute__((weak)) void *_ZTV11CompoundTag[32] = {0};
     __attribute__((weak)) void *_ZTV10CompoundTag[32] = {0};
