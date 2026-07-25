@@ -55,22 +55,111 @@ extern "C" {
     __attribute__((weak)) void *_ZTI3Tag[8] = {0};
     __attribute__((weak)) void *_ZTIN8endstone4core17EndstoneDimensionE[8] = {0};
 
-    // ItemStack and ItemStackBase constructor & assignment weak stubs
+    // ItemStack and ItemStackBase method weak stubs
+    __attribute__((weak)) void _ZN13ItemStackBaseC1Ev() {}
+    __attribute__((weak)) void _ZN13ItemStackBaseC2Ev() {}
     __attribute__((weak)) void _ZN13ItemStackBaseC1ERKS_() {}
     __attribute__((weak)) void _ZN13ItemStackBaseC2ERKS_() {}
     __attribute__((weak)) void _ZN13ItemStackBaseaSERKS_() {}
-    __attribute__((weak)) void _ZN13ItemStackBaseC1Ev() {}
-    __attribute__((weak)) void _ZN13ItemStackBaseC2Ev() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase6isNullEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase13getDescriptorEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase11matchesItemERKS_() {}
+    __attribute__((weak)) void _ZN13ItemStackBase3setEi() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase6hasTagERK14VanillaItemTag() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase11hasUserDataEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase15hasSameUserDataERKS_() {}
+    __attribute__((weak)) void _ZN13ItemStackBase11setUserDataENSt3__110unique_ptrI11CompoundTagNS0_14default_deleteIS2_EEEE() {}
+    __attribute__((weak)) void _ZN13ItemStackBase11setUserDataESt10unique_ptrI11CompoundTagSt14default_deleteIS1_EE() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase11getUserDataEv() {}
+    __attribute__((weak)) void _ZN13ItemStackBase11getUserDataEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase7getItemEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase10getItemPtrEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase8getBlockEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase5getIdEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase8getIdAuxEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase7isBlockEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase29isValid_DeprecatedSeeCommentEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase15getMaxStackSizeEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase14getDamageValueEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase14hasDamageValueEv() {}
+    __attribute__((weak)) void _ZN13ItemStackBase17removeDamageValueEv() {}
+    __attribute__((weak)) void _ZN13ItemStackBase14setDamageValueEs() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase11getAuxValueEv() {}
+    __attribute__((weak)) void _ZN13ItemStackBase11setAuxValueEs() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase7getNameEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase14getDescriptionIdEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase13getCustomNameEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase18hasCustomHoverNameEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase8getCountEv() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase10canPlaceOnEPK5Block() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase10canDestroyEPK5Block() {}
+    __attribute__((weak)) void _ZN13ItemStackBase14setWasPickedUpEb() {}
+    __attribute__((weak)) void _ZNK13ItemStackBase14getWasPickedUpEv() {}
 
+    __attribute__((weak)) void _ZN9ItemStackC1Ev() {}
+    __attribute__((weak)) void _ZN9ItemStackC2Ev() {}
     __attribute__((weak)) void _ZN9ItemStackC1ERKS_() {}
     __attribute__((weak)) void _ZN9ItemStackC2ERKS_() {}
     __attribute__((weak)) void _ZN9ItemStackaSERKS_() {}
-    __attribute__((weak)) void _ZN9ItemStackC1Ev() {}
-    __attribute__((weak)) void _ZN9ItemStackC2Ev() {}
+    __attribute__((weak)) void _ZNK9ItemStack7isBundleEv() {}
+    __attribute__((weak)) void _ZNK9ItemStack23getItemStackNetIdVariantEv() {}
 
+    __attribute__((weak)) void _ZN12ItemInstanceC1Ev() {}
+    __attribute__((weak)) void _ZN12ItemInstanceC2Ev() {}
     __attribute__((weak)) void _ZN12ItemInstanceC1ERKS_() {}
     __attribute__((weak)) void _ZN12ItemInstanceC2ERKS_() {}
     __attribute__((weak)) void _ZN12ItemInstanceaSERKS_() {}
+
+    // Block method weak stubs
+    __attribute__((weak)) void _ZNK5Block11hasPropertyE13BlockProperty() {}
+    __attribute__((weak)) void _ZNK5Block16getLightEmissionEv() {}
+    __attribute__((weak)) void _ZNK5Block16getTranslucencyEv() {}
+    __attribute__((weak)) void _ZNK5Block7isSolidEv() {}
+    __attribute__((weak)) void _ZNK5Block8getLightEv() {}
+    __attribute__((weak)) void _ZNK5Block12getFlameOddsEv() {}
+    __attribute__((weak)) void _ZNK5Block11getBurnOddsEv() {}
+    __attribute__((weak)) void _ZNK5Block23getExplosionResistanceEv() {}
+    __attribute__((weak)) void _ZNK5Block8hasStateERK10BlockState() {}
+    __attribute__((weak)) void _ZNK5Block8hasStateERK12HashedString() {}
+    __attribute__((weak)) void _ZNK5Block15isLavaBlockingEv() {}
+    __attribute__((weak)) void _ZNK5Block27requiresCorrectToolForDropsEv() {}
+    __attribute__((weak)) void _ZNK5Block12getThicknessEv() {}
+    __attribute__((weak)) void _ZNK5Block11getMaterialEv() {}
+    __attribute__((weak)) void _ZNK5Block11getFrictionEv() {}
+    __attribute__((weak)) void _ZNK5Block15getDestroySpeedEv() {}
+    __attribute__((weak)) void _ZNK5Block7getNameEv() {}
+    __attribute__((weak)) void _ZNK5Block18getSerializationIdEv() {}
+    __attribute__((weak)) void _ZNK5Block12getRuntimeIdEv() {}
+    __attribute__((weak)) void _ZNK5Block13toDebugStringEv() {}
+    __attribute__((weak)) void _ZNK5Block12getBlockTypeEv() {}
+    __attribute__((weak)) void _ZNK5Block7getTagsEv() {}
+    __attribute__((weak)) void _ZNK5Block13getDirectDataEv() {}
+
+    // BlockType method weak stubs
+    __attribute__((weak)) void _ZNK9BlockType6hasTagERK12HashedString() {}
+    __attribute__((weak)) void _ZNK9BlockType6hasTagERKm() {}
+    __attribute__((weak)) void _ZNK9BlockType11hasPropertyE13BlockProperty() {}
+    __attribute__((weak)) void _ZNK9BlockType25tryGetStateFromLegacyDataEh() {}
+    __attribute__((weak)) void _ZNK9BlockType8hasStateERK10BlockState() {}
+    __attribute__((weak)) void _ZNK9BlockType8hasStateERK12HashedString() {}
+    __attribute__((weak)) void _ZNK9BlockType27requiresCorrectToolForDropsEv() {}
+    __attribute__((weak)) void _ZNK9BlockType7isSolidEv() {}
+    __attribute__((weak)) void _ZNK9BlockType12getThicknessEv() {}
+    __attribute__((weak)) void _ZNK9BlockType16getTranslucencyEv() {}
+    __attribute__((weak)) void _ZNK9BlockType7getTagsEv() {}
+    __attribute__((weak)) void _ZNK9BlockType11getMaterialEv() {}
+    __attribute__((weak)) void _ZNK9BlockType16getDescriptionIdEv() {}
+    __attribute__((weak)) void _ZNK9BlockType12getRawNameIdEv() {}
+    __attribute__((weak)) void _ZNK9BlockType12getNamespaceEv() {}
+    __attribute__((weak)) void _ZNK9BlockType7getNameEv() {}
+    __attribute__((weak)) void _ZNK9BlockType15getDefaultStateEv() {}
+    __attribute__((weak)) void _ZNK9BlockType26getRequiredBaseGameVersionEv() {}
+    __attribute__((weak)) void _ZNK9BlockType15getBlockItemIdEv() {}
+    __attribute__((weak)) void _ZNK9BlockType13getTintMethodEv() {}
+
+    // BlockSource method weak stubs
+    __attribute__((weak)) void _ZNK11BlockSource12isEmptyBlockERK8BlockPos() {}
+    __attribute__((weak)) void _ZNK11BlockSource8getBiomeERK8BlockPos() {}
 
     // ListTag method weak stubs
     __attribute__((weak)) void _ZNK7ListTag3getEi() {}
