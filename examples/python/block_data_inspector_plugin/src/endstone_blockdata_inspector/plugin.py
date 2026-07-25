@@ -19,7 +19,7 @@ from endstone_blockdata import (
 class BlockDataInspectorPlugin(Plugin):
     api_version = "0.4"
     name = "BlockDataInspectorPlugin"
-    version = "0.4.5-beta.25"
+    version = "0.4.5-beta.26"
     description = "Interactive In-Game Container, NBT, and Block State Test Suite"
 
     commands = {

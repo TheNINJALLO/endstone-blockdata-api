@@ -232,11 +232,70 @@ extern "C" {
     __attribute__((weak)) void _ZNK11CompoundTag8getFloatESt17basic_string_viewIcSt11char_traitsIcEE() {}
     __attribute__((weak)) void _ZNK11CompoundTag9getDoubleESt17basic_string_viewIcSt11char_traitsIcEE() {}
 
-    // Tag base class method weak stubs
-    __attribute__((weak)) void _ZNK3Tag6equalsERKS_() {}
+    // Tag subclass copy methods
+    __attribute__((weak)) void _ZNK11CompoundTag4copyEv() {}
+    __attribute__((weak)) void _ZNK7ListTag4copyEv() {}
+    __attribute__((weak)) void _ZNK9DoubleTag4copyEv() {}
+    __attribute__((weak)) void _ZNK8FloatTag4copyEv() {}
+    __attribute__((weak)) void _ZNK6IntTag4copyEv() {}
+    __attribute__((weak)) void _ZNK8Int64Tag4copyEv() {}
+    __attribute__((weak)) void _ZNK8ShortTag4copyEv() {}
+    __attribute__((weak)) void _ZNK7ByteTag4copyEv() {}
+    __attribute__((weak)) void _ZNK12ByteArrayTag4copyEv() {}
+    __attribute__((weak)) void _ZNK11IntArrayTag4copyEv() {}
+    __attribute__((weak)) void _ZNK6EndTag4copyEv() {}
+    __attribute__((weak)) void _ZNK9StringTag4copyEv() {}
     __attribute__((weak)) void _ZNK3Tag4copyEv() {}
-    __attribute__((weak)) void _ZNK3Tag5getIdEv() {}
-    __attribute__((weak)) void _ZNK3Tag8toStringEv() {}
+
+    // Tag subclass clone methods
+    __attribute__((weak)) void _ZNK11CompoundTag5cloneEv() {}
+    __attribute__((weak)) void _ZNK7ListTag5cloneEv() {}
+    __attribute__((weak)) void _ZNK3Tag5cloneEv() {}
+
+    // Tag subclass getId methods
+    __attribute__((weak)) void _ZNK11CompoundTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK7ListTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK9DoubleTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK8FloatTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK6IntTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK8Int64Tag5getIdEv() {}
+    __attribute__((weak)) void _ZNK8ShortTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK7ByteTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK12ByteArrayTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK11IntArrayTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK6EndTag5getIdEv() {}
+    __attribute__((weak)) void _ZNK9StringTag5getIdEv() {}
+
+    // Tag subclass equals methods
+    __attribute__((weak)) void _ZNK11CompoundTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK7ListTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK9DoubleTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK8FloatTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK6IntTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK8Int64Tag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK8ShortTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK7ByteTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK12ByteArrayTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK11IntArrayTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK6EndTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK9StringTag6equalsERK3Tag() {}
+    __attribute__((weak)) void _ZNK3Tag6equalsERKS_() {}
+
+    // Tag subclass print methods
+    __attribute__((weak)) void _ZNK11CompoundTag5printER11PrintStream() {}
+    __attribute__((weak)) void _ZNK11CompoundTag5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEER11PrintStream() {}
+    __attribute__((weak)) void _ZNK7ListTag5printER11PrintStream() {}
+    __attribute__((weak)) void _ZNK7ListTag5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEER11PrintStream() {}
+    __attribute__((weak)) void _ZNK3Tag5printER11PrintStream() {}
+    __attribute__((weak)) void _ZNK3Tag5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEER11PrintStream() {}
+
+    // Tag subclass write/load methods
+    __attribute__((weak)) void _ZNK11CompoundTag5writeER12IDataOutput() {}
+    __attribute__((weak)) void _ZN11CompoundTag4loadER11IDataInput() {}
+    __attribute__((weak)) void _ZNK7ListTag5writeER12IDataOutput() {}
+    __attribute__((weak)) void _ZN7ListTag4loadER11IDataInput() {}
+    __attribute__((weak)) void _ZNK3Tag5writeER12IDataOutput() {}
+    __attribute__((weak)) void _ZN3Tag4loadER11IDataInput() {}
 
     // Weak function stubs for missing BDS/Endstone internal functions
     __attribute__((weak)) void _ZN12HashedStringC1EPKc() {}
@@ -246,8 +305,6 @@ extern "C" {
     __attribute__((weak)) void _ZN12HashedStringC1EDn() {}
     __attribute__((weak)) void _ZN12HashedStringC2EDn() {}
 
-    __attribute__((weak)) void _ZNK3Tag5printER11PrintStream() {}
-    __attribute__((weak)) void _ZNK3Tag5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEER11PrintStream() {}
     __attribute__((weak)) void _ZN15BaseGameVersionC1Ev() {}
     __attribute__((weak)) void _ZN15BaseGameVersionC2Ev() {}
     __attribute__((weak)) void _ZN15BaseGameVersionC1Eb() {}
