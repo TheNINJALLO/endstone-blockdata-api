@@ -1,6 +1,9 @@
 #if defined(__linux__) && !defined(_WIN32)
 extern "C" {
-    // Weak object stubs for Bedrock Tag vtables & typeinfo
+    // Weak object stubs for Bedrock Tag vtables, typeinfo, and static constants
+    __attribute__((weak)) char _ZN9ItemStack10EMPTY_ITEME[256] = {0};
+    __attribute__((weak)) char _ZN13ItemStackBase10EMPTY_ITEME[256] = {0};
+
     __attribute__((weak)) void *_ZTV7ListTag[32] = {0};
     __attribute__((weak)) void *_ZTV11CompoundTag[32] = {0};
     __attribute__((weak)) void *_ZTV10CompoundTag[32] = {0};

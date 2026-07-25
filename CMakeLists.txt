@@ -113,6 +113,12 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h" "${ENDSTONE_HASHED_STRING_H_CONTENT}")
     endif()
 
+    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/world/item/item_stack.h")
+        file(READ "${endstone_SOURCE_DIR}/src/bedrock/world/item/item_stack.h" ENDSTONE_ITEM_STACK_H_CONTENT)
+        string(REPLACE "static const ItemStack EMPTY_ITEM;" "inline static const ItemStack EMPTY_ITEM{};" ENDSTONE_ITEM_STACK_H_CONTENT "${ENDSTONE_ITEM_STACK_H_CONTENT}")
+        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/world/item/item_stack.h" "${ENDSTONE_ITEM_STACK_H_CONTENT}")
+    endif()
+
     set(BLOCKDATA_PLUGIN_SOURCES src/plugin.cpp src/endstone_public_adapter.cpp src/linux_symbol_compat.cpp)
     if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
         list(APPEND BLOCKDATA_PLUGIN_SOURCES src/bds_26_30_adapter.cpp)
