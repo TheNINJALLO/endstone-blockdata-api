@@ -86,7 +86,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
 
     if(EXISTS "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h")
         file(READ "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h" ENDSTONE_DIMENSION_H_CONTENT)
-        string(REPLACE "::Dimension &getHandle() const;" "::Dimension &getHandle() const { return *dimension_; }" ENDSTONE_DIMENSION_H_CONTENT "${ENDSTONE_DIMENSION_H_CONTENT}")
+        string(REPLACE "::Dimension &getHandle() const;" "::Dimension &getHandle() const { return *dimension_.get(); }" ENDSTONE_DIMENSION_H_CONTENT "${ENDSTONE_DIMENSION_H_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h" "${ENDSTONE_DIMENSION_H_CONTENT}")
     endif()
 
