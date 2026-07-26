@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -14,12 +15,14 @@ PROJECTS = {
     "blockdata": {
         "slug": "endstone-blockdata-api",
         "plugin_prefix": "endstone_blockdata_bds_",
+        "supported_bds": {"1.26.33"},
     },
     "worldgen": {
         "slug": "endstone-worldgen-api",
         "plugin_prefix": "endstone_worldgen_bds_",
     },
 }
+SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 def sha256(path: Path) -> str:
@@ -43,7 +46,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    for label, value in (("version", args.version), ("bds", args.bds), ("platform", args.platform)):
+        if not SAFE_COMPONENT.fullmatch(value):
+            raise SystemExit(f"Invalid {label} value: {value!r}")
     info = PROJECTS[args.project]
+    supported_bds = info.get("supported_bds")
+    if supported_bds is not None and args.bds not in supported_bds:
+        raise SystemExit(
+            f"Unsupported BDS build for {info['slug']}: {args.bds}; "
+            f"expected one of {sorted(supported_bds)}"
+        )
     stage = args.stage.resolve()
     release_dir = args.release_dir.resolve()
     if not stage.is_dir():
@@ -67,9 +79,10 @@ def main() -> int:
     raw_plugin = release_dir / f"{release_stem}{plugin.suffix.lower()}"
     shutil.copy2(plugin, raw_plugin)
 
+    manifest_path = stage / "PACKAGE_MANIFEST.json"
     files = []
     for path in sorted(stage.rglob("*")):
-        if path.is_file():
+        if path.is_file() and path != manifest_path:
             files.append(
                 {
                     "path": path.relative_to(stage).as_posix(),
@@ -88,7 +101,6 @@ def main() -> int:
         "primary_plugin": plugin.relative_to(stage).as_posix(),
         "files": files,
     }
-    manifest_path = stage / "PACKAGE_MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     archive = release_dir / f"{release_stem}.zip"

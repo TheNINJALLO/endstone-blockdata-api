@@ -3,13 +3,58 @@
 #include "endstone_blockdata/container.h"
 #include "endstone_blockdata/audit.h"
 #include "endstone_blockdata/container_audit_reactor.h"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <limits>
 using namespace endstone_blockdata;
 int main(){
-    assert(isSupportedBds2630Build("1.26.32")); assert(isSupportedBds2630Build("1.26.33")); assert(!isSupportedBds2630Build("1.26.20"));
+    assert(isSupportedBds2630Build("1.26.33"));
+    assert(!isSupportedBds2630Build("1.26.32"));
+    assert(!isSupportedBds2630Build(""));
+    assert(!isSupportedBds2630Build("1.26.20"));
+    assert(!isSupportedBds2630Build("1.26.34"));
+    assert(!isSupportedBds2630Build("server-1.26.33-custom"));
+    assert(isExpectedEndstoneVersion("0.11.6", "0.11.6"));
+    assert(!isExpectedEndstoneVersion("0.11.5", "0.11.6"));
+    assert(!isExpectedEndstoneVersion("0.11.6-dev", "0.11.6"));
+    std::string nbt_error;
+    auto valid_nbt=NbtValue::compound({
+      {"bytes",ByteArray{-128,0,127}},
+      {"ints",IntArray{std::numeric_limits<std::int32_t>::min(),0,std::numeric_limits<std::int32_t>::max()}},
+      {"longs",LongArray{std::numeric_limits<std::int64_t>::min(),0,std::numeric_limits<std::int64_t>::max()}},
+      {"list",NbtValue::list({std::int32_t(1),std::int32_t(2)})}});
+    assert(validateNbtPayload(valid_nbt,&nbt_error));
+    assert(nbt_error.empty());
+    auto valid_copy=valid_nbt;
+    assert(nbtEqual(valid_nbt,valid_copy));
+    const auto valid_root=std::get<NbtValue::CompoundPtr>(valid_copy.value);
+    assert(std::holds_alternative<ByteArray>(valid_root->at("bytes").value));
+    assert(std::holds_alternative<IntArray>(valid_root->at("ints").value));
+    assert(std::holds_alternative<LongArray>(valid_root->at("longs").value));
+    assert(!validateNbtPayload(NbtValue::compound({{"invalid",NbtValue{}}}),&nbt_error));
+    assert(!validateNbtPayload(NbtValue{NbtValue::ListPtr{}},&nbt_error));
+    assert(!validateNbtPayload(NbtValue{NbtValue::CompoundPtr{}},&nbt_error));
+    assert(!nbt_error.empty());
+    assert(!validateNbtPayload(NbtValue::list({std::int32_t(1),std::string("mixed")}),&nbt_error));
+    assert(!validateNbtPayload(NbtValue::list({std::int32_t(1),std::int64_t(2)}),&nbt_error));
+    assert(validateNbtPayload(NbtValue::list({true,std::int8_t(1)}),&nbt_error));
+    assert(nbt_error.empty());
     BlockDataService svc(makeInMemoryAdapter()); BlockLocation loc{"overworld",10,64,20};
     auto before=svc.capture(loc); assert(before && before->type=="minecraft:air");
+    BlockPatch invalid_nbt; invalid_nbt.location=loc; invalid_nbt.nbt_updates["bad"]=NbtValue{};
+    assert(svc.apply(invalid_nbt).status==ApplyStatus::InvalidPatch);
+    BlockPatch invalid_slot; invalid_slot.location=loc;
+    invalid_slot.inventory_updates[-1]={-1,NbtValue::compound({}),0};
+    assert(svc.apply(invalid_slot).status==ApplyStatus::InvalidPatch);
+    assert(!svc.capture(loc)->block_entity);
+    const int edge=std::numeric_limits<int>::max();
+    auto edge_region=svc.captureRegion({{"overworld",edge,edge,edge},{"overworld",edge,edge,edge}});
+    assert(edge_region.size()==1 && edge_region.front().location.x==edge);
+    bool oversized_region_threw=false;
+    try { (void)svc.captureRegion({{"overworld",0,0,0},{"overworld",32768,0,0}}); }
+    catch(const std::length_error &) { oversized_region_threw=true; }
+    assert(oversized_region_threw);
     BlockPatch p; p.location=loc; p.expected_revision=before->revision; p.replacement_type="minecraft:chest";
     p.state_updates["minecraft:cardinal_direction"]=std::string("north"); p.nbt_updates["CustomName"]=std::string("Kingdom Vault");
     p.inventory_updates[0]={0,NbtValue::compound({{"Name",std::string("minecraft:diamond")},{"Count",std::int8_t(4)},
@@ -18,6 +63,33 @@ int main(){
     // The location is not a block entity yet, so arming must fail cleanly.
     assert(!reactor.arm(loc));
     auto applied=svc.apply(p); assert(applied.ok()); auto after=svc.capture(loc); assert(after && after->block_entity && after->revision!=before->revision);
+    assert(after->block_entity->inventory.size()==1);
+    assert(after->block_entity->inventory[0].revision==hashNbt(after->block_entity->inventory[0].item));
+
+    // Captures and direct NBT copies must not share mutable compound/list storage.
+    auto detached=*after;
+    auto detached_root=std::get<NbtValue::CompoundPtr>(detached.block_entity->nbt.value);
+    (*detached_root)["CustomName"]=std::string("mutated outside apply");
+    auto stored=svc.capture(loc);
+    auto stored_root=std::get<NbtValue::CompoundPtr>(stored->block_entity->nbt.value);
+    assert(std::get<std::string>((*stored_root)["CustomName"].value)=="Kingdom Vault");
+
+    // Inventory iteration order is not part of a block snapshot's identity.
+    BlockSnapshot ordered=*after;
+    ordered.block_entity->inventory.push_back({2,NbtValue::compound({{"Name",std::string("minecraft:stone")}}),0});
+    BlockSnapshot reversed=ordered;
+    std::reverse(reversed.block_entity->inventory.begin(),reversed.block_entity->inventory.end());
+    assert(calculateRevision(ordered)==calculateRevision(reversed));
+
+    ContainerView initial_view(*after);
+    auto slot_patch=initial_view.patchSlot(0,NbtValue::compound({{"Name",std::string("minecraft:gold_ingot")}}));
+    assert(slot_patch.inventory_updates.at(0).revision==after->block_entity->inventory[0].revision);
+
+    BlockPatch unsupported; unsupported.location=loc; unsupported.replacement_type="minecraft:stone";
+    for(auto policy:{ConflictPolicy::MergeChangedPaths,ConflictPolicy::MergeInventorySlots,ConflictPolicy::Replace})
+        assert(svc.apply(unsupported,policy).status==ApplyStatus::Unsupported);
+    assert(svc.capture(loc)->type==after->type);
+
     assert(reactor.arm(loc));
     BlockPatch change; change.location=loc; change.inventory_updates[0]={0,NbtValue::compound({{"Name",std::string("minecraft:emerald")},{"Count",std::int8_t(2)}}),0};
     assert(svc.apply(change, ConflictPolicy::Force).ok());

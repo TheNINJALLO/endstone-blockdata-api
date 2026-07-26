@@ -1,36 +1,54 @@
-"""
-BlockDataInspectorPlugin - Advanced Container & NBT In-Game Test Plugin
-Endstone API Version: 0.4
-Depends on: endstone_blockdata (v0.4.5-alpha.9)
-"""
+"""Endstone BlockData live-service command test plugin."""
 
+from __future__ import annotations
+
+import importlib
 import json
-from endstone.plugin import Plugin
+from typing import Any
+
 from endstone.command import Command, CommandSender
-from endstone_blockdata import (
-    BlockDataService,
-    ContainerView,
-    BlockPatch,
-    ConflictPolicy,
-    BlockLocation,
-    InventoryChangeKind,
-)
+from endstone.plugin import Plugin
+
 
 class BlockDataInspectorPlugin(Plugin):
-    api_version = "0.5"
-    name = "BlockDataInspectorPlugin"
-    version = "0.4.5-beta.28"
-    description = "Interactive In-Game Container, NBT, and Block State Test Suite"
+    """Exercise the native BlockData service from in-game commands."""
+
+    api_version = "0.11"
+    version = "0.4.5-beta.29"
+    description = "Interactive in-game container, NBT, and block-state test suite"
+    depend = ["blockdata_api"]
 
     commands = {
         "bd": {
-            "description": "BlockData Inspector & Container NBT Test Suite",
-            "usages": ["/bd <locate|inspect|item|audit|state> [args...]"],
-            "permissions": ["bd.admin"],
-        },
-        "blockdata": {
-            "description": "BlockData Inspector & Container NBT Test Suite",
-            "usages": ["/blockdata <locate|inspect|item|audit|state> [args...]"],
+            "description": "BlockData inspector and container NBT test suite",
+            "usages": [
+                "/bd",
+                "/bd (locate)<action: BlockDataLocateAction> [radius: int]",
+                "/bd (inspect)<action: BlockDataInspectAction> [position: block_pos]",
+                (
+                    "/bd (item)<action: BlockDataItemAction> "
+                    "(add)<operation: BlockDataItemAddOperation> <slot: int> "
+                    "<item_id: str> [count: int] [nbt: json]"
+                ),
+                (
+                    "/bd (item)<action: BlockDataItemAction> "
+                    "(remove)<operation: BlockDataItemRemoveOperation> <slot: int>"
+                ),
+                (
+                    "/bd (audit)<action: BlockDataAuditAction> "
+                    "(start|stop)<operation: BlockDataAuditToggle> [position: block_pos]"
+                ),
+                (
+                    "/bd (audit)<action: BlockDataAuditAction> "
+                    "(history)<operation: BlockDataAuditHistory>"
+                ),
+                (
+                    "/bd (state)<action: BlockDataStateAction> "
+                    "(set)<operation: BlockDataStateSet> <property: str> <value: str> "
+                    "[position: block_pos]"
+                ),
+            ],
+            "aliases": ["blockdata"],
             "permissions": ["bd.admin"],
         }
     }
@@ -42,233 +60,458 @@ class BlockDataInspectorPlugin(Plugin):
         }
     }
 
-    def on_enable(self):
-        self.service = BlockDataService()
-        self.audit_active = False
-        self.audit_baseline = {}
-        self.audit_logs = []
-        self.logger.info("BlockDataInspectorPlugin enabled. Type '/bd' in-game or console for help.")
+    _SUBCOMMAND_HANDLERS = {
+        "locate": "_handle_locate",
+        "inspect": "_handle_inspect",
+        "item": "_handle_item",
+        "audit": "_handle_audit",
+        "state": "_handle_state",
+    }
 
-    def on_command(self, sender: CommandSender, command: Command, args: list[str]) -> bool:
+    def on_enable(self) -> None:
+        self.audit_baselines: dict[tuple[str, int, int, int], dict[str, Any]] = {}
+        self.audit_logs: list[dict[str, Any]] = []
+        self.live_bridge = None
+        self.native_capabilities: dict[str, Any] = {}
+        self.bridge_error = "native bridge was not initialized"
+        self._connect_bridge()
+
+        if self.live_bridge is None:
+            self.logger.error(
+                "BlockData live bridge unavailable; /bd commands will report unavailable: %s",
+                self.bridge_error,
+            )
+        else:
+            adapter = self.native_capabilities.get("adapter", "unknown")
+            self.logger.info(
+                "BlockData Inspector enabled against native adapter '%s'. Type '/bd' for help.",
+                adapter,
+            )
+
+    def _connect_bridge(self) -> Any | None:
+        """Connect to the native service, allowing command-time recovery."""
+        try:
+            bridge = importlib.import_module("_endstone_blockdata_live")
+            if not bridge.available(self.server):
+                self.live_bridge = None
+                self.native_capabilities = {}
+                self.bridge_error = "endstone:blockdata native service is not registered"
+                return None
+            capabilities = dict(bridge.capabilities(self.server))
+        except Exception as error:
+            self.live_bridge = None
+            self.native_capabilities = {}
+            self.bridge_error = str(error)
+            return None
+
+        self.live_bridge = bridge
+        self.native_capabilities = capabilities
+        self.bridge_error = ""
+        return bridge
+
+    def on_command(
+        self, sender: CommandSender, command: Command, args: list[str]
+    ) -> bool:
+        if command.name not in {"bd", "blockdata"}:
+            return False
         if not args:
             self._send_help(sender)
             return True
 
-        subcmd = args[0].lower()
-
-        if subcmd == "locate":
-            return self._handle_locate(sender, args[1:])
-        elif subcmd == "inspect":
-            return self._handle_inspect(sender, args[1:])
-        elif subcmd == "item":
-            return self._handle_item(sender, args[1:])
-        elif subcmd == "audit":
-            return self._handle_audit(sender, args[1:])
-        elif subcmd == "state":
-            return self._handle_state(sender, args[1:])
-        else:
+        handler_name = self._SUBCOMMAND_HANDLERS.get(args[0].lower())
+        if handler_name is None:
             self._send_help(sender)
             return True
+        return getattr(self, handler_name)(sender, args[1:])
 
-    def _send_help(self, sender: CommandSender):
-        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5-alpha.9) ===")
-        sender.send_message("§a/bd locate [radius]              §7- Locate nearby container blocks")
-        sender.send_message("§a/bd inspect [x] [y] [z]           §7- Inspect block state & NBT container slots")
-        sender.send_message("§a/bd item add <slot> <id> [cnt] [nbt] §7- Add item with NBT data to slot")
-        sender.send_message("§a/bd item remove <slot>            §7- Remove item from slot via NBT patch")
-        sender.send_message("§a/bd audit <start|stop|history>    §7- Container audit & inventory diff recorder")
-        sender.send_message("§a/bd state set <prop> <val>        §7- Mutate block state properties")
+    def _send_help(self, sender: CommandSender) -> None:
+        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5-beta.29) ===")
+        sender.send_message("§a/bd locate [radius]                 §7- Locate nearby containers")
+        sender.send_message("§a/bd inspect [x y z]                §7- Inspect live block state and NBT")
+        sender.send_message("§a/bd item add <slot> <id> [count] [nbt] §7- Add a container item")
+        sender.send_message("§a/bd item remove <slot>             §7- Remove a container item")
+        sender.send_message("§a/bd audit <start|stop|history> [x y z] §7- Record live inventory diffs")
+        sender.send_message("§a/bd state set <property> <value> [x y z] §7- Mutate live block state")
 
-    def _get_target_pos(self, sender: CommandSender, args: list[str]) -> tuple[str, int, int, int]:
-        dim = "overworld"
-        x, y, z = 0, 64, 0
-        if hasattr(sender, "location") and sender.location:
-            loc = sender.location
-            x, y, z = int(loc.x), int(loc.y), int(loc.z)
-            if hasattr(loc, "dimension") and loc.dimension:
-                dim = loc.dimension.name
+    def _require_bridge(
+        self, sender: CommandSender, *capabilities: str, method: str | None = None
+    ) -> Any | None:
+        bridge = getattr(self, "live_bridge", None)
+        if bridge is None:
+            bridge = self._connect_bridge()
+        if bridge is None:
+            reason = getattr(self, "bridge_error", "native bridge is unavailable")
+            sender.send_message(f"§cNative BlockData service unavailable: {reason}")
+            return None
 
+        if method and not hasattr(bridge, method):
+            sender.send_message(
+                f"§cInstalled BlockData bridge does not expose '{method}'. "
+                "Install the matching native API package."
+            )
+            return None
+
+        missing = [name for name in capabilities if not self.native_capabilities.get(name, False)]
+        if missing:
+            sender.send_message(
+                "§cNative adapter does not support required capability: " + ", ".join(missing)
+            )
+            return None
+        return bridge
+
+    @staticmethod
+    def _dimension_name(sender: CommandSender) -> str:
+        location = getattr(sender, "location", None)
+        dimension = getattr(location, "dimension", None)
+        name = getattr(dimension, "name", None)
+        return str(name) if name else "overworld"
+
+    def _get_target_pos(
+        self, sender: CommandSender, args: list[str]
+    ) -> tuple[str, int, int, int]:
+        location = getattr(sender, "location", None)
+        if location is None:
+            x, y, z = 0, 64, 0
+        else:
+            x, y, z = int(location.x), int(location.y), int(location.z)
         if len(args) >= 3:
             try:
                 x, y, z = int(args[0]), int(args[1]), int(args[2])
             except ValueError:
                 pass
-        return dim, x, y, z
+        return self._dimension_name(sender), x, y, z
+
+    def _capture(
+        self, sender: CommandSender, dimension: str, x: int, y: int, z: int
+    ) -> dict[str, Any] | None:
+        bridge = self._require_bridge(sender, method="capture")
+        if bridge is None:
+            return None
+        try:
+            snapshot = bridge.capture(self.server, dimension, x, y, z)
+        except Exception as error:
+            sender.send_message(f"§cNative capture failed: {error}")
+            return None
+        if snapshot is None:
+            sender.send_message(f"§cNative service could not capture ({x}, {y}, {z}).")
+            return None
+        return dict(snapshot)
 
     def _handle_locate(self, sender: CommandSender, args: list[str]) -> bool:
         radius = 5
-        if args and args[0].isdigit():
-            radius = min(int(args[0]), 25)
+        if args:
+            try:
+                radius = max(0, min(int(args[0]), 12))
+            except ValueError:
+                sender.send_message("§cRadius must be an integer from 0 to 12.")
+                return True
 
-        dim, px, py, pz = self._get_target_pos(sender, [])
-        sender.send_message(f"§eScanning for containers around ({px}, {py}, {pz}) within radius {radius}...")
+        bridge = self._require_bridge(
+            sender, "block_entity_nbt", method="capture_region"
+        )
+        if bridge is None:
+            return True
+        dimension, px, py, pz = self._get_target_pos(sender, [])
+        sender.send_message(
+            f"§eScanning live blocks around ({px}, {py}, {pz}) within radius {radius}..."
+        )
+        try:
+            snapshots = bridge.capture_region(
+                self.server,
+                dimension,
+                px - radius,
+                max(py - radius, -64),
+                pz - radius,
+                px + radius,
+                min(py + radius, 319),
+                pz + radius,
+            )
+        except Exception as error:
+            sender.send_message(f"§cNative region capture failed: {error}")
+            return True
 
-        min_pos = (px - radius, max(py - radius, -64), pz - radius)
-        max_pos = (px + radius, min(py + radius, 319), pz + radius)
-
-        snapshots = self.service.capture_region(dim, min_pos, max_pos)
-        containers_found = []
-
-        for s in snapshots:
-            if s.block_entity is not None:
-                slot_cnt = len(s.block_entity.inventory)
-                containers_found.append((s.location, s.type, slot_cnt, s.block_entity.nbt))
-
-        if not containers_found:
+        containers = [dict(snapshot) for snapshot in snapshots if snapshot.get("block_entity")]
+        if not containers:
             sender.send_message(f"§cNo container block entities found within radius {radius}.")
-        else:
-            sender.send_message(f"§aFound {len(containers_found)} container block entities:")
-            for loc, btype, slots, nbt in containers_found[:10]:
-                custom_name = nbt.get("CustomName", btype)
-                sender.send_message(f"  §7- Location: §f({loc.x}, {loc.y}, {loc.z}) §eType: §f{btype} §7Slots: §b{slots} §7Name: §f{custom_name}")
+            return True
 
+        sender.send_message(f"§aFound {len(containers)} container block entities:")
+        for snapshot in containers[:10]:
+            entity = dict(snapshot["block_entity"])
+            location = dict(snapshot["location"])
+            nbt = dict(entity.get("nbt") or {})
+            sender.send_message(
+                "  §7- Location: "
+                f"§f({location['x']}, {location['y']}, {location['z']}) "
+                f"§eType: §f{snapshot.get('type', 'unknown')} "
+                f"§7Slots: §b{len(entity.get('inventory') or [])} "
+                f"§7Name: §f{nbt.get('CustomName', snapshot.get('type', 'unknown'))}"
+            )
         return True
 
     def _handle_inspect(self, sender: CommandSender, args: list[str]) -> bool:
-        dim, x, y, z = self._get_target_pos(sender, args)
-        sender.send_message(f"§e=== Inspecting Block at ({x}, {y}, {z}) in {dim} ===")
+        dimension, x, y, z = self._get_target_pos(sender, args)
+        snapshot = self._capture(sender, dimension, x, y, z)
+        if snapshot is None:
+            return True
 
-        snap = self.service.capture(dim, (x, y, z))
-        sender.send_message(f"§7Block Type: §f{snap.type} §7(Runtime ID: §f{snap.runtime_id}§7)")
-        sender.send_message(f"§7Revision: §f{snap.revision}")
-
-        if snap.states:
+        sender.send_message(f"§e=== Live Block at ({x}, {y}, {z}) in {dimension} ===")
+        sender.send_message(
+            f"§7Block Type: §f{snapshot.get('type', 'unknown')} "
+            f"§7(Runtime ID: §f{snapshot.get('runtime_id', 0)}§7)"
+        )
+        sender.send_message(f"§7Revision: §f{snapshot.get('revision', 0)}")
+        states = dict(snapshot.get("states") or {})
+        if states:
             sender.send_message("§7Block State Properties:")
-            for k, v in snap.states.items():
-                sender.send_message(f"  §8- §f{k} = §b{v}")
+            for name, value in states.items():
+                sender.send_message(f"  §8- §f{name} = §b{value}")
         else:
             sender.send_message("§7Block State Properties: §oNone")
 
-        if snap.block_entity:
-            view = ContainerView(snap)
-            sender.send_message(f"§7Block Entity: §a{snap.block_entity.type_name}")
-            sender.send_message(f"§7Canonical NBT Tags: §f{json.dumps(view.nbt)}")
-            inventory = snap.block_entity.inventory
-            if inventory:
-                sender.send_message(f"§7Container Inventory Slots ({len(inventory)} items):")
-                for slot in inventory:
-                    sender.send_message(f"  §eSlot {slot.slot}: §f{json.dumps(slot.item)}")
-            else:
-                sender.send_message("§7Container Inventory Slots: §oEmpty")
-        else:
-            sender.send_message("§7Block Entity / NBT: §oNone (Standard Block)")
-
+        raw_entity = snapshot.get("block_entity")
+        if not raw_entity:
+            sender.send_message("§7Block Entity / NBT: §oNone (standard block)")
+            return True
+        entity = dict(raw_entity)
+        sender.send_message(f"§7Block Entity: §a{entity.get('type', 'unknown')}")
+        sender.send_message(
+            f"§7Canonical NBT: §f{json.dumps(entity.get('nbt') or {}, default=str)}"
+        )
+        inventory = list(entity.get("inventory") or [])
+        sender.send_message(f"§7Container Inventory: §b{len(inventory)} items")
+        for slot in inventory:
+            sender.send_message(
+                f"  §eSlot {slot.get('slot', '?')}: "
+                f"§f{json.dumps(slot.get('item'), default=str)}"
+            )
         return True
 
+    @staticmethod
+    def _parse_non_negative_int(value: str) -> int | None:
+        try:
+            parsed = int(value)
+        except ValueError:
+            return None
+        return parsed if parsed >= 0 else None
+
+    @staticmethod
+    def _empty_patch(snapshot: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "location": dict(snapshot["location"]),
+            "expected_revision": snapshot.get("revision"),
+            "state_updates": {},
+            "state_removals": [],
+            "nbt_updates": {},
+            "nbt_removals": [],
+            "inventory_updates": {},
+            "inventory_removals": [],
+        }
+
+    def _apply(
+        self, sender: CommandSender, patch: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        bridge = self._require_bridge(sender, method="apply")
+        if bridge is None:
+            return None
+        try:
+            return dict(bridge.apply(self.server, patch, "fail_if_changed"))
+        except Exception as error:
+            sender.send_message(f"§cNative apply failed: {error}")
+            return None
+
+    @staticmethod
+    def _send_apply_failure(sender: CommandSender, result: dict[str, Any]) -> None:
+        if result.get("status") == "conflict":
+            sender.send_message(
+                "§cThe block changed before the write was applied. Nothing was overwritten; "
+                "inspect it and retry the command."
+            )
+            return
+        sender.send_message(f"§cNative write failed: {result.get('message', 'unknown error')}")
+
     def _handle_item(self, sender: CommandSender, args: list[str]) -> bool:
-        if not args or args[0].lower() not in ("add", "remove"):
-            sender.send_message("§cUsage: /bd item <add|remove> <slot> [item_id] [count] [nbt_json]")
+        if len(args) < 2 or args[0].lower() not in {"add", "remove"}:
+            sender.send_message(
+                "§cUsage: /bd item <add|remove> <slot> [item_id] [count] [nbt_json]"
+            )
+            return True
+        if self._require_bridge(sender, "inventory", method="apply") is None:
             return True
 
         action = args[0].lower()
-        if len(args) < 2 or not args[1].isdigit():
-            sender.send_message("§cSpecify a valid slot index. Example: /bd item add 0 diamond 64")
+        slot = self._parse_non_negative_int(args[1])
+        if slot is None:
+            sender.send_message("§cSlot must be a non-negative integer.")
+            return True
+        dimension, x, y, z = self._get_target_pos(sender, [])
+        snapshot = self._capture(sender, dimension, x, y, z)
+        if snapshot is None:
+            return True
+        if not snapshot.get("block_entity"):
+            sender.send_message(f"§cBlock at ({x}, {y}, {z}) is not a container.")
             return True
 
-        slot = int(args[1])
-        dim, x, y, z = self._get_target_pos(sender, args[5:] if len(args) >= 8 else [])
-
-        snap = self.service.capture(dim, (x, y, z))
-        if snap.block_entity is None:
-            sender.send_message(f"§cBlock at ({x}, {y}, {z}) is not a container block entity!")
+        patch = self._empty_patch(snapshot)
+        if action == "remove":
+            patch["inventory_removals"] = [slot]
+            result = self._apply(sender, patch)
+            if result is not None:
+                if result.get("ok"):
+                    sender.send_message(f"§aCleared live item in slot {slot} at ({x}, {y}, {z}).")
+                else:
+                    self._send_apply_failure(sender, result)
             return True
 
-        view = ContainerView(snap)
-
-        if action == "add":
-            item_id = args[2] if len(args) > 2 else "minecraft:diamond"
-            count = int(args[3]) if len(args) > 3 and args[3].isdigit() else 1
-            nbt_data = {}
-            if len(args) > 4:
-                try:
-                    nbt_data = json.loads(" ".join(args[4:]))
-                except Exception as e:
-                    sender.send_message(f"§cFailed to parse NBT JSON: {e}")
-                    return True
-
-            item_payload = {
-                "id": item_id,
-                "count": count,
-                "tag": nbt_data
-            }
-
-            patch = view.patch_item(slot, item_payload)
-            res = self.service.apply(patch, ConflictPolicy.FORCE)
-            if res.success:
-                sender.send_message(f"§aAdded item to slot {slot} at ({x}, {y}, {z}): §f{count}x {item_id} NBT: {nbt_data}")
-            else:
-                sender.send_message(f"§cFailed to patch item: {res.message}")
-
-        elif action == "remove":
-            patch = view.clear_item(slot)
-            res = self.service.apply(patch, ConflictPolicy.FORCE)
-            if res.success:
-                sender.send_message(f"§aCleared item at slot {slot} at ({x}, {y}, {z}).")
-            else:
-                sender.send_message(f"§cFailed to clear item: {res.message}")
-
-        return True
-
-    def _handle_audit(self, sender: CommandSender, args: list[str]) -> bool:
-        if not args:
-            sender.send_message("§cUsage: /bd audit <start|stop|history>")
+        if len(args) < 3:
+            sender.send_message("§cUsage: /bd item add <slot> <item_id> [count] [nbt_json]")
             return True
-
-        sub = args[0].lower()
-        dim, x, y, z = self._get_target_pos(sender, args[1:])
-
-        if sub == "start":
-            self.audit_active = True
-            snap = self.service.capture(dim, (x, y, z))
-            self.audit_baseline[(dim, x, y, z)] = snap
-            sender.send_message(f"§aStarted container audit recorder for block at ({x}, {y}, {z}).")
-
-        elif sub == "stop":
-            if not self.audit_active or (dim, x, y, z) not in self.audit_baseline:
-                sender.send_message("§cNo active audit baseline found for this block.")
+        item_id = args[2] if ":" in args[2] else f"minecraft:{args[2]}"
+        count = 1
+        if len(args) > 3:
+            count = self._parse_non_negative_int(args[3]) or 0
+            if count < 1:
+                sender.send_message("§cItem count must be a positive integer.")
                 return True
 
-            baseline = self.audit_baseline.pop((dim, x, y, z))
-            current = self.service.capture(dim, (x, y, z))
-            delta = self.service.diff(baseline, current)
+        nbt_data: dict[str, Any] = {}
+        if len(args) > 4:
+            try:
+                decoded = json.loads(" ".join(args[4:]))
+            except json.JSONDecodeError as error:
+                sender.send_message(f"§cFailed to parse NBT JSON: {error.msg}")
+                return True
+            if not isinstance(decoded, dict):
+                sender.send_message("§cNBT JSON must be an object.")
+                return True
+            nbt_data = decoded
 
-            sender.send_message(f"§e=== Container Transaction Audit Report for ({x}, {y}, {z}) ===")
-            sender.send_message(f"§7Block Changed: §f{delta.block_changed} §7NBT Changed: §f{delta.actor_nbt_changed}")
-            sender.send_message(f"§7Inventory Change Count: §b{len(delta.inventory_changes)}")
-
-            for change in delta.inventory_changes:
-                kind_str = change.kind.name if hasattr(change.kind, "name") else str(change.kind)
-                before_str = json.dumps(change.before) if change.before else "None"
-                after_str = json.dumps(change.after) if change.after else "None"
-                sender.send_message(f"  §e[{kind_str}] §fSlot {change.slot}: Before={before_str} -> After={after_str}")
-
-            self.audit_logs.append(delta)
-            self.audit_active = False
-
-        elif sub == "history":
-            sender.send_message(f"§e=== Audit History ({len(self.audit_logs)} sessions recorded) ===")
-            for idx, log in enumerate(self.audit_logs[-5:], 1):
-                sender.send_message(f" §7#{idx}: Pos ({log.location.x},{log.location.y},{log.location.z}) Changes: {len(log.inventory_changes)}")
-
+        patch["inventory_updates"] = {
+            slot: {"id": item_id, "count": count, "tag": nbt_data}
+        }
+        result = self._apply(sender, patch)
+        if result is not None:
+            if result.get("ok"):
+                sender.send_message(f"§aAdded {count}x {item_id} to live slot {slot}.")
+            else:
+                self._send_apply_failure(sender, result)
         return True
 
-    def _handle_state(self, sender: CommandSender, args: list[str]) -> bool:
-        if len(args) < 2:
-            sender.send_message("§cUsage: /bd state set <property_name> <value> [x] [y] [z]")
+    @staticmethod
+    def _inventory(snapshot: dict[str, Any]) -> dict[int, Any]:
+        entity = snapshot.get("block_entity") or {}
+        return {
+            int(slot["slot"]): slot.get("item")
+            for slot in entity.get("inventory", [])
+            if "slot" in slot
+        }
+
+    @classmethod
+    def _diff_snapshots(
+        cls, before: dict[str, Any], after: dict[str, Any]
+    ) -> dict[str, Any]:
+        left, right = cls._inventory(before), cls._inventory(after)
+        changes = []
+        for slot in sorted(set(left) | set(right)):
+            old, new = left.get(slot), right.get(slot)
+            if old == new:
+                continue
+            kind = "added" if slot not in left else "removed" if slot not in right else "changed"
+            changes.append({"slot": slot, "kind": kind, "before": old, "after": new})
+        before_entity, after_entity = before.get("block_entity"), after.get("block_entity")
+        return {
+            "location": dict(after["location"]),
+            "block_changed": (before.get("type"), before.get("runtime_id"), before.get("states"))
+            != (after.get("type"), after.get("runtime_id"), after.get("states")),
+            "actor_nbt_changed": (before_entity or {}).get("nbt")
+            != (after_entity or {}).get("nbt"),
+            "inventory_changes": changes,
+        }
+
+    def _handle_audit(self, sender: CommandSender, args: list[str]) -> bool:
+        if not args or args[0].lower() not in {"start", "stop", "history"}:
+            sender.send_message("§cUsage: /bd audit <start|stop|history> [x] [y] [z]")
+            return True
+        operation = args[0].lower()
+        if operation == "history":
+            sender.send_message(f"§e=== Live Audit History ({len(self.audit_logs)} sessions) ===")
+            for index, delta in enumerate(self.audit_logs[-5:], 1):
+                location = delta["location"]
+                sender.send_message(
+                    f" §7#{index}: ({location['x']}, {location['y']}, {location['z']}) "
+                    f"changes={len(delta['inventory_changes'])}"
+                )
             return True
 
-        prop_name = args[1]
-        prop_val = args[2] if len(args) >= 3 else "true"
+        dimension, x, y, z = self._get_target_pos(sender, args[1:])
+        key = (dimension, x, y, z)
+        if operation == "start":
+            snapshot = self._capture(sender, dimension, x, y, z)
+            if snapshot is not None:
+                self.audit_baselines[key] = snapshot
+                sender.send_message(f"§aStarted live audit for ({x}, {y}, {z}).")
+            return True
 
-        dim, x, y, z = self._get_target_pos(sender, args[3:] if len(args) >= 6 else [])
+        baseline = self.audit_baselines.get(key)
+        if baseline is None:
+            sender.send_message("§cNo active audit baseline found for this block.")
+            return True
+        current = self._capture(sender, dimension, x, y, z)
+        if current is None:
+            return True
+        self.audit_baselines.pop(key, None)
+        delta = self._diff_snapshots(baseline, current)
+        self.audit_logs.append(delta)
+        sender.send_message(f"§e=== Live Audit Report for ({x}, {y}, {z}) ===")
+        sender.send_message(
+            f"§7Block Changed: §f{delta['block_changed']} "
+            f"§7NBT Changed: §f{delta['actor_nbt_changed']}"
+        )
+        sender.send_message(f"§7Inventory Changes: §b{len(delta['inventory_changes'])}")
+        for change in delta["inventory_changes"]:
+            sender.send_message(
+                f"  §e[{change['kind']}] §fSlot {change['slot']}: "
+                f"{json.dumps(change['before'], default=str)} -> "
+                f"{json.dumps(change['after'], default=str)}"
+            )
+        return True
 
-        snap = self.service.capture(dim, (x, y, z))
-        patch = BlockPatch(snap.location, snap.revision, state_updates={prop_name: prop_val})
+    @staticmethod
+    def _parse_state_value(value: str) -> bool | int | str:
+        lowered = value.casefold()
+        if lowered == "true":
+            return True
+        if lowered == "false":
+            return False
+        try:
+            return int(value)
+        except ValueError:
+            return value
 
-        res = self.service.apply(patch, ConflictPolicy.FORCE)
-        if res.success:
-            sender.send_message(f"§aMutated block property '{prop_name}' to '{prop_val}' at ({x}, {y}, {z}). New Revision: {res.new_revision}")
-        else:
-            sender.send_message(f"§cFailed to mutate block state: {res.message}")
+    def _handle_state(self, sender: CommandSender, args: list[str]) -> bool:
+        if len(args) < 3 or args[0].lower() != "set":
+            sender.send_message(
+                "§cUsage: /bd state set <property_name> <value> [x] [y] [z]"
+            )
+            return True
+        if self._require_bridge(sender, "block_writes", method="apply") is None:
+            return True
 
+        dimension, x, y, z = self._get_target_pos(sender, args[3:])
+        snapshot = self._capture(sender, dimension, x, y, z)
+        if snapshot is None:
+            return True
+        property_name = args[1]
+        property_value = self._parse_state_value(args[2])
+        patch = self._empty_patch(snapshot)
+        patch["state_updates"] = {property_name: property_value}
+        result = self._apply(sender, patch)
+        if result is not None:
+            if result.get("ok"):
+                sender.send_message(
+                    f"§aSet live '{property_name}' to '{property_value}' at ({x}, {y}, {z}). "
+                    f"New revision: {result.get('resulting_revision', 0)}"
+                )
+            else:
+                self._send_apply_failure(sender, result)
         return True

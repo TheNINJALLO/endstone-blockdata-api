@@ -1,9 +1,11 @@
 #include "endstone_blockdata/bds_26_30_adapter.h"
 #include "endstone_blockdata/endstone_adapter.h"
+#include "native_item_bridge.h"
 
 #include <endstone/endstone.hpp>
 #include "bedrock/nbt/compound_tag.h"
 #include "bedrock/world/container.h"
+#include "bedrock/world/item/item.h"
 #include "bedrock/world/item/item_stack.h"
 #include "bedrock/world/level/block/actor/block_actor.h"
 #include "bedrock/world/level/block/actor/vanilla_block_actor.h"
@@ -14,6 +16,7 @@
 #include <cstddef>
 #include <exception>
 #include <limits>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,6 +26,11 @@
 
 namespace endstone_blockdata {
 namespace {
+bool isExactRuntimeBuild(const endstone::Server &server) {
+    return server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD &&
+           isExpectedEndstoneVersion(server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
+}
+
 std::string blockActorTypeName(BlockActorType type) {
     switch (type) {
     case BlockActorType::Furnace: return "minecraft:furnace";
@@ -93,6 +101,17 @@ std::int32_t intField(const NbtCompound &compound, std::initializer_list<std::st
                       std::int32_t fallback = 0) {
     if (const auto *v = field(compound, keys)) return intValue(*v, fallback);
     return fallback;
+}
+
+std::optional<std::int64_t> integerValue(const NbtValue &value) {
+    return std::visit([](const auto &v) -> std::optional<std::int64_t> {
+        using T = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<T, std::int8_t> || std::is_same_v<T, std::int16_t> ||
+                      std::is_same_v<T, std::int32_t> || std::is_same_v<T, std::int64_t>) {
+            return static_cast<std::int64_t>(v);
+        }
+        return std::nullopt;
+    }, value.value);
 }
 
 NbtValue fromNativeTag(const Tag &tag) {
@@ -175,7 +194,10 @@ std::unique_ptr<CompoundTag> toNativeCompound(const NbtValue &value) {
 CompoundTag makeItemTag(int slot, const ItemStack &item) {
     CompoundTag out;
     out.putByte("Slot", static_cast<std::uint8_t>(slot));
-    out.putString("Name", item.getName());
+    // ItemStackBase::getName() is the translated/display name. Canonical item
+    // NBT needs the registry identifier so a captured stack can be reapplied.
+    const auto *definition = item.getItem();
+    out.putString("Name", definition ? definition->getFullItemName() : item.getName());
     out.putByte("Count", item.getCount());
     out.putShort("Damage", item.getDamageValue());
     out.putShort("Aux", item.getAuxValue());
@@ -221,23 +243,45 @@ std::optional<ItemStack> itemFromNbt(const NbtValue &value) {
     if (!item) return std::nullopt;
     if (const auto *empty = field(*item, {"empty"}); empty && intValue(*empty, 0) != 0) return ItemStack::EMPTY_ITEM;
 
-    auto name = stringField(*item, {"Name", "name"});
+    // The portable/Python API calls this field `id`; canonical Bedrock NBT
+    // calls it `Name`. Accept both at the native boundary.
+    auto name = stringField(*item, {"Name", "name", "id"});
     if (!name || name->empty()) return std::nullopt;
-    const int count = std::clamp(intField(*item, {"Count", "count"}, 1), 1, 255);
-    const int aux = intField(*item, {"Damage", "Aux", "aux"}, 0);
+    int count = 1;
+    if (const auto *count_value = field(*item, {"Count", "count"})) {
+        const auto parsed = integerValue(*count_value);
+        if (!parsed || *parsed < 1 || *parsed > std::numeric_limits<std::uint8_t>::max())
+            return std::nullopt;
+        count = static_cast<int>(*parsed);
+    }
+    int aux = 0;
+    if (const auto *aux_value = field(*item, {"Damage", "Aux", "aux"})) {
+        const auto parsed = integerValue(*aux_value);
+        if (!parsed || *parsed < std::numeric_limits<std::int16_t>::min() ||
+            *parsed > std::numeric_limits<std::int16_t>::max()) return std::nullopt;
+        aux = static_cast<int>(*parsed);
+    }
 
     std::unique_ptr<CompoundTag> user_data;
-    if (const auto *tag = field(*item, {"tag", "user_data"})) user_data = toNativeCompound(*tag);
+    if (const auto *tag = field(*item, {"tag", "user_data"})) {
+        user_data = toNativeCompound(*tag);
+        if (!user_data) return std::nullopt;
+    }
     ItemStack stack(*name, count, aux, user_data.get());
+    // The Bedrock constructor returns a null stack when the identifier is not
+    // registered or is incompatible with this world. Treat that as invalid
+    // input; otherwise an "add" patch can silently clear the target slot.
+    if (stack.isNull() || count > stack.getMaxStackSize()) return std::nullopt;
 
     auto can_place = stringListField(*item, {"CanPlaceOn", "can_place_on"});
-    if (!can_place.empty()) stack.setCanPlaceOn(can_place);
+    if (!can_place.empty() && !stack.setCanPlaceOn(can_place)) return std::nullopt;
     auto can_destroy = stringListField(*item, {"CanDestroy", "can_destroy"});
-    if (!can_destroy.empty()) stack.setCanDestroy(can_destroy);
+    if (!can_destroy.empty() && !stack.setCanDestroy(can_destroy)) return std::nullopt;
     return stack;
 }
 
 struct ActorAccess {
+    Level *level{};
     BlockSource *source{};
     BlockActor *actor{};
     IVanillaMainBlockActorComponent *main{};
@@ -250,7 +294,9 @@ std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLoca
     auto *exact_dimension = static_cast<endstone::core::EndstoneDimension *>(dimension);
     if (!exact_dimension) return std::nullopt;
 
-    auto &source = exact_dimension->getHandle().getBlockSourceFromMainChunkSource();
+    auto &native_dimension = exact_dimension->getHandle();
+    auto &native_level = native_dimension.getLevel();
+    auto &source = native_dimension.getBlockSourceFromMainChunkSource();
     const ::BlockPos position(location.x, location.y, location.z);
     auto *actor = const_cast<BlockActor *>(source.getBlockEntity(position));
     if (!actor) return std::nullopt;
@@ -259,7 +305,7 @@ std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLoca
         reinterpret_cast<std::byte *>(actor) + sizeof(BlockActor));
     if (main->getBlockActorType() != actor->getType()) return std::nullopt;
 
-    return ActorAccess{&source, actor, main, main->getContainer()};
+    return ActorAccess{&native_level, &source, actor, main, main->getContainer()};
 }
 
 CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocation &location,
@@ -290,13 +336,14 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
     return root;
 }
 
-bool applyItems(Container &container, const NbtValue &value, std::string &error) {
+using ItemReplacements = std::vector<std::pair<int, ItemStack>>;
+
+bool parseItems(Container &container, const NbtValue &value, ItemReplacements &replacements,
+                std::string &error) {
     const auto *items = listOf(value);
     if (!items) { error = "Items must be an NBT list"; return false; }
 
-    // Parse and validate the entire replacement first. A malformed entry must
-    // never empty or partially rewrite a live container.
-    std::vector<std::pair<int, ItemStack>> replacements;
+    replacements.clear();
     replacements.reserve(items->size());
     std::vector<bool> occupied(static_cast<std::size_t>(container.getContainerSize()), false);
     for (const auto &entry : *items) {
@@ -310,13 +357,27 @@ bool applyItems(Container &container, const NbtValue &value, std::string &error)
         occupied[static_cast<std::size_t>(slot)] = true;
         replacements.emplace_back(slot, std::move(*stack));
     }
+    return true;
+}
 
+void applyItems(Container &container, ItemReplacements &replacements) {
     container.removeAllItems();
     for (auto &[slot, stack] : replacements) {
         container.setItem(slot, stack);
         container.setContainerChanged(slot);
     }
-    return true;
+}
+
+struct NativeMutationPlan {
+    std::optional<std::string> custom_name;
+    std::optional<ItemReplacements> replacement_items;
+    std::vector<std::pair<std::string, NbtValue>> additional_updates;
+    ItemReplacements inventory_updates;
+    std::vector<int> inventory_removals;
+};
+
+bool isIdentityField(std::string_view key) {
+    return key == "id" || key == "x" || key == "y" || key == "z" || key.starts_with("_endstone_");
 }
 
 class Bds2630BlockAdapter final : public IBedrockBlockAdapter {
@@ -346,8 +407,7 @@ public:
 
     bool verifySymbols() noexcept override {
         try {
-            return isSupportedBds2630Build(server_.getMinecraftVersion()) &&
-                   sizeof(void *) == 8;
+            return isExactRuntimeBuild(server_) && sizeof(void *) == 8;
         } catch (...) {
             return false;
         }
@@ -356,7 +416,7 @@ public:
     std::string bedrockBuild() const override { return server_.getMinecraftVersion(); }
 
     std::optional<BlockSnapshot> capture(const BlockLocation &location) override {
-        if (!server_.isPrimaryThread() || !isSupportedBds2630Build(server_.getMinecraftVersion())) return std::nullopt;
+        if (!server_.isPrimaryThread() || !isExactRuntimeBuild(server_)) return std::nullopt;
         auto snapshot = public_->capture(location);
         if (!snapshot) return std::nullopt;
 
@@ -387,91 +447,170 @@ public:
     }
 
     ApplyResult apply(const BlockPatch &patch, ConflictPolicy policy) override {
+        if (policy != ConflictPolicy::FailIfChanged && policy != ConflictPolicy::Force)
+            return {ApplyStatus::Unsupported, "conflict policy is not implemented; use FailIfChanged or Force", 0};
         if (!server_.isPrimaryThread()) return {ApplyStatus::AdapterError, "live apply must run on primary thread", 0};
-        if (!isSupportedBds2630Build(server_.getMinecraftVersion()))
-            return {ApplyStatus::Unsupported, "adapter refuses non-26.30-family BDS build", 0};
+        if (!isExactRuntimeBuild(server_))
+            return {ApplyStatus::Unsupported,
+                    "adapter refuses a runtime other than BDS " ENDSTONE_BLOCKDATA_BDS_BUILD
+                    " with Endstone " ENDSTONE_BLOCKDATA_ENDSTONE_VERSION, 0};
 
         auto current = capture(patch.location);
         if (!current) return {ApplyStatus::ChunkUnavailable, "block or chunk unavailable", 0};
         if (patch.expected_revision && policy != ConflictPolicy::Force && *patch.expected_revision != current->revision)
             return {ApplyStatus::Conflict, "revision changed", current->revision};
 
-        if (patch.replacement_type || !patch.state_updates.empty() || !patch.state_removals.empty()) {
-            BlockPatch public_patch = patch;
-            public_patch.expected_revision.reset();
-            public_patch.nbt_updates.clear();
-            public_patch.nbt_removals.clear();
-            public_patch.inventory_updates.clear();
-            public_patch.inventory_removals.clear();
-            auto result = public_->apply(public_patch, ConflictPolicy::Force);
-            if (!result.ok()) return result;
+        const bool has_public_changes = patch.replacement_type || !patch.state_updates.empty() ||
+                                        !patch.state_removals.empty();
+        const bool has_native_changes = !patch.nbt_updates.empty() || !patch.nbt_removals.empty() ||
+                                        !patch.inventory_updates.empty() || !patch.inventory_removals.empty();
+        if (has_public_changes && has_native_changes) {
+            return {ApplyStatus::Unsupported,
+                    "mixed block-state and block-entity patches are not atomic; apply them separately",
+                    current->revision};
         }
 
-        if (patch.nbt_updates.empty() && patch.nbt_removals.empty() &&
-            patch.inventory_updates.empty() && patch.inventory_removals.empty()) {
-            auto updated = capture(patch.location);
-            return {ApplyStatus::Applied, "block data applied", updated ? updated->revision : 0};
+        if (has_public_changes) {
+            BlockPatch public_patch = patch;
+            public_patch.expected_revision.reset();
+            return public_->apply(public_patch, ConflictPolicy::Force);
         }
+
+        if (!has_native_changes)
+            return {ApplyStatus::Applied, "block data unchanged", current->revision};
 
         auto access = locateActor(server_, patch.location);
         if (!access) return {ApplyStatus::Unsupported, "block has no supported vanilla block actor", current->revision};
+        if (!access->container)
+            return {ApplyStatus::Unsupported, "block actor is not a supported container", current->revision};
 
-        CompoundTag additional;
-        bool has_additional = false;
+        NativeItemRegistryScope item_registry_scope(*access->level);
+
+        NativeMutationPlan plan;
+        bool custom_name_seen = false;
+        bool items_seen = false;
         for (const auto &[key, value] : patch.nbt_updates) {
+            std::string validation_error;
+            if (!validateNbtPayload(value, &validation_error)) {
+                return {ApplyStatus::InvalidPatch,
+                        "invalid NBT update '" + key + "': " + validation_error,
+                        current->revision};
+            }
             if (key == "CustomName" || key == "custom_name") {
-                if (!access->container) return {ApplyStatus::Unsupported, "CustomName currently requires a container block actor", current->revision};
+                if (custom_name_seen)
+                    return {ApplyStatus::InvalidPatch, "CustomName was specified more than once", current->revision};
                 const auto *name = std::get_if<std::string>(&value.value);
                 if (!name) return {ApplyStatus::InvalidPatch, "CustomName must be a string", current->revision};
-                access->container->setCustomName(*name);
+                plan.custom_name = *name;
+                custom_name_seen = true;
             } else if (key == "Items" || key == "items") {
-                if (!access->container) return {ApplyStatus::Unsupported, "Items requires a container block actor", current->revision};
+                if (items_seen)
+                    return {ApplyStatus::InvalidPatch, "Items was specified more than once", current->revision};
+                plan.replacement_items.emplace();
                 std::string error;
-                if (!applyItems(*access->container, value, error)) return {ApplyStatus::InvalidPatch, error, current->revision};
-            } else if (key == "id" || key == "x" || key == "y" || key == "z" || key.starts_with("_endstone_")) {
+                if (!parseItems(*access->container, value, *plan.replacement_items, error))
+                    return {ApplyStatus::InvalidPatch, error, current->revision};
+                items_seen = true;
+            } else if (isIdentityField(key)) {
                 return {ApplyStatus::InvalidPatch, "identity and adapter metadata NBT fields are read-only", current->revision};
             } else {
-                if (!access->container)
-                    return {ApplyStatus::Unsupported, "generic non-container actor NBT write requires a native save/load hook", current->revision};
-                additional.put(key, toNativeTag(value));
-                has_additional = true;
+                if (patch.nbt_removals.contains(key))
+                    return {ApplyStatus::InvalidPatch, "an NBT field cannot be updated and removed in one patch", current->revision};
+                plan.additional_updates.emplace_back(key, value);
             }
         }
         for (const auto &key : patch.nbt_removals) {
             if (key == "CustomName" || key == "custom_name") {
-                if (!access->container) return {ApplyStatus::Unsupported, "CustomName currently requires a container block actor", current->revision};
-                access->container->setCustomName("");
+                if (custom_name_seen)
+                    return {ApplyStatus::InvalidPatch, "CustomName cannot be updated and removed in one patch", current->revision};
+                plan.custom_name = std::string{};
+                custom_name_seen = true;
             } else if (key == "Items" || key == "items") {
-                if (!access->container) return {ApplyStatus::Unsupported, "Items requires a container block actor", current->revision};
-                access->container->removeAllItems();
+                if (items_seen)
+                    return {ApplyStatus::InvalidPatch, "Items cannot be updated and removed in one patch", current->revision};
+                plan.replacement_items.emplace();
+                items_seen = true;
+            } else if (isIdentityField(key)) {
+                return {ApplyStatus::InvalidPatch, "identity and adapter metadata NBT fields are read-only", current->revision};
             } else {
                 return {ApplyStatus::Unsupported, "removing arbitrary additional-save keys is not supported by Container::readAdditionalSaveData", current->revision};
             }
         }
-        if (has_additional) access->container->readAdditionalSaveData(additional);
 
-        if ((!patch.inventory_updates.empty() || !patch.inventory_removals.empty()) && !access->container)
-            return {ApplyStatus::Unsupported, "block actor is not a container", current->revision};
+        if (items_seen && (!patch.inventory_updates.empty() || !patch.inventory_removals.empty()))
+            return {ApplyStatus::InvalidPatch, "Items and per-slot inventory changes cannot be combined", current->revision};
 
         for (const auto &[slot, item_patch] : patch.inventory_updates) {
             if (slot < 0 || slot >= access->container->getContainerSize())
                 return {ApplyStatus::InvalidPatch, "inventory slot out of range", current->revision};
+            if (patch.inventory_removals.contains(slot))
+                return {ApplyStatus::InvalidPatch, "an inventory slot cannot be updated and removed in one patch", current->revision};
+            std::string validation_error;
+            if (!validateNbtPayload(item_patch.item, &validation_error)) {
+                return {ApplyStatus::InvalidPatch,
+                        "invalid inventory item NBT for slot " + std::to_string(slot) + ": " + validation_error,
+                        current->revision};
+            }
             auto stack = itemFromNbt(item_patch.item);
             if (!stack) return {ApplyStatus::InvalidPatch, "invalid canonical item NBT", current->revision};
-            access->container->setItem(slot, *stack);
-            access->container->setContainerChanged(slot);
+            plan.inventory_updates.emplace_back(slot, std::move(*stack));
         }
         for (int slot : patch.inventory_removals) {
             if (slot < 0 || slot >= access->container->getContainerSize())
                 return {ApplyStatus::InvalidPatch, "inventory slot out of range", current->revision};
+            plan.inventory_removals.push_back(slot);
+        }
+
+        // Build and validate the final container projection before mutating any
+        // live object. Invalid input must not leave a partial inventory write.
+        auto candidate = captureCanonicalActorTag(*access, patch.location, server_.getMinecraftVersion());
+        if (plan.custom_name) {
+            if (plan.custom_name->empty()) candidate.remove("CustomName");
+            else candidate.putString("CustomName", *plan.custom_name);
+        }
+        for (const auto &[key, value] : plan.additional_updates)
+            candidate.put(key, toNativeTag(value));
+
+        if (plan.replacement_items || !plan.inventory_updates.empty() || !plan.inventory_removals.empty()) {
+            std::map<int, ItemStack> final_items;
+            if (plan.replacement_items) {
+                for (const auto &[slot, stack] : *plan.replacement_items)
+                    if (!stack.isNull()) final_items.insert_or_assign(slot, stack);
+            } else {
+                for (int slot = 0; slot < access->container->getContainerSize(); ++slot) {
+                    const auto &stack = access->container->getItem(slot);
+                    if (!stack.isNull()) final_items.emplace(slot, stack);
+                }
+            }
+            for (const auto &[slot, stack] : plan.inventory_updates) {
+                if (stack.isNull()) final_items.erase(slot);
+                else final_items.insert_or_assign(slot, stack);
+            }
+            for (int slot : plan.inventory_removals) final_items.erase(slot);
+
+            ListTag items;
+            for (const auto &[slot, stack] : final_items) {
+                auto item_tag = makeItemTag(slot, stack);
+                items.add(item_tag.copy());
+            }
+            candidate.put("Items", items.copy());
+        }
+        if (!access->main->validateData(candidate))
+            return {ApplyStatus::AdapterError, "block actor rejected the resulting canonical NBT", current->revision};
+
+        // readAdditionalSaveData expects a complete save projection, not a
+        // sparse tag. Passing only changed keys can reset unrelated fields.
+        if (!plan.additional_updates.empty()) access->container->readAdditionalSaveData(candidate);
+        if (plan.custom_name) access->container->setCustomName(*plan.custom_name);
+        if (plan.replacement_items) applyItems(*access->container, *plan.replacement_items);
+        for (auto &[slot, stack] : plan.inventory_updates) {
+            access->container->setItem(slot, stack);
+            access->container->setContainerChanged(slot);
+        }
+        for (int slot : plan.inventory_removals) {
             access->container->setItem(slot, ItemStack::EMPTY_ITEM);
             access->container->setContainerChanged(slot);
         }
-
-        // Validate the complete resulting projection before announcing the mutation.
-        auto resulting_tag = captureCanonicalActorTag(*access, patch.location, server_.getMinecraftVersion());
-        if (!access->main->validateData(resulting_tag))
-            return {ApplyStatus::AdapterError, "block actor rejected the resulting canonical NBT", current->revision};
 
         access->main->setChanged();
         access->main->onChanged(*access->source);

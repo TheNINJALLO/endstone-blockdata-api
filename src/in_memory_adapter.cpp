@@ -16,6 +16,8 @@ public:
         } return it->second;
     }
     ApplyResult apply(const BlockPatch &p, ConflictPolicy policy) override {
+        if (policy != ConflictPolicy::FailIfChanged && policy != ConflictPolicy::Force)
+            return {ApplyStatus::Unsupported,"conflict policy is not implemented; use FailIfChanged or Force",0};
         std::scoped_lock lock(mu_);
         auto [it, inserted] = blocks_.try_emplace(p.location);
         auto &s = it->second;
@@ -35,7 +37,11 @@ public:
             for(const auto &[k,v]:p.nbt_updates) (*compound)[k]=v;
             for(const auto &k:p.nbt_removals) compound->erase(k);
             for(const auto &slot:p.inventory_removals) std::erase_if(s.block_entity->inventory,[&](const auto &x){return x.slot==slot;});
-            for(const auto &[slot,val]:p.inventory_updates){ std::erase_if(s.block_entity->inventory,[&](const auto &x){return x.slot==slot;}); s.block_entity->inventory.push_back(val); }
+            for(const auto &[slot,val]:p.inventory_updates){
+                std::erase_if(s.block_entity->inventory,[&](const auto &x){return x.slot==slot;});
+                auto stored=val; stored.slot=slot; stored.revision=hashNbt(stored.item);
+                s.block_entity->inventory.push_back(std::move(stored));
+            }
         }
         s.revision=calculateRevision(s);
         return {ApplyStatus::Applied,"applied",s.revision};
