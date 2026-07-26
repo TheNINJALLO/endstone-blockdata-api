@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=80", "wheel>=0.45"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "endstone-blockdata-inspector"
-version = "0.4.5b30"
+version = "0.4.5b31"
 description = "In-game container, NBT, and block state inspection test plugin for Endstone"
 readme = "README.md"
 requires-python = "==3.14.*"
@@ -18,3 +18,9 @@ dependencies = [
 [tool.setuptools]
 packages = ["endstone_blockdata_inspector"]
 package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+endstone_blockdata_inspector = [
+    "_endstone_blockdata_live*.pyd",
+    "_endstone_blockdata_live*.so",
+]

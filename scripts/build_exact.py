@@ -20,6 +20,7 @@ SUPPORTED_PLATFORMS = {"linux-x64", "windows-x64"}
 BUILD_TARGETS = ['blockdata_api', '_endstone_blockdata_live']
 INSTALL_COMPONENT = "blockdata_package"
 REQUIRED_PYTHON = (3, 14)
+BRIDGE_MODULE = "_endstone_blockdata_live"
 
 
 def require(program: str, fallbacks: tuple[str, ...] = ()) -> str:
@@ -210,6 +211,22 @@ def main() -> int:
         "--component", INSTALL_COMPONENT,
     ], env=env, log_file=log_file)
 
+    bridge_candidates = [
+        path for path in (stage_dir / "python").glob(f"{BRIDGE_MODULE}.*")
+        if path.is_file() and path.suffix.lower() in {".pyd", ".so"}
+    ]
+    if len(bridge_candidates) != 1:
+        raise SystemExit(
+            f"Expected exactly one installed {BRIDGE_MODULE} bridge, "
+            f"found {bridge_candidates}"
+        )
+    run([
+        sys.executable,
+        str(root / "scripts" / "build_test_wheel.py"),
+        "--bridge", str(bridge_candidates[0]),
+        "--stage-dir", str(stage_dir),
+        "--output-dir", str(release_dir),
+    ], env=env, log_file=log_file)
     run([
         sys.executable,
         str(root / "scripts" / "package_release.py"),

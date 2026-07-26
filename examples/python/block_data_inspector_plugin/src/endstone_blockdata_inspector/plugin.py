@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
-import importlib
 import json
 from typing import Any
 
 from endstone.command import Command, CommandSender
 from endstone.plugin import Plugin
 
+from ._bridge_loader import import_live_bridge
+
 
 class BlockDataInspectorPlugin(Plugin):
     """Exercise the native BlockData service from in-game commands."""
 
     api_version = "0.11"
-    version = "0.4.5-beta.30"
+    version = "0.4.5-beta.31"
     description = "Interactive in-game container, NBT, and block-state test suite"
     depend = ["blockdata_api"]
 
@@ -78,20 +79,20 @@ class BlockDataInspectorPlugin(Plugin):
 
         if self.live_bridge is None:
             self.logger.error(
-                "BlockData live bridge unavailable; /bd commands will report unavailable: %s",
-                self.bridge_error,
+                f"BlockData live bridge unavailable; /bd commands will report unavailable: "
+                f"{self.bridge_error}"
             )
         else:
             adapter = self.native_capabilities.get("adapter", "unknown")
             self.logger.info(
-                "BlockData Inspector enabled against native adapter '%s'. Type '/bd' for help.",
-                adapter,
+                f"BlockData Inspector enabled against native adapter '{adapter}'. "
+                "Type '/bd' for help."
             )
 
     def _connect_bridge(self) -> Any | None:
         """Connect to the native service, allowing command-time recovery."""
         try:
-            bridge = importlib.import_module("_endstone_blockdata_live")
+            bridge = import_live_bridge(self.version)
             if not bridge.available(self.server):
                 self.live_bridge = None
                 self.native_capabilities = {}
@@ -125,7 +126,7 @@ class BlockDataInspectorPlugin(Plugin):
         return getattr(self, handler_name)(sender, args[1:])
 
     def _send_help(self, sender: CommandSender) -> None:
-        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5-beta.30) ===")
+        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5-beta.31) ===")
         sender.send_message("§a/bd locate [radius]                 §7- Locate nearby containers")
         sender.send_message("§a/bd inspect [x y z]                §7- Inspect live block state and NBT")
         sender.send_message("§a/bd item add <slot> <id> [count] [nbt] §7- Add a container item")

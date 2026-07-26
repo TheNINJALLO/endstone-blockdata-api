@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.4.5-beta.30**
+Version: **0.4.5-beta.31**
 
 ## Implemented
 
@@ -14,7 +14,7 @@ Version: **0.4.5-beta.30**
 - Downloadable workflow artifacts on every push
 - Automatic tagged GitHub Releases
 - Raw plugin, ZIP package, manifest, and SHA-256 outputs
-- Verified Endstone 0.11 command-test wheel and native bridge packaging
+- Verified CPython 3.14 platform command wheels with a bundled native bridge
 - Build-time rejection of unresolved Bedrock ABI symbols and release-time RPATH validation
 - Strong native item-registry and placement/destroy restriction bridge with scoped live Level access
 

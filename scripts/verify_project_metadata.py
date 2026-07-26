@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CONFIGS = {
     "endstone-blockdata-api": {
+        "bridge_module": "_endstone_blockdata_live",
+        "wheel_package": "endstone_blockdata_inspector",
         "package_init": "python/endstone_blockdata/__init__.py",
         "wheel_pyproject": "examples/python/block_data_inspector_plugin/pyproject.toml",
         "wheel_plugin": (
@@ -18,6 +20,8 @@ CONFIGS = {
         "version_macro": "ENDSTONE_BLOCKDATA_VERSION",
     },
     "endstone-worldgen-api": {
+        "bridge_module": "_endstone_worldgen_live",
+        "wheel_package": "endstone_worldgen_studio",
         "package_init": "python/endstone_worldgen/__init__.py",
         "wheel_pyproject": "examples/python/world_gen_studio_plugin/pyproject.toml",
         "wheel_plugin": (
@@ -184,6 +188,31 @@ def main() -> int:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     if f"v{release}" not in readme:
         failures.append(f"README.md does not reference release tag v{release}")
+    wheel_project = Path(config["wheel_pyproject"])
+    wheel_project_text = (ROOT / wheel_project).read_text(encoding="utf-8")
+    for required in (
+        "setuptools>=80",
+        "wheel>=0.45",
+        f'{config["bridge_module"]}*.pyd',
+        f'{config["bridge_module"]}*.so',
+    ):
+        if required not in wheel_project_text:
+            failures.append(f"Test wheel packaging is missing {required!r}")
+    setup_text = (ROOT / wheel_project.parent / "setup.py").read_text(encoding="utf-8")
+    if "has_ext_modules" not in setup_text or "return True" not in setup_text:
+        failures.append("Test wheel setup.py must force a platform-specific binary wheel tag")
+    build_exact_text = (ROOT / "scripts/build_exact.py").read_text(encoding="utf-8")
+    if "build_test_wheel.py" not in build_exact_text or '"--stage-dir"' not in build_exact_text:
+        failures.append("Exact build must create and bundle its matching platform command wheel")
+    for required in (
+        "cp314-cp314-linux_x86_64",
+        "cp314-cp314-win_amd64",
+        "--structure-only",
+        "Smoke-test relocated Linux command wheel",
+        "Smoke-test relocated Windows command wheel",
+    ):
+        if required not in workflow_text:
+            failures.append(f"Workflow platform-wheel contract is missing {required!r}")
     if failures:
         raise SystemExit("Metadata verification failed:\n- " + "\n- ".join(failures))
 

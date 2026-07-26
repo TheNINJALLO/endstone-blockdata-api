@@ -5,13 +5,17 @@ native service. It never falls back to the in-memory reference adapter.
 
 ## Installation
 
-Install the native BlockData package matching the server's exact operating
-system and BDS build first. Its `_endstone_blockdata_live` module must be on the
-Endstone Python path, and the Endstone host must run **CPython 3.14** to match
-the native bridge ABI. Then copy this wheel into the server's `plugins/` folder:
+Install the complete native BlockData package matching the server's exact
+operating system and BDS build, then use its matching platform-specific command
+wheel. That wheel contains `_endstone_blockdata_live` inside the inspector
+package, so the bridge does not depend on the bundle's `python/` directory being
+on `sys.path`. The Endstone host must run **CPython 3.14** to match the native
+bridge ABI. Top-level bridge modules from older releases are deliberately
+ignored so they cannot hide a missing or corrupt bridge in the installed wheel.
 
 ```text
-endstone_blockdata_inspector-0.4.5b30-py3-none-any.whl
+endstone_blockdata_inspector-0.4.5b31-cp314-cp314-linux_x86_64.whl
+endstone_blockdata_inspector-0.4.5b31-cp314-cp314-win_amd64.whl
 ```
 
 Endstone discovers the `blockdata-inspector` entry point at startup. All

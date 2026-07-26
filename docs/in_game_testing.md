@@ -4,9 +4,9 @@ The release includes the `endstone_blockdata_inspector` test-plugin wheel.
 
 ## Install
 
-1. Install the exact native BlockData bundle for the server's BDS build and platform.
-2. Ensure the bundle's `_endstone_blockdata_live` module is importable by Endstone.
-3. Copy `endstone_blockdata_inspector-0.4.5b30-py3-none-any.whl` to `plugins/`.
+1. Stop the server and remove every older BlockData inspector wheel from `plugins/`.
+2. Remove any manually copied top-level `_endstone_blockdata_live` file from `plugins/.local`.
+3. Extract the BDS 1.26.33 ZIP matching the server platform and copy both files from its `plugins/` directory into the server's `plugins/` directory.
 4. Restart Endstone and confirm both the native API and inspector load.
 
 The wheel registers Endstone entry point `blockdata-inspector`, command `/bd`

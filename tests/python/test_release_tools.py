@@ -5,10 +5,11 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","version": "0.4.5-beta.30"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","version": "0.4.5-beta.31"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -20,6 +21,22 @@ class TestReleaseTools(unittest.TestCase):
             capture_output=True,
             text=True,
         )
+
+    @staticmethod
+    def add_command_wheel(stage: Path) -> Path:
+        wheel = (
+            stage / "plugins" /
+            "endstone_blockdata_inspector-0.4.5b31-cp314-cp314-win_amd64.whl"
+        )
+        wheel.parent.mkdir(parents=True, exist_ok=True)
+        bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))
+        with ZipFile(wheel, "w", compression=ZIP_DEFLATED) as archive:
+            if bridges:
+                archive.writestr(
+                    f"endstone_blockdata_inspector/{bridges[0].name}",
+                    bridges[0].read_bytes(),
+                )
+        return wheel
 
     def test_package_round_trip_and_checksum_tamper_detection(self):
         scratch_root = ROOT / "build" / "release-tool-tests"
@@ -38,6 +55,7 @@ class TestReleaseTools(unittest.TestCase):
             bridge.write_bytes(b"MZ" + bytes(range(32)))
             package = stage / "python" / "example.py"
             package.write_text("VALUE = 1\n", encoding="utf-8")
+            self.add_command_wheel(stage)
             # A repeated packaging run must never hash a stale manifest into itself.
             (stage / "PACKAGE_MANIFEST.json").write_text("{}\n", encoding="utf-8")
 
@@ -85,6 +103,7 @@ class TestReleaseTools(unittest.TestCase):
             bridge = stage / "python" / "_endstone_blockdata_live.cp314-win_amd64.pyd"
             bridge.parent.mkdir(parents=True)
             bridge.write_bytes(b"not-a-pe-binary")
+            self.add_command_wheel(stage)
             common = (
                 "--version", CONFIG["version"], "--bds", "1.26.33",
                 "--platform", "windows-x64",
@@ -118,6 +137,7 @@ class TestReleaseTools(unittest.TestCase):
                 plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
                 plugin.parent.mkdir(parents=True)
                 plugin.write_bytes(b"MZ" + bytes(range(64)))
+                self.add_command_wheel(stage)
                 for bridge_name in bridge_names:
                     bridge = stage / "python" / bridge_name
                     bridge.parent.mkdir(parents=True, exist_ok=True)
@@ -150,6 +170,7 @@ class TestReleaseTools(unittest.TestCase):
             bridge = stage / "python" / f"{CONFIG['bridge_prefix']}.cp313-win_amd64.pyd"
             bridge.parent.mkdir(parents=True)
             bridge.write_bytes(b"MZ" + bytes(range(32)))
+            self.add_command_wheel(stage)
             common = (
                 "--version", CONFIG["version"], "--bds", "1.26.33",
                 "--platform", "windows-x64",

@@ -4,11 +4,11 @@
 
 Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.33 with Endstone 0.11.6. Open the repository's **Actions** tab, select the completed build, and download the package matching your operating system.
 
-A tagged release such as `v0.4.5-beta.30` publishes the same files under the repository's **Releases** page.
+A tagged release such as `v0.4.5-beta.31` publishes the same files under the repository's **Releases** page.
 
 Use the ZIP matching the server's operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not use it with any BDS or Endstone version other than BDS 1.26.33 / Endstone 0.11.6.
 
-The `/bd` test wheel requires an Endstone host running **CPython 3.14**, and the exact bundle's native bridge must carry the matching `cp314`/`cpython-314` ABI tag. Make the extracted ZIP's `python/` directory importable by that interpreter (set `PYTHONPATH` to it, or copy its contents into Endstone's Python `site-packages`), then put `endstone_blockdata_inspector-0.4.5b30-py3-none-any.whl` in the server's `plugins/` directory. Installing only the raw `.dll`/`.so` and the wheel omits `_endstone_blockdata_live`, so live commands cannot run.
+The `/bd` plugin requires Endstone's **CPython 3.14** runtime. The complete ZIP contains a platform-specific `cp314` wheel with `_endstone_blockdata_live` bundled inside it. Stop the server, remove every older BlockData inspector wheel from `plugins/` and any manually copied top-level `_endstone_blockdata_live` file from `.local`, then copy both files from the ZIP's `plugins/` directory into the server's `plugins/` directory. No `PYTHONPATH` or manual `site-packages` copy is required.
 
 ## Building locally
 
@@ -24,7 +24,7 @@ Windows PowerShell:
 ./scripts/build_exact.ps1 -BdsBuild 1.26.33 -Platform windows-x64
 ```
 
-Completed raw plugins, ZIP packages, and checksums are written to `dist/release/`.
+Completed raw plugins, self-contained platform wheels, ZIP packages, and checksums are written to `dist/release/`.
 
 At startup the native plugin verifies the exact BDS build, registers `endstone:blockdata`, and logs whether canonical actor NBT, nested item NBT, and inventory access are active.
 

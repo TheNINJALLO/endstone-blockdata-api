@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import logging
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 import sys
@@ -15,6 +14,19 @@ PLUGIN_PROJECT = ROOT / "examples" / "python" / "block_data_inspector_plugin"
 PLUGIN_SOURCE = PLUGIN_PROJECT / "src"
 
 
+class StrictEndstoneLogger:
+    """Match Endstone's one-rendered-string Python logger contract."""
+
+    def __init__(self) -> None:
+        self.records: list[tuple[str, str]] = []
+
+    def info(self, message: str) -> None:
+        self.records.append(("info", message))
+
+    def error(self, message: str) -> None:
+        self.records.append(("error", message))
+
+
 def install_endstone_test_double() -> None:
     """Provide only the Endstone surface needed by handler unit tests."""
 
@@ -25,7 +37,7 @@ def install_endstone_test_double() -> None:
     class Plugin:
         def __init__(self) -> None:
             self.server = object()
-            self.logger = logging.getLogger(type(self).__name__)
+            self.logger = StrictEndstoneLogger()
 
     class Command:
         def __init__(self, name: str):
@@ -47,7 +59,7 @@ def install_endstone_test_double() -> None:
 install_endstone_test_double()
 sys.path.insert(0, str(PLUGIN_SOURCE))
 
-from endstone_blockdata_inspector import BlockDataInspectorPlugin
+from endstone_blockdata_inspector import BlockDataInspectorPlugin, _bridge_loader
 
 
 class FakeSender:
@@ -195,6 +207,83 @@ class InspectorWheelTests(unittest.TestCase):
             ["endstone_blockdata_inspector"],
         )
 
+    def test_bridge_loader_prefers_bundled_platform_module(self) -> None:
+        bundled = ModuleType(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+        with patch.object(
+            _bridge_loader.importlib, "import_module", return_value=bundled
+        ) as import_module:
+            loaded = _bridge_loader.import_live_bridge(BlockDataInspectorPlugin.version)
+
+        self.assertIs(loaded, bundled)
+        import_module.assert_called_once_with(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+
+    def test_bridge_loader_rejects_stale_top_level_module(self) -> None:
+        bundled_missing = ModuleNotFoundError(
+            "bundled bridge is absent", name=_bridge_loader.BUNDLED_BRIDGE_MODULE
+        )
+        stale_legacy = ModuleType(_bridge_loader.BRIDGE_MODULE)
+        with patch.dict(sys.modules, {_bridge_loader.BRIDGE_MODULE: stale_legacy}):
+            with patch.object(
+                _bridge_loader.importlib,
+                "import_module",
+                side_effect=bundled_missing,
+            ) as import_module:
+                with self.assertRaises(ModuleNotFoundError) as raised:
+                    _bridge_loader.import_live_bridge(BlockDataInspectorPlugin.version)
+
+        self.assertIn("package-local native bridge", str(raised.exception))
+        import_module.assert_called_once_with(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+
+    def test_bridge_loader_does_not_mask_bundled_dependency_errors(self) -> None:
+        dependency_error = ModuleNotFoundError(
+            "bundled dependency is absent", name="endstone.internal_dependency"
+        )
+        with patch.object(
+            _bridge_loader.importlib, "import_module", side_effect=dependency_error
+        ) as import_module:
+            with self.assertRaises(ModuleNotFoundError) as raised:
+                _bridge_loader.import_live_bridge(BlockDataInspectorPlugin.version)
+
+        self.assertIs(raised.exception, dependency_error)
+        import_module.assert_called_once_with(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+
+    def test_bridge_loader_missing_error_names_required_platform_wheel(self) -> None:
+        missing = ModuleNotFoundError(
+            "bundled bridge is absent", name=_bridge_loader.BUNDLED_BRIDGE_MODULE
+        )
+        with patch.object(
+            _bridge_loader.importlib, "import_module", side_effect=missing
+        ):
+            with self.assertRaises(ModuleNotFoundError) as raised:
+                _bridge_loader.import_live_bridge(BlockDataInspectorPlugin.version)
+
+        message = str(raised.exception)
+        self.assertIn(BlockDataInspectorPlugin.version, message)
+        self.assertIn("CPython 3.14 platform wheel", message)
+        self.assertIn("py3-none-any", message)
+
+    def test_on_enable_uses_single_string_endstone_logger_methods(self) -> None:
+        plugin = BlockDataInspectorPlugin()
+        bridge = FakeLiveBridge()
+        with patch(
+            "endstone_blockdata_inspector.plugin.import_live_bridge",
+            return_value=bridge,
+        ):
+            plugin.on_enable()
+
+        self.assertEqual(plugin.logger.records[-1][0], "info")
+        self.assertIn("native adapter 'test'", plugin.logger.records[-1][1])
+
+        unavailable = BlockDataInspectorPlugin()
+        with patch(
+            "endstone_blockdata_inspector.plugin.import_live_bridge",
+            side_effect=RuntimeError("bridge load failed"),
+        ):
+            unavailable.on_enable()
+
+        self.assertEqual(unavailable.logger.records[-1][0], "error")
+        self.assertIn("bridge load failed", unavailable.logger.records[-1][1])
+
     def test_all_commands_permissions_and_usages_are_declared(self) -> None:
         self.assertEqual(BlockDataInspectorPlugin.api_version, "0.11")
         self.assertEqual(BlockDataInspectorPlugin.depend, ["blockdata_api"])
@@ -262,7 +351,7 @@ class InspectorWheelTests(unittest.TestCase):
         plugin.live_bridge = None
         plugin.bridge_error = "module not found"
         with patch(
-            "endstone_blockdata_inspector.plugin.importlib.import_module",
+            "endstone_blockdata_inspector.plugin.import_live_bridge",
             side_effect=ModuleNotFoundError("module not found"),
         ):
             self.assertTrue(
@@ -277,7 +366,7 @@ class InspectorWheelTests(unittest.TestCase):
         sender = FakeSender()
 
         with patch(
-            "endstone_blockdata_inspector.plugin.importlib.import_module",
+            "endstone_blockdata_inspector.plugin.import_live_bridge",
             return_value=bridge,
         ):
             plugin.on_enable()
