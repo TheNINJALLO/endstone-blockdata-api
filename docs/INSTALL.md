@@ -4,9 +4,11 @@
 
 Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.32 and 1.26.33. Open the repository's **Actions** tab, select the completed build, and download the package matching your exact BDS version and operating system.
 
-A tagged release such as `v0.4.5-alpha.9` publishes the same files under the repository's **Releases** page.
+A tagged release such as `v0.4.5-beta.29` publishes the same files under the repository's **Releases** page.
 
-Copy the packaged plugin from `plugins/` into Endstone's native plugin directory. For Python consumers, also place the generated `_endstone_blockdata_live` module and `python/endstone_blockdata` package where Endstone's Python interpreter can import them.
+Use the ZIP matching the server's exact BDS build and operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not mix the native plugin or Python bridge from another BDS build.
+
+The `/bd` test wheel and its ABI-tagged bridge require an Endstone host running **CPython 3.12**. Make the extracted ZIP's `python/` directory importable by that interpreter (set `PYTHONPATH` to it, or copy its contents into Endstone's Python `site-packages`), then put `endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl` in the server's `plugins/` directory. Installing only the raw `.dll`/`.so` and the wheel omits `_endstone_blockdata_live`, so live commands cannot run.
 
 ## Building locally
 

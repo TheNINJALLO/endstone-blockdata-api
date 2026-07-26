@@ -38,7 +38,7 @@ class BlockSnapshot:
     def refresh_revision(self)->int:
         raw=json.dumps({"type":self.type,"runtime":self.runtime_id,"states":self.states,
           "entity":None if self.block_entity is None else {"type":self.block_entity.type,"nbt":self.block_entity.nbt,
-          "inventory":[{"slot":s.slot,"item":s.item} for s in self.block_entity.inventory]}},sort_keys=True,separators=(",",":"),default=str)
+          "inventory":[{"slot":s.slot,"item":s.item} for s in sorted(self.block_entity.inventory,key=lambda entry:entry.slot)]}},sort_keys=True,separators=(",",":"),default=str)
         self.revision=int.from_bytes(hashlib.blake2b(raw.encode(),digest_size=8).digest(),"big")
         return self.revision
 

@@ -1,12 +1,12 @@
 # Endstone BlockData API
 
-[![Version](https://img.shields.io/badge/version-v0.4.5--beta.28-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.28)
+[![Version](https://img.shields.io/badge/version-v0.4.5--beta.29-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.29)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.5%20%7C%20v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
 [![BDS Version](https://img.shields.io/badge/BDS-1.26.32%20%7C%201.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta28)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta29)
 [![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg?style=for-the-badge)](LICENSE)
 
 A high-performance, detached **Block State**, **Block Entity**, and **Canonical NBT** manipulation API for Endstone Bedrock Dedicated Servers (BDS).
 
@@ -20,15 +20,21 @@ Comprehensive guides, architecture diagrams, container audit tutorials, and full
 
 ---
 
-## 📦 Direct Release Downloads (`v0.4.5-beta.28`)
+## 📦 Direct Release Downloads (`v0.4.5-beta.29`)
+
+Use the **complete ZIP** matching the server's exact BDS build and platform when installing the `/bd` wheel; it contains the native plugin and `_endstone_blockdata_live` bridge. The raw library downloads are for C++-only/manual installations and do not contain that bridge.
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Windows x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.28/endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.32-windows-x64.dll) |
-| **Windows x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.28/endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.33-windows-x64.dll) |
-| **Linux x64** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.28/endstone-blockdata-api-v0.4.5-beta.28-linux-x64.so) |
-| **Linux x64** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.28/endstone-blockdata-api-v0.4.5-beta.28-bds-1.26.33-linux-x64.so) |
-| **Python Wheel** | `Universal` | `endstone_blockdata_inspector-0.4.5b28-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.28/endstone_blockdata_inspector-0.4.5b28-py3-none-any.whl) |
+| **Windows x64 ZIP (recommended)** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.zip) |
+| **Windows x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.zip) |
+| **Linux x64 ZIP (recommended)** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.zip) |
+| **Linux x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.zip) |
+| **Windows x64 raw plugin** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.dll) |
+| **Windows x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.dll) |
+| **Linux x64 raw plugin** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.so) |
+| **Linux x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.so) |
+| **Python Wheel** | `CPython 3.12` | `endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl) |
 
 ---
 
@@ -75,14 +81,27 @@ if snapshot.block_entity:
 
 ### C++ API Example
 ```cpp
-#include <endstone_blockdata/endstone_adapter.h>
+#include <endstone_blockdata/live_service.h>
 #include <endstone/endstone.hpp>
+#include <string>
 
-void onContainerTouch(endstone::Server& server) {
-    auto* service = server.getServiceManager().getService<endstone_blockdata::BlockDataService>();
-    if (service) {
-        auto snap = service->capture("overworld", {100, 64, 200});
-        // Mutate block properties
+void onContainerTouch(endstone::Server &server) {
+    using namespace endstone_blockdata;
+    auto service = server.getServiceManager().load<LiveBlockDataService>(
+        std::string(BlockDataServiceName));
+    if (!service) return;  // The native BlockData plugin is not enabled.
+
+    BlockLocation location{"overworld", 100, 64, 200};
+    auto snapshot = service->capture(location);
+    if (!snapshot) return;
+
+    BlockPatch patch;
+    patch.location = location;
+    patch.expected_revision = snapshot->revision;
+    patch.state_updates["minecraft:cardinal_direction"] = std::string("north");
+    auto result = service->apply(patch, ConflictPolicy::FailIfChanged);
+    if (!result.ok()) {
+        server.getLogger().warning("BlockData apply failed: {}", result.message);
     }
 }
 ```
@@ -91,22 +110,25 @@ void onContainerTouch(endstone::Server& server) {
 
 ## 🎮 In-Game Inspector Test Suite (`/bd`)
 
-The repository includes a packaged Python wheel test plugin [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/):
+The repository includes a packaged Python wheel test plugin [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/). The wheel and its ABI-tagged native bridge require the Endstone host to run **CPython 3.12**. It calls the exact bundle's `_endstone_blockdata_live` bridge, so expose the extracted bundle's `python/` directory to Endstone before installing the wheel (or copy that directory's contents into Endstone's Python `site-packages`):
 
 ```bash
-# Installation via pip in Endstone Python environment:
-pip install endstone_blockdata_inspector-0.4.5a9-py3-none-any.whl
+# Use the python/ directory from the same OS and BDS build as the native plugin.
+export PYTHONPATH=/path/to/extracted/exact-bundle/python${PYTHONPATH:+:$PYTHONPATH}
+
+# Place the command-test wheel in the Endstone server's plugins/ directory.
+cp endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl /path/to/endstone/plugins/
 ```
 
 ### In-Game Command Reference
 | Command | Usage | Description |
 | :--- | :--- | :--- |
-| `/bd locate [radius]` | `/bd locate 10` | Scans bounding box around player for all container block entities. |
-| `/bd inspect [x] [y] [z]` | `/bd inspect 100 64 200` | Displays block runtime ID, state traits, revision, and canonical NBT inventory. |
-| `/bd item add <slot> <id> [cnt] [nbt]` | `/bd item add 0 diamond 64` | Inserts item with custom NBT into target container slot. |
-| `/bd item remove <slot>` | `/bd item remove 0` | Clears item from target slot using an NBT removal patch. |
-| `/bd audit <start\|stop\|history>` | `/bd audit start` | Records container baseline and generates transaction change diffs. |
-| `/bd state set <prop> <val>` | `/bd state set facing south` | Mutates a block state property in real-time. |
+| `/bd locate [radius]` | `/bd locate 10` | Uses native region capture to find live container block entities. |
+| `/bd inspect [x] [y] [z]` | `/bd inspect 100 64 200` | Displays live runtime ID, states, revision, actor NBT, and inventory. |
+| `/bd item add <slot> <id> [cnt] [nbt]` | `/bd item add 0 diamond 64` | Writes a live item with optimistic revision checking. |
+| `/bd item remove <slot>` | `/bd item remove 0` | Clears a live item with optimistic revision checking. |
+| `/bd audit <start\|stop\|history>` | `/bd audit start` | Captures and compares live native snapshots. |
+| `/bd state set <prop> <val>` | `/bd state set facing south` | Writes a live block-state property. |
 
 ---
 
@@ -125,4 +147,4 @@ Full technical documentation, architecture deep dives, and API reference manuals
 
 ## 📜 License
 
-Distributed under the [MIT License](LICENSE).
+Distributed under the [Apache License 2.0](LICENSE).

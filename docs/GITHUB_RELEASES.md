@@ -11,7 +11,8 @@ Each push, pull request, or manual workflow run performs:
 3. Exact native builds for BDS 1.26.33 / Endstone v0.11.6 on Linux x64 and Windows x64.
 4. Installation into an isolated staging directory.
 5. Creation of a raw plugin, complete ZIP package, package manifest, and SHA-256 file.
-6. Package verification before upload.
+6. ELF/PE, archive, checksum, manifest, unresolved-Bedrock-symbol, and RPATH verification before upload.
+7. One clean build of the Python command-test wheel, followed by real Endstone command and permission construction tests.
 
 Open the workflow run in GitHub and download the desired item from the **Artifacts** section. Workflow artifacts are retained for 30 days.
 
@@ -20,11 +21,11 @@ Open the workflow run in GitHub and download the desired item from the **Artifac
 Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`:
 
 ```bash
-git tag v0.4.5-alpha.9
-git push origin v0.4.5-alpha.9
+git tag v0.4.5-beta.29
+git push origin v0.4.5-beta.29
 ```
 
-The workflow downloads all four exact-build artifacts, creates `SHA256SUMS.txt`, and creates a GitHub Release. Because this version contains a hyphen, GitHub marks it as a prerelease.
+The workflow downloads all four exact-build artifacts and the verified test wheel, creates `SHA256SUMS.txt`, and creates a GitHub Release. Because this version contains a hyphen, GitHub marks it as a prerelease rather than incorrectly making it the latest stable release.
 
 Re-running the tagged workflow updates existing assets with `--clobber` rather than creating a duplicate release.
 
@@ -37,6 +38,8 @@ Each supported BDS build receives:
 - A Windows x64 ZIP package
 - A Linux x64 ZIP package
 - Per-package checksum files
+- The verified `endstone_blockdata_inspector` command-test wheel
+- A combined `SHA256SUMS.txt`
 
 The ZIP includes the plugin, SDK headers, Python package where applicable, compatibility manifest, installation notes, and `PACKAGE_MANIFEST.json`.
 

@@ -3,6 +3,8 @@ from copy import deepcopy
 from threading import RLock
 from .model import *
 
+_MAX_CAPTURE_REGION_BLOCKS = 32768
+
 class InMemoryAdapter:
     def __init__(self): self._blocks:dict[BlockLocation,BlockSnapshot]={}; self._lock=RLock()
     def capture(self,loc:BlockLocation)->BlockSnapshot:
@@ -10,6 +12,8 @@ class InMemoryAdapter:
             s=deepcopy(self._blocks.get(loc,BlockSnapshot(loc))); s.refresh_revision(); return s
     def apply(self,p:BlockPatch,policy:ConflictPolicy)->ApplyResult:
         with self._lock:
+            if policy not in (ConflictPolicy.FAIL_IF_CHANGED,ConflictPolicy.FORCE):
+                return ApplyResult(False,"unsupported","conflict policy is not implemented; use FailIfChanged or Force",0)
             s=deepcopy(self._blocks.get(p.location,BlockSnapshot(p.location))); s.refresh_revision()
             if p.expected_revision is not None and policy is not ConflictPolicy.FORCE and p.expected_revision!=s.revision:
                 return ApplyResult(False,"conflict","revision changed",s.revision)
@@ -33,6 +37,10 @@ class BlockDataService:
     def apply(self,patch:BlockPatch,policy:ConflictPolicy=ConflictPolicy.FAIL_IF_CHANGED)->ApplyResult: return self.adapter.apply(patch,policy)
     def capture_region(self,dimension:str,minimum:tuple[int,int,int],maximum:tuple[int,int,int])->list[BlockSnapshot]:
         ax,ay,az=minimum; bx,by,bz=maximum
+        width=abs(bx-ax)+1; height=abs(by-ay)+1; depth=abs(bz-az)+1
+        if (width>_MAX_CAPTURE_REGION_BLOCKS or height>_MAX_CAPTURE_REGION_BLOCKS or
+                depth>_MAX_CAPTURE_REGION_BLOCKS or width*height*depth>_MAX_CAPTURE_REGION_BLOCKS):
+            raise ValueError("capture region exceeds 32768 blocks")
         return [self.capture(dimension,(x,y,z)) for x in range(min(ax,bx),max(ax,bx)+1) for y in range(min(ay,by),max(ay,by)+1) for z in range(min(az,bz),max(az,bz)+1)]
     @staticmethod
     def diff(before:BlockSnapshot,after:BlockSnapshot)->BlockEntityAuditDelta:

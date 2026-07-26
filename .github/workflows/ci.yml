@@ -13,21 +13,32 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.5-beta.28
+  RELEASE_VERSION: 0.4.5-beta.29
   PROJECT_SLUG: endstone-blockdata-api
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  metadata:
+    name: Verify release metadata
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Verify synchronized versions and compatibility metadata
+        run: python scripts/verify_project_metadata.py
+
   portable:
     name: Portable tests v0.4.5 (${{ matrix.os }})
+    needs: [metadata]
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install Python package
@@ -43,6 +54,7 @@ jobs:
 
   exact:
     name: Exact v0.4.5 - BDS ${{ matrix.bds }} (${{ matrix.platform }})
+    needs: [metadata]
     strategy:
       fail-fast: false
       matrix:
@@ -61,15 +73,15 @@ jobs:
             bds: "1.26.33"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Install Conan dependency manager
-        run: python -m pip install "conan>=2.0,<3.0"
+        run: python -m pip install "conan>=2.18,<3"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -131,14 +143,6 @@ jobs:
           ninja --version
           python scripts\build_exact.py --bds "${{ matrix.bds }}" --platform "${{ matrix.platform }}" --parallel 2
 
-      - name: Build test plugin wheel
-        shell: bash
-        run: |
-          python -m pip install build wheel
-          if [ -d examples/python/block_data_inspector_plugin ]; then
-            python -m build --wheel examples/python/block_data_inspector_plugin -o dist/release
-          fi
-
       - name: Verify release assets
         run: >-
           python scripts/verify_release_assets.py
@@ -148,39 +152,66 @@ jobs:
           --platform "${{ matrix.platform }}"
 
       - name: Upload compiled plugin package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.PROJECT_SLUG }}-exact-${{ matrix.bds }}-${{ matrix.platform }}
           path: dist/release/*
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
+          compression-level: 0
 
-  diagnostics:
-    name: Upload failed-build diagnostics
-    needs: [exact]
-    if: failure()
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/upload-artifact@v4
+      - name: Upload failed-build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ env.PROJECT_SLUG }}-diagnostics
+          name: ${{ env.PROJECT_SLUG }}-diagnostics-${{ matrix.bds }}-${{ matrix.platform }}
           path: |
+            build-exact/**/CMakeCache.txt
             build-exact/**/CMakeFiles/CMakeOutput.log
             build-exact/**/CMakeFiles/CMakeError.log
             build-exact/**/*.log
             dist/**/*.json
             dist/diagnostics/**/*.log
+            .conan2-ci/**/profiles/*
+            build-exact/**/conan/**/*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  test-wheel:
+    name: Build and verify the BlockData command test wheel
+    needs: [metadata]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install wheel build and Endstone runtime dependencies
+        run: python -m pip install build wheel "endstone>=0.11,<0.12"
+      - name: Build test plugin wheel once
+        run: python -m build --wheel examples/python/block_data_inspector_plugin -o dist/test-wheel
+      - name: Verify wheel contents, entry point, commands, and permissions
+        run: >-
+          python tests/python/verify_test_wheel.py
+          dist/test-wheel/*.whl
+      - name: Run Python command-handler tests
+        run: python -m unittest discover -s tests/python -v
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.PROJECT_SLUG }}-test-wheel
+          path: dist/test-wheel/*.whl
+          if-no-files-found: error
+          retention-days: 30
 
   release:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [portable, exact]
+    needs: [portable, exact, test-wheel]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Verify release tag
         env:
           RELEASE_TAG: ${{ github.ref_name }}
@@ -194,11 +225,17 @@ jobs:
           if actual != expected:
               raise SystemExit(f'Release tag must be {expected}, got {actual}')
           PYTAG
-      - uses: actions/download-artifact@v4
+      - name: Download exact native packages
+        uses: actions/download-artifact@v8
         with:
           pattern: ${{ env.PROJECT_SLUG }}-exact-*
           path: release-assets
           merge-multiple: true
+      - name: Download verified command-test wheel
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.PROJECT_SLUG }}-test-wheel
+          path: release-assets
       - name: Generate combined checksums
         working-directory: release-assets
         shell: bash
@@ -213,13 +250,17 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
-          mkdir -p streamlined-release
-          cp release-assets/*.dll release-assets/*.so release-assets/*.whl streamlined-release/ 2>/dev/null || true
+          create_flags=()
+          edit_flags=(--prerelease=false --latest)
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            create_flags+=(--prerelease)
+            edit_flags=(--prerelease --latest=false)
+          fi
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" streamlined-release/* --clobber
-            gh release edit "$RELEASE_TAG" --prerelease=false --latest
+            gh release upload "$RELEASE_TAG" release-assets/* --clobber
+            gh release edit "$RELEASE_TAG" "${edit_flags[@]}"
           else
-            gh release create "$RELEASE_TAG" streamlined-release/* \
-              --verify-tag --generate-notes --latest \
+            gh release create "$RELEASE_TAG" release-assets/* \
+              --verify-tag --generate-notes "${create_flags[@]}" \
               --title "Endstone BlockData API $RELEASE_TAG"
           fi

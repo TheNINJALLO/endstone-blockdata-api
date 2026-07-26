@@ -1,3 +1,11 @@
+## 0.4.5-beta.29
+
+- Replaced unsafe Linux Bedrock ABI stubs with the matching Endstone tag's real implementations, fixing the `ItemStackBase` destructor load failure and the other strong unresolved NBT/item symbols.
+- Added build- and package-time symbol gates plus relocatable-RPATH checks for both the native plugin and bundled Python bridge.
+- Added deep-copy-safe NBT values, deterministic revisions, validated conflict policies, and stricter live patch/region input handling.
+- Updated the Endstone 0.11 test wheel, registered `/bd` command metadata, exercised every handler, and made the live bridge requirement explicit.
+- Synchronized release metadata and made CI publish complete ZIP/checksum assets and beta prereleases.
+
 ## 0.4.5-alpha.9
 
 - Replaced one-off private-header downloads with Endstone's Conan dependency graph.

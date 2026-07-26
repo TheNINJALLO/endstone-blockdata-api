@@ -1,42 +1,47 @@
-# In-Game Command & Inspection Suite
+# In-game command and inspection suite
 
-The repository includes a standalone Python wheel test plugin [`endstone_blockdata_inspector`](../examples/python/block_data_inspector_plugin/).
+The release includes the `endstone_blockdata_inspector` test-plugin wheel.
 
----
+## Install
 
-## 📦 Installation
+1. Install the exact native BlockData bundle for the server's BDS build and platform.
+2. Ensure the bundle's `_endstone_blockdata_live` module is importable by Endstone.
+3. Copy `endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl` to `plugins/`.
+4. Restart Endstone and confirm both the native API and inspector load.
 
-```bash
-pip install endstone_blockdata_inspector-0.4.5a9-py3-none-any.whl
+The wheel registers Endstone entry point `blockdata-inspector`, command `/bd`
+(alias `/blockdata`), and permission `bd.admin` with operator default.
+
+## Commands
+
+### `/bd locate [radius]`
+
+Captures a live region and lists nearby container actors. Radius is capped at 12.
+
+### `/bd inspect [x y z]`
+
+Displays the live block runtime ID, states, revision, actor NBT, and inventory.
+
+### `/bd item add <slot> <item_id> [count] [nbt_json]`
+
+Writes a live item through the native bridge. Example:
+
+```text
+/bd item add 0 minecraft:diamond_sword 1 {"display":{"Name":"Excalibur"}}
 ```
 
----
+### `/bd item remove <slot>`
 
-## 🎮 Command Usage (`/bd`)
+Clears the selected live inventory slot.
 
-All subcommands require OP permission or `bd.admin`.
+### `/bd audit <start|stop|history> [x y z]`
 
-### 1. `/bd locate [radius]`
-Scans a 3D bounding box around the player or coordinates and displays all container block entities.
-- **Example**: `/bd locate 15`
+Stores and compares live snapshots, reporting block, actor-NBT, and slot changes.
 
-### 2. `/bd inspect [x] [y] [z]`
-Displays block runtime ID, state properties, revision counter, and full NBT inventory.
-- **Example**: `/bd inspect 100 64 200`
+### `/bd state set <property> <value> [x y z]`
 
-### 3. `/bd item add <slot> <item_id> [count] [nbt_json]`
-Inserts an item with custom NBT into the target slot.
-- **Example**: `/bd item add 0 minecraft:diamond_sword 1 {"display":{"Name":"§6Excalibur"}}`
+Writes a live block-state property through the native bridge.
 
-### 4. `/bd item remove <slot>`
-Clears an item from the specified slot using an NBT removal patch.
-- **Example**: `/bd item remove 0`
-
-### 5. `/bd audit <start|stop|history>`
-- `start`: Records initial container baseline.
-- `stop`: Compares current state against baseline and outputs delta log.
-- `history`: Shows past audit sessions.
-
-### 6. `/bd state set <property> <value>`
-Mutates block state properties in real-time.
-- **Example**: `/bd state set facing south`
+Every command checks native service availability and adapter capabilities first.
+Missing live support is reported as an error; the plugin never substitutes the
+in-memory reference implementation.

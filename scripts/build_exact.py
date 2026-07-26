@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-VERSION = "0.4.5-beta.28"
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE_RELEASE = json.loads((ROOT / "SOURCE_RELEASE.json").read_text(encoding="utf-8"))
+VERSION = SOURCE_RELEASE["version"]
 PROJECT = "blockdata"
 PROJECT_SLUG = "endstone-blockdata-api"
-SUPPORTED_BDS = {"1.26.32", "1.26.33"}
+SUPPORTED_BDS = set(SOURCE_RELEASE["supported_bds"])
 SUPPORTED_PLATFORMS = {"linux-x64", "windows-x64"}
 BUILD_TARGETS = ['blockdata_api', '_endstone_blockdata_live']
 INSTALL_COMPONENT = "blockdata_package"
@@ -73,6 +76,11 @@ def find_toolchain(folder: Path) -> Path:
 
 
 def main() -> int:
+    if SOURCE_RELEASE.get("name") != PROJECT_SLUG:
+        raise SystemExit(
+            f"SOURCE_RELEASE.json project mismatch: expected {PROJECT_SLUG}, "
+            f"got {SOURCE_RELEASE.get('name')}"
+        )
     parser = argparse.ArgumentParser()
     parser.add_argument("--bds", required=True, choices=sorted(SUPPORTED_BDS))
     parser.add_argument("--platform", required=True, choices=sorted(SUPPORTED_PLATFORMS))
@@ -85,7 +93,7 @@ def main() -> int:
     if not 1 <= args.parallel <= 4:
         raise SystemExit("--parallel must be between 1 and 4")
 
-    root = Path(__file__).resolve().parents[1]
+    root = ROOT
     build_dir = root / "build-exact" / args.bds / args.platform
     conan_dir = build_dir / "conan"
     stage_dir = root / "dist" / "stage" / f"bds-{args.bds}-{args.platform}"
@@ -133,6 +141,7 @@ def main() -> int:
         "--profile:build", "exact",
         "-s:h", "build_type=Release",
         "-s:h", "compiler.cppstd=20",
+        "-o:h", f"&:bds_build={args.bds}",
         "-s:b", "build_type=Release",
         "-c:h", "tools.cmake.cmaketoolchain:generator=Ninja",
         "-c:h", compiler_conf,

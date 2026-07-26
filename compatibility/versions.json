@@ -1,7 +1,7 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.4.1",
+  "api": "0.4.5",
   "adapter_family": "minecraft-bedrock-26.30",
   "adapters": [
     {
@@ -47,5 +47,5 @@
     "byte-identical hidden general BlockActor::save/load ABI",
     "unverified arbitrary non-container actor NBT replacement"
   ],
-  "policy": "fail-closed; exact runtime BDS build match required"
+  "policy": "fail-closed; exact runtime BDS build and mapped Endstone version required"
 }

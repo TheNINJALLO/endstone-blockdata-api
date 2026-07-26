@@ -22,6 +22,10 @@ struct NbtValue {
     Value value;
 
     NbtValue() = default;
+    NbtValue(const NbtValue &other);
+    NbtValue &operator=(const NbtValue &other);
+    NbtValue(NbtValue &&) noexcept = default;
+    NbtValue &operator=(NbtValue &&) noexcept = default;
     template <typename T> NbtValue(T v) : value(std::move(v)) {}
     static NbtValue list(NbtList values);
     static NbtValue compound(NbtCompound values);
@@ -29,5 +33,8 @@ struct NbtValue {
 
 std::uint64_t hashNbt(const NbtValue &value);
 [[nodiscard]] bool nbtEqual(const NbtValue &left, const NbtValue &right);
+// Validates values before conversion to a native NBT tree. End/null is a list
+// terminator rather than a payload value, and NBT lists must have one tag type.
+[[nodiscard]] bool validateNbtPayload(const NbtValue &value, std::string *error = nullptr);
 std::string debugNbt(const NbtValue &value);
 }

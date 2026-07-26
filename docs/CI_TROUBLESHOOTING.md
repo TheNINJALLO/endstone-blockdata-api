@@ -1,13 +1,13 @@
 # GitHub Actions troubleshooting
 
-## Fixed in 0.4.5-alpha.9
+## Hardened in 0.4.5-beta.29
 
-The original exact-build workflow could fail with:
+Earlier exact-build workflows could fail with:
 
 - Linux exit code `126`, because GitHub's browser upload did not retain the executable bit on `scripts/build_exact.sh`.
-- Windows exit code `1`, because the workflow forced `clang-cl` and Ninja instead of Endstone's Visual Studio/MSVC build path.
+- A Linux load failure such as `undefined symbol: _ZN13ItemStackBaseD2Ev`, because unsafe weak compatibility shims did not provide the exact Bedrock implementations used by the adapter.
 
-The workflow now calls the Linux script as `bash scripts/build_exact.sh`, uses Clang 18 with libc++ 18 on Ubuntu 24.04, and uses Visual Studio 2022/MSVC on Windows.
+The workflow now calls `python scripts/build_exact.py` on both platforms, uses Clang 18 with libc++ 18 on Ubuntu 22.04, and uses `clang-cl`, `lld-link`, and Ninja from a Visual Studio developer environment on Windows. The native adapter links the matching Endstone Bedrock implementation. Both the native build and release verifier reject strong unresolved Bedrock ABI symbols, and release verification rejects machine-specific RPATH/RUNPATH entries.
 
 ## Reading a failed build
 

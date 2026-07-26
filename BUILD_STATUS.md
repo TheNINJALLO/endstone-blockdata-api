@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.4.5-alpha.9**
+Version: **0.4.5-beta.29**
 
 ## Implemented
 
@@ -15,6 +15,8 @@ Version: **0.4.5-alpha.9**
 - Downloadable workflow artifacts on every push
 - Automatic tagged GitHub Releases
 - Raw plugin, ZIP package, manifest, and SHA-256 outputs
+- Verified Endstone 0.11 command-test wheel and native bridge packaging
+- Build-time rejection of unresolved Bedrock ABI symbols and release-time RPATH validation
 
 ## Validation boundary
 
@@ -22,7 +24,7 @@ Portable builds and package tooling are validated locally. Exact native binaries
 
 ## GitHub Actions toolchain hotfix
 
-- Linux exact builds run on Ubuntu 24.04 with Clang 18 and libc++ 18.
-- Shell scripts are invoked with `bash`, so browser uploads cannot cause exit code 126 by dropping executable permissions.
-- Windows exact builds use Visual Studio 2022/MSVC x64 instead of clang-cl/Ninja.
+- Linux exact builds run on Ubuntu 22.04 with Clang 18 and libc++ 18.
+- Both platforms invoke `scripts/build_exact.py`, so executable-bit loss cannot cause exit code 126.
+- Windows exact builds use clang-cl, lld-link, and Ninja inside the Visual Studio 2022 developer environment.
 - Failed exact jobs upload CMake diagnostics for inspection.

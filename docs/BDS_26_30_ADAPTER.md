@@ -4,6 +4,7 @@
 |---|---|---|
 | 1.26.32 | v0.11.5 | accepted |
 | 1.26.33 | v0.11.6 | accepted |
+| supported BDS with any other Endstone version | mismatch | refused; public adapter only |
 | anything else | none | refused |
 
 ## Capture path

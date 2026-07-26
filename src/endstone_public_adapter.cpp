@@ -32,6 +32,8 @@ public:
     }
 
     ApplyResult apply(const BlockPatch &patch, ConflictPolicy policy) override {
+        if (policy != ConflictPolicy::FailIfChanged && policy != ConflictPolicy::Force)
+            return {ApplyStatus::Unsupported, "conflict policy is not implemented; use FailIfChanged or Force", 0};
         if (!server_.isPrimaryThread()) return {ApplyStatus::AdapterError, "live apply must run on the primary thread", 0};
         if (!patch.nbt_updates.empty() || !patch.nbt_removals.empty() || !patch.inventory_updates.empty() || !patch.inventory_removals.empty())
             return {ApplyStatus::Unsupported, "block-entity NBT requires a verified native adapter", 0};

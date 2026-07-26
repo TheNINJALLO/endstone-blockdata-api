@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -20,6 +21,7 @@ PROJECTS = {
         "plugin_prefix": "endstone_worldgen_bds_",
     },
 }
+SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 def sha256(path: Path) -> str:
@@ -43,6 +45,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    for label, value in (("version", args.version), ("bds", args.bds), ("platform", args.platform)):
+        if not SAFE_COMPONENT.fullmatch(value):
+            raise SystemExit(f"Invalid {label} value: {value!r}")
     info = PROJECTS[args.project]
     stage = args.stage.resolve()
     release_dir = args.release_dir.resolve()
@@ -67,9 +72,10 @@ def main() -> int:
     raw_plugin = release_dir / f"{release_stem}{plugin.suffix.lower()}"
     shutil.copy2(plugin, raw_plugin)
 
+    manifest_path = stage / "PACKAGE_MANIFEST.json"
     files = []
     for path in sorted(stage.rglob("*")):
-        if path.is_file():
+        if path.is_file() and path != manifest_path:
             files.append(
                 {
                     "path": path.relative_to(stage).as_posix(),
@@ -88,7 +94,6 @@ def main() -> int:
         "primary_plugin": plugin.relative_to(stage).as_posix(),
         "files": files,
     }
-    manifest_path = stage / "PACKAGE_MANIFEST.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     archive = release_dir / f"{release_stem}.zip"

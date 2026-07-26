@@ -5,6 +5,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+set(ENDSTONE_BLOCKDATA_RELEASE_VERSION "${PROJECT_VERSION}")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/SOURCE_RELEASE.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/SOURCE_RELEASE.json" ENDSTONE_BLOCKDATA_RELEASE_JSON)
+    string(JSON ENDSTONE_BLOCKDATA_RELEASE_VERSION
+        GET "${ENDSTONE_BLOCKDATA_RELEASE_JSON}" version
+    )
+endif()
+string(REPLACE "." "\\." ENDSTONE_BLOCKDATA_PROJECT_VERSION_REGEX "${PROJECT_VERSION}")
+if(NOT ENDSTONE_BLOCKDATA_RELEASE_VERSION MATCHES "^${ENDSTONE_BLOCKDATA_PROJECT_VERSION_REGEX}($|[-+])")
+    message(FATAL_ERROR
+        "SOURCE_RELEASE.json version '${ENDSTONE_BLOCKDATA_RELEASE_VERSION}' does not match project version '${PROJECT_VERSION}'")
+endif()
+
 option(ENDSTONE_BLOCKDATA_BUILD_TESTS "Build portable tests" ON)
 option(ENDSTONE_BLOCKDATA_BUILD_PLUGIN "Build the Endstone plugin wrapper" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_PYTHON "Build portable pybind11 bindings" OFF)
@@ -12,6 +25,12 @@ option(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON "Build live Endstone Python bridge" 
 option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630 "Build exact BDS 26.30-family adapter" ON)
 set(ENDSTONE_BDS_BUILD "1.26.33" CACHE STRING "Exact BDS build: 1.26.32 or 1.26.33")
 string(REPLACE "." "_" ENDSTONE_BDS_BUILD_FILE "${ENDSTONE_BDS_BUILD}")
+if(DEFINED ENDSTONE_CONAN_BDS_BUILD AND
+   NOT ENDSTONE_CONAN_BDS_BUILD STREQUAL ENDSTONE_BDS_BUILD)
+    message(FATAL_ERROR
+        "Conan dependencies target BDS ${ENDSTONE_CONAN_BDS_BUILD}, but CMake targets ${ENDSTONE_BDS_BUILD}"
+    )
+endif()
 
 add_library(endstone_blockdata_core STATIC
     src/block_data_service.cpp
@@ -27,6 +46,10 @@ target_compile_features(endstone_blockdata_core PUBLIC cxx_std_20)
 configure_file(include/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/version.h @ONLY)
 
 if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
+    if(NOT DEFINED ENDSTONE_CONAN_BDS_BUILD)
+        message(FATAL_ERROR
+            "ENDSTONE_CONAN_BDS_BUILD is missing; configure the exact plugin with this project's Conan toolchain")
+    endif()
     if(ENDSTONE_BDS_BUILD STREQUAL "1.26.32")
         set(ENDSTONE_EXACT_TAG "v0.11.5")
     elseif(ENDSTONE_BDS_BUILD STREQUAL "1.26.33")
@@ -36,6 +59,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     else()
         set(ENDSTONE_EXACT_TAG "v0.11.6")
     endif()
+    string(REGEX REPLACE "^v" "" ENDSTONE_EXACT_VERSION "${ENDSTONE_EXACT_TAG}")
 
     # Private Bedrock headers use Endstone's complete dependency graph.
     # Conan generates these package configs from the exact versions pinned in conanfile.py.
@@ -46,7 +70,11 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     find_package(date REQUIRED)
     find_package(EnTT REQUIRED)
     find_package(expected-lite REQUIRED)
-    find_package(fmt REQUIRED)
+    set(ENDSTONE_EXACT_FORMAT_TARGET)
+    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.32")
+        find_package(fmt REQUIRED)
+        list(APPEND ENDSTONE_EXACT_FORMAT_TARGET fmt::fmt)
+    endif()
     find_package(funchook REQUIRED)
     find_package(glm REQUIRED)
     find_package(magic_enum REQUIRED)
@@ -84,36 +112,23 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
     endif()
 
-    if(EXISTS "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h")
-        file(READ "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h" ENDSTONE_DIMENSION_H_CONTENT)
-        string(REPLACE "::Dimension &getHandle() const;" "::Dimension &getHandle() const { return **reinterpret_cast<::Dimension * const *>(&dimension_); }" ENDSTONE_DIMENSION_H_CONTENT "${ENDSTONE_DIMENSION_H_CONTENT}")
-        file(WRITE "${endstone_SOURCE_DIR}/src/endstone/core/level/dimension.h" "${ENDSTONE_DIMENSION_H_CONTENT}")
+    # The native adapter passes Bedrock-owned types across the ABI. Link the
+    # exact Endstone tag's implementations instead of satisfying relocations
+    # with untyped no-op weak symbols. Those shims made the library load only
+    # until an NBT method returned an invalid value or iterator.
+    if(NOT TARGET bedrock::bedrock)
+        add_subdirectory(
+            "${endstone_SOURCE_DIR}/src/bedrock"
+            "${endstone_BINARY_DIR}/src/bedrock"
+            EXCLUDE_FROM_ALL
+        )
     endif()
 
-    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h")
-        file(READ "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h" ENDSTONE_TAG_H_CONTENT)
-        string(REPLACE "virtual void print(PrintStream &stream) const;" "virtual void print(PrintStream &stream) const {}" ENDSTONE_TAG_H_CONTENT "${ENDSTONE_TAG_H_CONTENT}")
-        string(REPLACE "virtual void print(std::string const &, PrintStream &stream) const;" "virtual void print(std::string const &, PrintStream &stream) const {}" ENDSTONE_TAG_H_CONTENT "${ENDSTONE_TAG_H_CONTENT}")
-        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/nbt/tag.h" "${ENDSTONE_TAG_H_CONTENT}")
-    endif()
-
-    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/resources/base_game_version.h")
-        file(READ "${endstone_SOURCE_DIR}/src/bedrock/resources/base_game_version.h" ENDSTONE_BGV_H_CONTENT)
-        string(REPLACE "BaseGameVersion();" "BaseGameVersion() = default;" ENDSTONE_BGV_H_CONTENT "${ENDSTONE_BGV_H_CONTENT}")
-        string(REPLACE "BaseGameVersion(bool never_compatible);" "BaseGameVersion(bool never_compatible) : never_compatible_(never_compatible) {}" ENDSTONE_BGV_H_CONTENT "${ENDSTONE_BGV_H_CONTENT}")
-        string(REPLACE "bool operator==(const BaseGameVersion &rhs) const;" "bool operator==(const BaseGameVersion &rhs) const { return true; }" ENDSTONE_BGV_H_CONTENT "${ENDSTONE_BGV_H_CONTENT}")
-        string(REPLACE "[[nodiscard]] bool isCompatibleWith(const BaseGameVersion &) const;" "[[nodiscard]] bool isCompatibleWith(const BaseGameVersion &) const { return true; }" ENDSTONE_BGV_H_CONTENT "${ENDSTONE_BGV_H_CONTENT}")
-        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/resources/base_game_version.h" "${ENDSTONE_BGV_H_CONTENT}")
-    endif()
-
-    if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h")
-        file(READ "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h" ENDSTONE_HASHED_STRING_H_CONTENT)
-        string(REPLACE "HashedString(char const *str);" "HashedString(char const *str) : str_hash_(computeHash(str)), str_(str ? str : \"\") {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
-        string(REPLACE "HashedString(const std::string &str);" "HashedString(const std::string &str) : str_hash_(computeHash(str)), str_(str) {}" ENDSTONE_HASHED_STRING_H_CONTENT "${ENDSTONE_HASHED_STRING_H_CONTENT}")
-        file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/core/string/string_hash.h" "${ENDSTONE_HASHED_STRING_H_CONTENT}")
-    endif()
-
-    set(BLOCKDATA_PLUGIN_SOURCES src/plugin.cpp src/endstone_public_adapter.cpp src/linux_symbol_compat.cpp)
+    set(BLOCKDATA_PLUGIN_SOURCES
+        src/plugin.cpp
+        src/endstone_public_adapter.cpp
+        src/native_runtime_bridge.cpp
+    )
     if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
         list(APPEND BLOCKDATA_PLUGIN_SOURCES src/bds_26_30_adapter.cpp)
     endif()
@@ -122,6 +137,11 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     set_target_properties(blockdata_api PROPERTIES
         PREFIX ""
         OUTPUT_NAME "endstone_blockdata_bds_${ENDSTONE_BDS_BUILD_FILE}"
+        BUILD_RPATH_USE_ORIGIN ON
+        INSTALL_RPATH ""
+        INSTALL_RPATH_USE_LINK_PATH FALSE
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
     )
     target_include_directories(blockdata_api PRIVATE
         include
@@ -134,11 +154,13 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     target_compile_definitions(blockdata_api PRIVATE
         ENDSTONE_BLOCKDATA_NATIVE_2630=$<BOOL:${ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630}>
         ENDSTONE_BLOCKDATA_BDS_BUILD="${ENDSTONE_BDS_BUILD}"
+        ENDSTONE_BLOCKDATA_ENDSTONE_VERSION="${ENDSTONE_EXACT_VERSION}"
         ENTT_SPARSE_PAGE=2048
         ENTT_NO_MIXIN=1
     )
     target_link_libraries(blockdata_api PRIVATE
         endstone_blockdata_core
+        bedrock::bedrock
         aklomp::base64
         boost::boost
         concurrentqueue::concurrentqueue
@@ -146,7 +168,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         date::date
         EnTT::EnTT
         nonstd::expected-lite
-        fmt::fmt
+        ${ENDSTONE_EXACT_FORMAT_TARGET}
         funchook::funchook
         glm::glm
         magic_enum::magic_enum
@@ -158,11 +180,25 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         spdlog::spdlog
         tomlplusplus::tomlplusplus
         zstr::zstr
+        ${CMAKE_DL_LIBS}
     )
     if(UNIX)
         target_compile_options(blockdata_api PRIVATE -fms-extensions)
-    elseif(WIN32)
-        target_link_options(blockdata_api PRIVATE "/FORCE:UNRESOLVED")
+        # Bedrock is a private, exact-build ABI implementation. Do not export
+        # or interpose its static-library symbols into Endstone's plugin scope.
+        target_link_options(blockdata_api PRIVATE "LINKER:--exclude-libs,ALL")
+        target_link_options(blockdata_api PRIVATE -Wl,--no-undefined)
+    endif()
+
+    if(UNIX AND NOT APPLE)
+        add_custom_command(TARGET blockdata_api POST_BUILD
+            COMMAND "${CMAKE_COMMAND}"
+                "-DPLUGIN_FILE:FILEPATH=$<TARGET_FILE:blockdata_api>"
+                "-DNM_TOOL:FILEPATH=${CMAKE_NM}"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
+            COMMENT "Checking the plugin for unresolved Bedrock ABI symbols"
+            VERBATIM
+        )
     endif()
 
     install(TARGETS blockdata_api
@@ -171,7 +207,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         ARCHIVE DESTINATION lib
         COMPONENT blockdata_package
     )
-    install(FILES $<TARGET_FILE:blockdata_api> DESTINATION plugins COMPONENT blockdata_package)
 
     if(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON)
         FetchContent_Declare(pybind11_live
@@ -180,27 +215,16 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         )
         FetchContent_MakeAvailable(pybind11_live)
         pybind11_add_module(_endstone_blockdata_live MODULE src/live_python_bindings.cpp)
+        set_target_properties(_endstone_blockdata_live PROPERTIES
+            BUILD_RPATH_USE_ORIGIN ON
+            INSTALL_RPATH ""
+            INSTALL_RPATH_USE_LINK_PATH FALSE
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON
+        )
         target_link_libraries(_endstone_blockdata_live PRIVATE
+            endstone::endstone
             endstone_blockdata_core
-            aklomp::base64
-            boost::boost
-            concurrentqueue::concurrentqueue
-            cpptrace::cpptrace
-            date::date
-            EnTT::EnTT
-            nonstd::expected-lite
-            fmt::fmt
-            funchook::funchook
-            glm::glm
-            magic_enum::magic_enum
-            Microsoft.GSL::GSL
-            nlohmann_json::nlohmann_json
-            raknet::raknet
-            replxx::replxx
-            sentry::sentry
-            spdlog::spdlog
-            tomlplusplus::tomlplusplus
-            zstr::zstr
         )
         target_include_directories(_endstone_blockdata_live PRIVATE
             include
@@ -210,11 +234,38 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
             ${endstone_BINARY_DIR}/include
             ${endstone_BINARY_DIR}/include/generated
         )
+        if(UNIX)
+            target_compile_options(_endstone_blockdata_live PRIVATE -fms-extensions)
+            target_link_options(_endstone_blockdata_live PRIVATE "LINKER:--exclude-libs,ALL")
+            # Match endstone_add_plugin's self-contained Linux runtime linkage;
+            # the bridge is loaded by Python as its own shared object.
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                target_compile_options(_endstone_blockdata_live PRIVATE -stdlib=libc++)
+                target_link_options(_endstone_blockdata_live PRIVATE -stdlib=libc++)
+                target_link_libraries(_endstone_blockdata_live PRIVATE
+                    -static-libgcc
+                    -static-libstdc++
+                    libc++.a
+                    libc++abi.a
+                )
+            endif()
+        endif()
+        add_dependencies(blockdata_api _endstone_blockdata_live)
         install(TARGETS _endstone_blockdata_live
             RUNTIME DESTINATION python
             LIBRARY DESTINATION python
             COMPONENT blockdata_package
         )
+        if(UNIX AND NOT APPLE)
+            add_custom_command(TARGET _endstone_blockdata_live POST_BUILD
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DPLUGIN_FILE:FILEPATH=$<TARGET_FILE:_endstone_blockdata_live>"
+                    "-DNM_TOOL:FILEPATH=${CMAKE_NM}"
+                    -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
+                COMMENT "Checking the live Python bridge for unresolved Bedrock ABI symbols"
+                VERBATIM
+            )
+        endif()
     endif()
 
     install(DIRECTORY python/endstone_blockdata DESTINATION python COMPONENT blockdata_package)
@@ -249,5 +300,24 @@ if(ENDSTONE_BLOCKDATA_BUILD_TESTS)
     enable_testing()
     add_executable(blockdata_tests tests/cpp/test_blockdata.cpp)
     target_link_libraries(blockdata_tests PRIVATE endstone_blockdata_core)
+    if(MSVC)
+        target_compile_options(blockdata_tests PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(blockdata_tests PRIVATE -UNDEBUG)
+    endif()
     add_test(NAME blockdata_tests COMMAND blockdata_tests)
+
+    add_test(
+        NAME blockdata_symbol_gate_accepts_clean_elf
+        COMMAND "${CMAKE_COMMAND}"
+            "-DNM_OUTPUT_FILE:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/nm_clean.txt"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
+    )
+    add_test(
+        NAME blockdata_symbol_gate_rejects_undefined_bedrock
+        COMMAND "${CMAKE_COMMAND}"
+            "-DNM_OUTPUT_FILE:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/nm_undefined_bedrock.txt"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
+    )
+    set_tests_properties(blockdata_symbol_gate_rejects_undefined_bedrock PROPERTIES WILL_FAIL TRUE)
 endif()
