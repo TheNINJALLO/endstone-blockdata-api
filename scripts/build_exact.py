@@ -19,6 +19,7 @@ SUPPORTED_BDS = set(SOURCE_RELEASE["supported_bds"])
 SUPPORTED_PLATFORMS = {"linux-x64", "windows-x64"}
 BUILD_TARGETS = ['blockdata_api', '_endstone_blockdata_live']
 INSTALL_COMPONENT = "blockdata_package"
+REQUIRED_PYTHON = (3, 14)
 
 
 def require(program: str, fallbacks: tuple[str, ...] = ()) -> str:
@@ -86,6 +87,12 @@ def main() -> int:
     parser.add_argument("--platform", required=True, choices=sorted(SUPPORTED_PLATFORMS))
     parser.add_argument("--parallel", type=int, default=2)
     args = parser.parse_args()
+
+    if sys.implementation.name != "cpython" or sys.version_info[:2] != REQUIRED_PYTHON:
+        raise SystemExit(
+            "The exact native Python bridge must be built with CPython 3.14; "
+            f"running {sys.implementation.name} {sys.version_info.major}.{sys.version_info.minor}"
+        )
 
     host_windows = os.name == "nt"
     if args.platform.startswith("windows") != host_windows:
@@ -161,6 +168,8 @@ def main() -> int:
         f"-DCMAKE_TOOLCHAIN_FILE={toolchain}",
         f"-DCMAKE_MAKE_PROGRAM={ninja}",
         f"-DCMAKE_INSTALL_PREFIX={stage_dir}",
+        "-DPYBIND11_FINDPYTHON=ON",
+        f"-DPython_EXECUTABLE={sys.executable}",
         "-DENDSTONE_BLOCKDATA_BUILD_TESTS=OFF",
         "-DENDSTONE_BLOCKDATA_BUILD_PLUGIN=ON",
         "-DENDSTONE_BLOCKDATA_BUILD_NATIVE_2630=ON",

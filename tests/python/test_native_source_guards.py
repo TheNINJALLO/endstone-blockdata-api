@@ -8,6 +8,19 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestNativeSourceGuards(unittest.TestCase):
+    def test_native_runtime_gate_uses_normalized_expected_builds(self):
+        adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
+        plugin = (ROOT / "src/plugin.cpp").read_text(encoding="utf-8")
+        version_gate = (ROOT / "src/version_gate.cpp").read_text(encoding="utf-8")
+
+        self.assertIn("isExpectedBds2630Build(server.getMinecraftVersion()", adapter)
+        self.assertNotIn(
+            "server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD",
+            adapter,
+        )
+        self.assertIn('canonicalBdsBuild(build) == "26.33"', version_gate)
+        self.assertIn("runtime BDS={} Endstone={}; expected BDS={} Endstone={}", plugin)
+
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
         self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.6")', cmake)

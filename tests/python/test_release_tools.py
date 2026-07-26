@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","version": "0.4.5-beta.29"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","version": "0.4.5-beta.30"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestReleaseTools(unittest.TestCase):
             )
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
-            bridge = stage / "python" / "_endstone_blockdata_live.cp312-win_amd64.pyd"
+            bridge = stage / "python" / "_endstone_blockdata_live.cp314-win_amd64.pyd"
             bridge.parent.mkdir(parents=True)
             bridge.write_bytes(b"MZ" + bytes(range(32)))
             package = stage / "python" / "example.py"
@@ -82,7 +82,7 @@ class TestReleaseTools(unittest.TestCase):
             plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
-            bridge = stage / "python" / "_endstone_blockdata_live.cp312-win_amd64.pyd"
+            bridge = stage / "python" / "_endstone_blockdata_live.cp314-win_amd64.pyd"
             bridge.parent.mkdir(parents=True)
             bridge.write_bytes(b"not-a-pe-binary")
             common = (
@@ -104,8 +104,8 @@ class TestReleaseTools(unittest.TestCase):
         cases = {
             "missing": [],
             "duplicate": [
-                f"{CONFIG['bridge_prefix']}.cp312-win_amd64.pyd",
-                f"{CONFIG['bridge_prefix']}.cp312-win_amd64-debug.pyd",
+                f"{CONFIG['bridge_prefix']}.cp314-win_amd64.pyd",
+                f"{CONFIG['bridge_prefix']}.cp314-win_amd64-debug.pyd",
             ],
         }
         scratch_root = ROOT / "build" / "release-tool-tests"
@@ -147,7 +147,7 @@ class TestReleaseTools(unittest.TestCase):
             plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
-            bridge = stage / "python" / f"{CONFIG['bridge_prefix']}.cp311-win_amd64.pyd"
+            bridge = stage / "python" / f"{CONFIG['bridge_prefix']}.cp313-win_amd64.pyd"
             bridge.parent.mkdir(parents=True)
             bridge.write_bytes(b"MZ" + bytes(range(32)))
             common = (
@@ -163,7 +163,7 @@ class TestReleaseTools(unittest.TestCase):
                 "--release-dir", str(release), check=False,
             )
             self.assertNotEqual(failed.returncode, 0)
-            self.assertIn("CPython 3.12", failed.stderr + failed.stdout)
+            self.assertIn("CPython 3.14", failed.stderr + failed.stdout)
 
     def test_rejects_unsafe_release_component(self):
         scratch_root = ROOT / "build" / "release-tool-tests"

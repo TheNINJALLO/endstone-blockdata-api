@@ -20,8 +20,8 @@ Open the workflow run in GitHub and download the desired item from the **Artifac
 Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`:
 
 ```bash
-git tag v0.4.5-beta.29
-git push origin v0.4.5-beta.29
+git tag v0.4.5-beta.30
+git push origin v0.4.5-beta.30
 ```
 
 The workflow downloads both exact-build artifacts and the verified test wheel, creates `SHA256SUMS.txt`, and creates a GitHub Release. Because this version contains a hyphen, GitHub marks it as a prerelease rather than incorrectly making it the latest stable release.

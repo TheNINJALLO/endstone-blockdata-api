@@ -1,18 +1,18 @@
 # Validation results
 
-Validated on 2026-07-25:
+Validated on 2026-07-26:
 
 - Portable MSVC Release configuration and C++20 build
 - CTest BlockData suite (3/3)
-- Python unit, release-tool, metadata, and native source-guard tests (18/18)
+- Python unit, release-tool, metadata, and native source-guard tests (19/19)
 - Built test wheel inspection against Endstone 0.11.6, including its entry point,
-  native-plugin dependency, commands, permissions, CPython 3.12 requirement,
+  native-plugin dependency, commands, permissions, CPython 3.14 requirement,
   plugin construction, and packaged contents
-- Project/version/dependency metadata consistency for `0.4.5-beta.29`
+- Project/version/dependency metadata consistency for `0.4.5-beta.30`
 - GitHub Actions YAML parsing
 - Release packaging round-trip with a synthetic Windows plugin stage
 - Checksum, ZIP path, manifest, native bridge, unresolved Bedrock symbol,
-  CPython 3.12 SOABI, dynamic runtime dependency, and non-relocatable RPATH
+  CPython 3.14 SOABI, dynamic runtime dependency, and non-relocatable RPATH
   rejection gates
 - Stable release filenames for BDS 1.26.33 on Linux and Windows
 - Source ZIP integrity and `git diff --check`

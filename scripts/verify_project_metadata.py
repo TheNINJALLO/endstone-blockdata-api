@@ -79,9 +79,17 @@ def main() -> int:
             capture(config["wheel_pyproject"], r'^version\s*=\s*"([^"]+)"', "test wheel version"),
             python_version,
         ),
-        "test wheel Python ABI": (
+        "test wheel Python version": (
             capture(config["wheel_pyproject"], r'^requires-python\s*=\s*"([^"]+)"', "requires-python"),
-            "==3.12.*",
+            "==3.14.*",
+        ),
+        "test wheel Endstone dependency": (
+            capture(
+                config["wheel_pyproject"],
+                r'^dependencies\s*=\s*\[\s*"([^"]+)"\s*,?\s*\]',
+                "test wheel dependency",
+            ),
+            "endstone==0.11.6",
         ),
         "test plugin version": (
             capture(config["wheel_plugin"], r'^\s+version\s*=\s*"([^"]+)"', "plugin version"),
@@ -122,6 +130,15 @@ def main() -> int:
         for label, (actual, expected) in checks.items()
         if actual != expected
     ]
+    workflow_text = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow_python_versions = re.findall(
+        r'^\s*python-version:\s*"([^"]+)"', workflow_text, re.MULTILINE
+    )
+    if workflow_python_versions != ["3.14"] * 5:
+        failures.append(
+            "All metadata, portable, exact, test-wheel, and release jobs must use Python 3.14; "
+            f"got {workflow_python_versions!r}"
+        )
     supported_bds = source.get("supported_bds", [])
     endstone_tags = source.get("endstone_tags", [])
     if slug == "endstone-blockdata-api":

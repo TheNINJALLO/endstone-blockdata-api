@@ -15,6 +15,13 @@ public:
         std::shared_ptr<endstone_blockdata::IBlockAdapter> adapter;
 #if ENDSTONE_BLOCKDATA_NATIVE_2630
         adapter = endstone_blockdata::makeBds2630Adapter(getServer());
+        if (!adapter) {
+            getLogger().warning(
+                "Exact native adapter unavailable; runtime BDS={} Endstone={}; expected BDS={} Endstone={}; "
+                "falling back to the public Endstone adapter",
+                getServer().getMinecraftVersion(), getServer().getVersion(),
+                ENDSTONE_BLOCKDATA_BDS_BUILD, ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
+        }
 #endif
         if (!adapter) adapter = endstone_blockdata::makeEndstonePublicAdapter(getServer());
         service_ = std::make_shared<endstone_blockdata::BlockDataService>(std::move(adapter));
