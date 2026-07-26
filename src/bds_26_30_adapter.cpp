@@ -27,7 +27,7 @@
 namespace endstone_blockdata {
 namespace {
 bool isExactRuntimeBuild(const endstone::Server &server) {
-    return server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD &&
+    return isExpectedBds2630Build(server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
            isExpectedEndstoneVersion(server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
 }
 

@@ -20,6 +20,7 @@ EXPECTED_TARGET = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
 EXPECTED_COMMANDS = {"bd"}
 EXPECTED_DEPENDENCIES = ["blockdata_api"]
 EXPECTED_PACKAGES = {"endstone_blockdata_inspector/"}
+EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.6"]
 
 
 def verify(wheel: Path) -> None:
@@ -44,9 +45,23 @@ def verify(wheel: Path) -> None:
         if len(metadata_files) != 1:
             raise AssertionError(f"expected one METADATA file, found {metadata_files}")
         metadata = Parser().parsestr(archive.read(metadata_files[0]).decode("utf-8"))
-        if metadata.get("Requires-Python") != "==3.12.*":
+        if metadata.get("Requires-Python") != "==3.14.*":
             raise AssertionError(
                 f"unexpected Requires-Python: {metadata.get('Requires-Python')!r}"
+            )
+        if metadata.get_all("Requires-Dist", []) != EXPECTED_RUNTIME_DEPENDENCIES:
+            raise AssertionError(
+                f"unexpected Requires-Dist: {metadata.get_all('Requires-Dist', [])!r}"
+            )
+        wheel_files = [name for name in names if name.endswith(".dist-info/WHEEL")]
+        if len(wheel_files) != 1:
+            raise AssertionError(f"expected one WHEEL file, found {wheel_files}")
+        wheel_metadata = Parser().parsestr(archive.read(wheel_files[0]).decode("utf-8"))
+        if wheel_metadata.get("Root-Is-Purelib") != "true":
+            raise AssertionError("command test wheel must remain pure Python")
+        if wheel_metadata.get_all("Tag", []) != ["py3-none-any"]:
+            raise AssertionError(
+                f"unexpected wheel tags: {wheel_metadata.get_all('Tag', [])!r}"
             )
         for package in EXPECTED_PACKAGES:
             if not any(name.startswith(package) for name in names):

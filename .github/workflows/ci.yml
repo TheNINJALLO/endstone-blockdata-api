@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.5-beta.29
+  RELEASE_VERSION: 0.4.5-beta.30
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Verify synchronized versions and compatibility metadata
         run: python scripts/verify_project_metadata.py
 
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Install Python package
         run: python -m pip install -e .
       - name: Configure portable build
@@ -72,10 +72,10 @@ jobs:
           fetch-depth: 1
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install Conan dependency manager
-        run: python -m pip install "conan>=2.18,<3"
+        run: python -m pip install "conan==2.31.1"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -179,9 +179,9 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Install wheel build and Endstone runtime dependencies
-        run: python -m pip install build wheel "endstone>=0.11,<0.12"
+        run: python -m pip install build wheel "endstone==0.11.6"
       - name: Build test plugin wheel once
         run: python -m build --wheel examples/python/block_data_inspector_plugin -o dist/test-wheel
       - name: Verify wheel contents, entry point, commands, and permissions
@@ -206,6 +206,9 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
       - name: Verify release tag
         env:
           RELEASE_TAG: ${{ github.ref_name }}

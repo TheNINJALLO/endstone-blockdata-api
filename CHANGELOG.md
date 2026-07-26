@@ -1,3 +1,10 @@
+## 0.4.5-beta.30
+
+- Normalized Endstone's `26.33` runtime build string against the packaged `1.26.33` target so the exact native adapter can enable on the supported server.
+- Moved the command-test wheel and bundled live bridge validation to CPython 3.14, including required `cp314`/`cpython-314` ABI checks.
+- Added safe Endstone v0.11.6 build-metadata/development-suffix validation and runtime-versus-expected mismatch diagnostics before public-adapter fallback.
+- Pinned the wheel runtime, release interpreter, and proven Conan 2.31.1 toolchain so tagged rebuilds cannot silently drift from the supported Endstone 0.11.6 contract.
+
 ## 0.4.5-beta.29
 
 - Replaced unsafe Linux Bedrock ABI stubs with the matching Endstone tag's real implementations, fixing the `ItemStackBase` destructor load failure and the other strong unresolved NBT/item symbols.

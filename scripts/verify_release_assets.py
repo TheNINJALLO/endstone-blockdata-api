@@ -254,11 +254,11 @@ def main() -> int:
             )
         bridge_filename = PurePosixPath(bridge_members[0]).name
         expected_abi_marker = (
-            ".cp312-" if args.platform.startswith("windows") else ".cpython-312-"
+            ".cp314-" if args.platform.startswith("windows") else ".cpython-314-"
         )
         if expected_abi_marker not in bridge_filename:
             raise SystemExit(
-                f"Native Python bridge must use the CPython 3.12 SOABI filename marker "
+                f"Native Python bridge must use the CPython 3.14 SOABI filename marker "
                 f"{expected_abi_marker!r}, got {bridge_filename!r}"
             )
 
