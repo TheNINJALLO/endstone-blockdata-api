@@ -29,6 +29,20 @@ Calculates inventory item and block state deltas between two snapshots.
 - `states: dict[str, str]`
 - `revision: int`
 - `block_entity: BlockEntitySnapshot | None`
+- `block_entity_status: str`
+
+The revision fingerprints block/state data, actor NBT, occupied inventory,
+capture completeness, and the container flag/capacity. Inventory storage order
+does not affect it.
+
+### `BlockEntitySnapshot`
+- `type: str`
+- `nbt: dict`
+- `raw_snbt: str`
+- `canonical_nbt: bool`
+- `is_container: bool`
+- `container_size: int`
+- `inventory: list[InventorySlotSnapshot]` (occupied slots only)
 
 ### `BlockPatch`
 - `location: BlockLocation`

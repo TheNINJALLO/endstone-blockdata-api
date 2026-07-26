@@ -27,7 +27,7 @@ Supported changes are applied on the Endstone primary thread through typed BDS i
 
 ## Service access
 
-Native plugins load `endstone:blockdata` through Endstone's `ServiceManager`. Python plugins use the companion `_endstone_blockdata_live` extension and pass their `self.server` object.
+Native plugins compiled for service ABI 2 load `endstone:blockdata:v2` through Endstone's `ServiceManager`. Python plugins use the matching companion `_endstone_blockdata_live` extension and pass their `self.server` object. The versioned name makes mixed native-plugin/bridge releases fail lookup safely.
 
 ## Build
 

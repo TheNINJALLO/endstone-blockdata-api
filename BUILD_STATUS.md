@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.4.5-beta.31**
+Version: **0.4.5-beta.32**
 
 ## Implemented
 
@@ -17,6 +17,8 @@ Version: **0.4.5-beta.31**
 - Verified CPython 3.14 platform command wheels with a bundled native bridge
 - Build-time rejection of unresolved Bedrock ABI symbols and release-time RPATH validation
 - Strong native item-registry and placement/destroy restriction bridge with scoped live Level access
+- ABI-versioned `endstone:blockdata:v2` service and matching package-local bridge
+- Sparse occupied-slot snapshots with explicit container capacity and capture status
 
 ## Validation boundary
 

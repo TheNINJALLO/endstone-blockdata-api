@@ -14,6 +14,7 @@ std::uint64_t hashState(const BlockStateValue &v) {
 std::uint64_t calculateRevision(const BlockSnapshot &s) {
     std::uint64_t h = std::hash<std::string>{}(s.type);
     mix(h, s.runtime_id);
+    mix(h, static_cast<std::uint64_t>(s.block_entity_status));
     std::vector<std::string> keys; keys.reserve(s.states.size());
     for (const auto &[k,_] : s.states) keys.push_back(k);
     std::sort(keys.begin(), keys.end());
@@ -21,6 +22,9 @@ std::uint64_t calculateRevision(const BlockSnapshot &s) {
     if (s.block_entity) {
         mix(h, std::hash<std::string>{}(s.block_entity->type));
         mix(h, hashNbt(s.block_entity->nbt));
+        mix(h, s.block_entity->is_container ? 1U : 0U);
+        mix(h, static_cast<std::uint64_t>(
+                   static_cast<std::int64_t>(s.block_entity->container_size)));
         std::vector<std::pair<std::int32_t, std::uint64_t>> inventory;
         inventory.reserve(s.block_entity->inventory.size());
         for (const auto &slot : s.block_entity->inventory)

@@ -22,12 +22,20 @@ class InMemoryAdapter:
             for k in p.state_removals: s.states.pop(k,None)
             if p.nbt_updates or p.nbt_removals or p.inventory_updates or p.inventory_removals:
                 s.block_entity=s.block_entity or BlockEntitySnapshot("generic", canonical_nbt=True)
+                s.block_entity_status="captured"
                 s.block_entity.nbt.update(deepcopy(p.nbt_updates))
                 for k in p.nbt_removals: s.block_entity.nbt.pop(k,None)
                 slots={x.slot:x for x in s.block_entity.inventory}
                 for slot in p.inventory_removals: slots.pop(slot,None)
                 for slot,item in p.inventory_updates.items(): slots[slot]=InventorySlotSnapshot(slot,deepcopy(item))
                 s.block_entity.inventory=list(slots.values())
+                if p.inventory_updates or p.inventory_removals:
+                    s.block_entity.is_container=True
+                    touched_slots=set(p.inventory_updates)|set(p.inventory_removals)
+                    if touched_slots:
+                        s.block_entity.container_size=max(
+                            s.block_entity.container_size,max(touched_slots)+1
+                        )
             s.refresh_revision(); self._blocks[p.location]=s
             return ApplyResult(True,"applied","applied",s.revision)
 
@@ -67,6 +75,10 @@ class ContainerView:
     def nbt(self): return deepcopy(self.snapshot.block_entity.nbt)
     @property
     def raw_snbt(self): return self.snapshot.block_entity.raw_snbt
+    @property
+    def capacity(self): return self.snapshot.block_entity.container_size
+    @property
+    def occupied_slots(self): return len(self.snapshot.block_entity.inventory)
     def get_item(self,slot:int):
         return next((deepcopy(x.item) for x in self.snapshot.block_entity.inventory if x.slot==slot),None)
     def patch_item(self,slot:int,item:dict)->BlockPatch:

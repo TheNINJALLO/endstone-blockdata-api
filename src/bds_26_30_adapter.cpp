@@ -286,26 +286,157 @@ struct ActorAccess {
     BlockActor *actor{};
     IVanillaMainBlockActorComponent *main{};
     Container *container{};
+    int container_size{};
 };
 
-std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLocation &location) {
+struct ActorLookup {
+    std::optional<ActorAccess> access;
+    BlockEntityCaptureStatus status{BlockEntityCaptureStatus::NoActor};
+};
+
+bool isSupportedVanillaActorType(BlockActorType type) {
+    // Endstone v0.11.6 declares the vanilla actor component as the second
+    // base of VanillaBlockActor. Data-driven and sentinel actor values do not
+    // carry that exact ABI contract and must never be reinterpreted as one.
+    switch (type) {
+    case BlockActorType::Furnace:
+    case BlockActorType::Chest:
+    case BlockActorType::NetherReactor:
+    case BlockActorType::Sign:
+    case BlockActorType::MobSpawner:
+    case BlockActorType::Skull:
+    case BlockActorType::FlowerPot:
+    case BlockActorType::BrewingStand:
+    case BlockActorType::EnchantingTable:
+    case BlockActorType::DaylightDetector:
+    case BlockActorType::Music:
+    case BlockActorType::Comparator:
+    case BlockActorType::Dispenser:
+    case BlockActorType::Dropper:
+    case BlockActorType::Hopper:
+    case BlockActorType::Cauldron:
+    case BlockActorType::ItemFrame:
+    case BlockActorType::PistonArm:
+    case BlockActorType::MovingBlock:
+    case BlockActorType::Chalkboard:
+    case BlockActorType::Beacon:
+    case BlockActorType::EndPortal:
+    case BlockActorType::EnderChest:
+    case BlockActorType::EndGateway:
+    case BlockActorType::ShulkerBox:
+    case BlockActorType::CommandBlock:
+    case BlockActorType::Bed:
+    case BlockActorType::Banner:
+    case BlockActorType::StructureBlock:
+    case BlockActorType::Jukebox:
+    case BlockActorType::ChemistryTable:
+    case BlockActorType::Conduit:
+    case BlockActorType::JigsawBlock:
+    case BlockActorType::Lectern:
+    case BlockActorType::BlastFurnace:
+    case BlockActorType::Smoker:
+    case BlockActorType::Bell:
+    case BlockActorType::Campfire:
+    case BlockActorType::BarrelBlock:
+    case BlockActorType::Beehive:
+    case BlockActorType::Lodestone:
+    case BlockActorType::SculkSensor:
+    case BlockActorType::SporeBlossom:
+    case BlockActorType::GlowItemFrame:
+    case BlockActorType::SculkCatalyst:
+    case BlockActorType::SculkShrieker:
+    case BlockActorType::HangingSign:
+    case BlockActorType::ChiseledBookshelf:
+    case BlockActorType::BrushableBlock:
+    case BlockActorType::DecoratedPot:
+    case BlockActorType::CalibratedSculkSensor:
+    case BlockActorType::Crafter:
+    case BlockActorType::TrialSpawner:
+    case BlockActorType::Vault:
+    case BlockActorType::CreakingHeart:
+    case BlockActorType::Shelf:
+    case BlockActorType::CopperGolemStatue:
+    case BlockActorType::PotentSulfurBlock:
+        return true;
+    case BlockActorType::Undefined:
+    case BlockActorType::DataDriven:
+    case BlockActorType::_count:
+        return false;
+    }
+    return false;
+}
+
+bool isKnownContainerActorType(BlockActorType type) {
+    switch (type) {
+    case BlockActorType::Furnace:
+    case BlockActorType::Chest:
+    case BlockActorType::BrewingStand:
+    case BlockActorType::Music:
+    case BlockActorType::Dispenser:
+    case BlockActorType::Dropper:
+    case BlockActorType::Hopper:
+    case BlockActorType::Beacon:
+    case BlockActorType::EnderChest:
+    case BlockActorType::ShulkerBox:
+    case BlockActorType::Jukebox:
+    case BlockActorType::ChemistryTable:
+    case BlockActorType::Lectern:
+    case BlockActorType::BlastFurnace:
+    case BlockActorType::Smoker:
+    case BlockActorType::Campfire:
+    case BlockActorType::BarrelBlock:
+    case BlockActorType::ChiseledBookshelf:
+    case BlockActorType::DecoratedPot:
+    case BlockActorType::Crafter:
+    case BlockActorType::Shelf:
+        return true;
+    default:
+        return false;
+    }
+}
+
+ActorLookup locateActor(endstone::Server &server, const BlockLocation &location) {
     auto *level = server.getLevel();
     auto *dimension = level ? level->getDimension(location.dimension) : nullptr;
     auto *exact_dimension = static_cast<endstone::core::EndstoneDimension *>(dimension);
-    if (!exact_dimension) return std::nullopt;
+    if (!exact_dimension) return {{}, BlockEntityCaptureStatus::DimensionUnavailable};
 
     auto &native_dimension = exact_dimension->getHandle();
     auto &native_level = native_dimension.getLevel();
     auto &source = native_dimension.getBlockSourceFromMainChunkSource();
     const ::BlockPos position(location.x, location.y, location.z);
     auto *actor = const_cast<BlockActor *>(source.getBlockEntity(position));
-    if (!actor) return std::nullopt;
+    if (!actor) return {};
+    if (!isSupportedVanillaActorType(actor->getType())) {
+        return {{}, BlockEntityCaptureStatus::UnsupportedActor};
+    }
 
-    auto *main = reinterpret_cast<IVanillaMainBlockActorComponent *>(
-        reinterpret_cast<std::byte *>(actor) + sizeof(BlockActor));
-    if (main->getBlockActorType() != actor->getType()) return std::nullopt;
+    // Use the compiler's exact multiple-inheritance adjustment from the
+    // pinned Endstone declaration instead of hand-adding sizeof(BlockActor).
+    // The actor-type allowlist above prevents invoking this interface for an
+    // ABI family that is not declared as VanillaBlockActor.
+    auto *vanilla = static_cast<VanillaBlockActor *>(actor);
+    auto *main = static_cast<IVanillaMainBlockActorComponent *>(vanilla);
+    if (main->getBlockActorType() != actor->getType()) {
+        return {{}, BlockEntityCaptureStatus::ComponentMismatch};
+    }
 
-    return ActorAccess{&native_level, &source, actor, main, main->getContainer()};
+    auto *container = main->getContainer();
+    if (!container) {
+        const auto status = isKnownContainerActorType(actor->getType())
+                                ? BlockEntityCaptureStatus::ContainerUnavailable
+                                : BlockEntityCaptureStatus::Captured;
+        return {ActorAccess{&native_level, &source, actor, main, nullptr, 0}, status};
+    }
+
+    constexpr int MaxSupportedContainerSlots = 4096;
+    const int container_size = container->getContainerSize();
+    if (container_size < 0 || container_size > MaxSupportedContainerSlots) {
+        return {ActorAccess{&native_level, &source, actor, main, nullptr, 0},
+                BlockEntityCaptureStatus::ContainerUnavailable};
+    }
+    return {ActorAccess{&native_level, &source, actor, main, container, container_size},
+            BlockEntityCaptureStatus::Captured};
 }
 
 CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocation &location,
@@ -322,9 +453,9 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
 
     if (access.container) {
         access.container->addAdditionalSaveData(root);
-        root.putInt("_endstone_container_size", access.container->getContainerSize());
+        root.putInt("_endstone_container_size", access.container_size);
         ListTag items;
-        for (int slot = 0; slot < access.container->getContainerSize(); ++slot) {
+        for (int slot = 0; slot < access.container_size; ++slot) {
             const auto &item = access.container->getItem(slot);
             if (!item.isNull()) {
                 auto item_tag = makeItemTag(slot, item);
@@ -420,8 +551,13 @@ public:
         auto snapshot = public_->capture(location);
         if (!snapshot) return std::nullopt;
 
-        auto access = locateActor(server_, location);
-        if (!access) return snapshot;
+        auto lookup = locateActor(server_, location);
+        snapshot->block_entity_status = lookup.status;
+        auto access = std::move(lookup.access);
+        if (!access) {
+            snapshot->revision = calculateRevision(*snapshot);
+            return snapshot;
+        }
 
         auto native = captureCanonicalActorTag(*access, location, server_.getMinecraftVersion());
         BlockEntitySnapshot entity;
@@ -429,13 +565,17 @@ public:
         entity.nbt = fromNativeTag(native);
         entity.raw_snbt = native.toString();
         entity.canonical_nbt = true;
+        entity.is_container = access->container != nullptr;
 
         if (access->container) {
-            entity.inventory.reserve(access->container->getContainerSize());
-            for (int slot = 0; slot < access->container->getContainerSize(); ++slot) {
+            entity.container_size = access->container_size;
+            entity.inventory.reserve(static_cast<std::size_t>(entity.container_size));
+            for (int slot = 0; slot < entity.container_size; ++slot) {
+                const auto &stack = access->container->getItem(slot);
+                if (stack.isNull()) continue;
                 InventorySlotSnapshot item;
                 item.slot = slot;
-                item.item = itemSnapshot(slot, access->container->getItem(slot));
+                item.item = itemSnapshot(slot, stack);
                 item.revision = hashNbt(item.item);
                 entity.inventory.push_back(std::move(item));
             }
@@ -473,16 +613,32 @@ public:
         if (has_public_changes) {
             BlockPatch public_patch = patch;
             public_patch.expected_revision.reset();
-            return public_->apply(public_patch, ConflictPolicy::Force);
+            auto result = public_->apply(public_patch, ConflictPolicy::Force);
+            if (result.ok()) {
+                // The public adapter cannot include exact actor/container
+                // completeness in its fingerprint. Return the revision that a
+                // subsequent capture through this exact service will observe.
+                auto updated = capture(patch.location);
+                result.resulting_revision = updated ? updated->revision : 0;
+            }
+            return result;
         }
 
         if (!has_native_changes)
             return {ApplyStatus::Applied, "block data unchanged", current->revision};
 
-        auto access = locateActor(server_, patch.location);
-        if (!access) return {ApplyStatus::Unsupported, "block has no supported vanilla block actor", current->revision};
+        auto lookup = locateActor(server_, patch.location);
+        auto access = std::move(lookup.access);
+        if (!access)
+            return {ApplyStatus::Unsupported,
+                    "block actor capture is unavailable: " +
+                        std::string(blockEntityCaptureStatusName(lookup.status)),
+                    current->revision};
         if (!access->container)
-            return {ApplyStatus::Unsupported, "block actor is not a supported container", current->revision};
+            return {ApplyStatus::Unsupported,
+                    "container access is unavailable: " +
+                        std::string(blockEntityCaptureStatusName(lookup.status)),
+                    current->revision};
 
         NativeItemRegistryScope item_registry_scope(*access->level);
 
@@ -541,7 +697,7 @@ public:
             return {ApplyStatus::InvalidPatch, "Items and per-slot inventory changes cannot be combined", current->revision};
 
         for (const auto &[slot, item_patch] : patch.inventory_updates) {
-            if (slot < 0 || slot >= access->container->getContainerSize())
+            if (slot < 0 || slot >= access->container_size)
                 return {ApplyStatus::InvalidPatch, "inventory slot out of range", current->revision};
             if (patch.inventory_removals.contains(slot))
                 return {ApplyStatus::InvalidPatch, "an inventory slot cannot be updated and removed in one patch", current->revision};
@@ -556,7 +712,7 @@ public:
             plan.inventory_updates.emplace_back(slot, std::move(*stack));
         }
         for (int slot : patch.inventory_removals) {
-            if (slot < 0 || slot >= access->container->getContainerSize())
+            if (slot < 0 || slot >= access->container_size)
                 return {ApplyStatus::InvalidPatch, "inventory slot out of range", current->revision};
             plan.inventory_removals.push_back(slot);
         }
@@ -577,7 +733,7 @@ public:
                 for (const auto &[slot, stack] : *plan.replacement_items)
                     if (!stack.isNull()) final_items.insert_or_assign(slot, stack);
             } else {
-                for (int slot = 0; slot < access->container->getContainerSize(); ++slot) {
+                for (int slot = 0; slot < access->container_size; ++slot) {
                     const auto &stack = access->container->getItem(slot);
                     if (!stack.isNull()) final_items.emplace(slot, stack);
                 }
@@ -622,7 +778,8 @@ public:
     }
 
     bool markBlockActorDirty(const BlockLocation &location) override {
-        auto access = locateActor(server_, location);
+        auto lookup = locateActor(server_, location);
+        auto access = std::move(lookup.access);
         if (!access) return false;
         access->main->setChanged();
         access->main->onChanged(*access->source);
@@ -630,7 +787,8 @@ public:
     }
 
     bool sendBlockActorUpdate(const BlockLocation &location) override {
-        auto access = locateActor(server_, location);
+        auto lookup = locateActor(server_, location);
+        auto access = std::move(lookup.access);
         if (!access) return false;
         access->source->fireBlockEntityChanged(*access->actor);
         return true;

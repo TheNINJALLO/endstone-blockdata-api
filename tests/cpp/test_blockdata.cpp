@@ -9,6 +9,13 @@
 #include <limits>
 using namespace endstone_blockdata;
 int main(){
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::NotSupported)=="not_supported");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::DimensionUnavailable)=="dimension_unavailable");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::NoActor)=="no_actor");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::UnsupportedActor)=="unsupported_actor");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::ComponentMismatch)=="component_mismatch");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::ContainerUnavailable)=="container_unavailable");
+    assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::Captured)=="captured");
     assert(isSupportedBds2630Build("26.33"));
     assert(isSupportedBds2630Build("1.26.33"));
     assert(isExpectedBds2630Build("26.33", "1.26.33"));
@@ -82,8 +89,40 @@ int main(){
     // The location is not a block entity yet, so arming must fail cleanly.
     assert(!reactor.arm(loc));
     auto applied=svc.apply(p); assert(applied.ok()); auto after=svc.capture(loc); assert(after && after->block_entity && after->revision!=before->revision);
+    assert(after->block_entity_status==BlockEntityCaptureStatus::Captured);
+    assert(after->block_entity->is_container && after->block_entity->container_size==1);
     assert(after->block_entity->inventory.size()==1);
     assert(after->block_entity->inventory[0].revision==hashNbt(after->block_entity->inventory[0].item));
+
+    // Snapshot completeness and container metadata are part of its revision.
+    BlockSnapshot status_changed=*after;
+    status_changed.block_entity_status=BlockEntityCaptureStatus::ContainerUnavailable;
+    assert(calculateRevision(status_changed)!=after->revision);
+    BlockSnapshot container_flag_changed=*after;
+    container_flag_changed.block_entity->is_container=false;
+    assert(calculateRevision(container_flag_changed)!=after->revision);
+    BlockSnapshot capacity_changed=*after;
+    capacity_changed.block_entity->container_size=2;
+    assert(calculateRevision(capacity_changed)!=after->revision);
+
+    // Even an empty sparse container changes identity when its known capacity grows.
+    BlockLocation empty_capacity_loc{"overworld",11,64,20};
+    auto empty_capacity_before=svc.capture(empty_capacity_loc);
+    BlockPatch capacity_six_patch; capacity_six_patch.location=empty_capacity_loc;
+    capacity_six_patch.expected_revision=empty_capacity_before->revision;
+    capacity_six_patch.inventory_removals.insert(5);
+    assert(svc.apply(capacity_six_patch).ok());
+    auto capacity_six=svc.capture(empty_capacity_loc);
+    assert(capacity_six->block_entity && capacity_six->block_entity->inventory.empty());
+    assert(capacity_six->block_entity->is_container && capacity_six->block_entity->container_size==6);
+    BlockPatch capacity_eleven_patch; capacity_eleven_patch.location=empty_capacity_loc;
+    capacity_eleven_patch.expected_revision=capacity_six->revision;
+    capacity_eleven_patch.inventory_removals.insert(10);
+    assert(svc.apply(capacity_eleven_patch).ok());
+    auto capacity_eleven=svc.capture(empty_capacity_loc);
+    assert(capacity_eleven->block_entity && capacity_eleven->block_entity->inventory.empty());
+    assert(capacity_eleven->block_entity->container_size==11);
+    assert(capacity_eleven->revision!=capacity_six->revision);
 
     // Captures and direct NBT copies must not share mutable compound/list storage.
     auto detached=*after;

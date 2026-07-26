@@ -1,3 +1,13 @@
+## 0.4.5-beta.32
+
+- Fixed every `/bd` coordinate overload to match Endstone 0.11's real argument contract, removed silent player-feet fallback, and added safe selected-container and explicit `at <x> <y> <z>` mutation targets.
+- Made `/bd locate` filter actual containers, sort nearest-first, and report chest, barrel, and colored shulker capacity, occupied slots, item previews, and actor-capture misses.
+- Added occupied-only native inventory snapshots, explicit container capacity and capture status, bounded exact actor/container access, and consistent reference-model container metadata.
+- Versioned the cross-DSO service as `endstone:blockdata:v2` so mixed old/new native plugins and wheels fail lookup safely instead of sharing incompatible C++ layouts.
+- Added registration tests for all 13 command usages plus regressions for negative coordinates, empty containers, sparse audit changes, invalid targets, conflicts, and bridge recovery.
+- Included capture completeness and container metadata in snapshot revisions, and bounded `/bd inspect` canonical-NBT chat output with an explicit truncation count while keeping occupied inventory separately summarized.
+- Preserved Linux host-resolved Endstone plugin imports while retaining selective build- and release-time rejection of unresolved private Bedrock ABI symbols.
+
 ## 0.4.5-beta.31
 
 - Fixed Endstone 0.11 logger calls so the inspector passes one rendered string instead of unsupported logging-style positional arguments.

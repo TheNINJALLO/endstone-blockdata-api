@@ -1,10 +1,10 @@
 # Endstone BlockData API
 
-[![Version](https://img.shields.io/badge/version-v0.4.5--beta.31-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.31)
+[![Version](https://img.shields.io/badge/version-v0.4.5--beta.32-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.32)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
 [![BDS Version](https://img.shields.io/badge/BDS-1.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta31)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta32)
 [![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg?style=for-the-badge)](LICENSE)
 
@@ -20,18 +20,18 @@ Comprehensive guides, architecture diagrams, container audit tutorials, and full
 
 ---
 
-## 📦 Direct Release Downloads (`v0.4.5-beta.31`)
+## 📦 Direct Release Downloads (`v0.4.5-beta.32`)
 
 Use the **complete ZIP** matching BDS 1.26.33 and the server platform. It contains both the native plugin and the matching self-contained `/bd` command wheel. The raw library is for native-API-only/manual installations.
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Windows x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-windows-x64.zip) |
-| **Linux x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-linux-x64.zip) |
-| **Windows x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-windows-x64.dll) |
-| **Linux x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone-blockdata-api-v0.4.5-beta.31-bds-1.26.33-linux-x64.so) |
-| **Windows `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.4.5b31-cp314-cp314-win_amd64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone_blockdata_inspector-0.4.5b31-cp314-cp314-win_amd64.whl) |
-| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.4.5b31-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.31/endstone_blockdata_inspector-0.4.5b31-cp314-cp314-linux_x86_64.whl) |
+| **Windows x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-windows-x64.zip) |
+| **Linux x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-linux-x64.zip) |
+| **Windows x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-windows-x64.dll) |
+| **Linux x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone-blockdata-api-v0.4.5-beta.32-bds-1.26.33-linux-x64.so) |
+| **Windows `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.4.5b32-cp314-cp314-win_amd64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone_blockdata_inspector-0.4.5b32-cp314-cp314-win_amd64.whl) |
+| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.4.5b32-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.32/endstone_blockdata_inspector-0.4.5b32-cp314-cp314-linux_x86_64.whl) |
 
 ---
 
@@ -109,19 +109,19 @@ void onContainerTouch(endstone::Server &server) {
 
 The repository includes the [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/) command plugin. Choose the platform-specific **CPython 3.14** wheel from the same exact build as the native plugin; its `_endstone_blockdata_live` bridge is bundled inside the wheel.
 
-Stop the server and remove older BlockData inspector wheels before copying beta.31; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
+Stop the server and remove older BlockData inspector wheels before copying beta.32; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
 
 ```bash
 # Linux example: copy both files from the complete ZIP's plugins/ directory.
 cp endstone_blockdata_bds_1_26_33.so /path/to/endstone/plugins/
-cp endstone_blockdata_inspector-0.4.5b31-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
+cp endstone_blockdata_inspector-0.4.5b32-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
 ```
 
 ### In-Game Command Reference
 | Command | Usage | Description |
 | :--- | :--- | :--- |
 | `/bd locate [radius]` | `/bd locate 10` | Uses native region capture to find live container block entities. |
-| `/bd inspect [x] [y] [z]` | `/bd inspect 100 64 200` | Displays live runtime ID, states, revision, actor NBT, and inventory. |
+| `/bd inspect [x] [y] [z]` | `/bd inspect 100 64 200` | Displays state, revision, a bounded canonical-NBT preview, capacity, and occupied inventory. |
 | `/bd item add <slot> <id> [cnt] [nbt]` | `/bd item add 0 diamond 64` | Writes a live item with optimistic revision checking. |
 | `/bd item remove <slot>` | `/bd item remove 0` | Clears a live item with optimistic revision checking. |
 | `/bd audit <start\|stop\|history>` | `/bd audit start` | Captures and compares live native snapshots. |
