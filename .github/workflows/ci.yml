@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.5-beta.30
+  RELEASE_VERSION: 0.4.5-beta.31
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -75,7 +75,13 @@ jobs:
           python-version: "3.14"
 
       - name: Install Conan dependency manager
-        run: python -m pip install "conan==2.31.1"
+        run: >-
+          python -m pip install
+          "conan==2.31.1"
+          "build==1.4.0"
+          "setuptools==80.9.0"
+          "wheel==0.46.3"
+          "endstone==0.11.6"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -145,6 +151,23 @@ jobs:
           --bds "${{ matrix.bds }}"
           --platform "${{ matrix.platform }}"
 
+      - name: Smoke-test relocated Linux command wheel and bundled bridge
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          wheels=(dist/release/*-cp314-cp314-linux_x86_64.whl)
+          test "${#wheels[@]}" -eq 1
+          python tests/python/verify_test_wheel.py "${wheels[0]}"
+
+      - name: Smoke-test relocated Windows command wheel and bundled bridge
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $wheels = @(Get-ChildItem dist/release -Filter "*-cp314-cp314-win_amd64.whl")
+          if ($wheels.Count -ne 1) { throw "Expected one Windows command wheel; found $($wheels.Count)" }
+          $wheelPath = $wheels[0].FullName
+          python tests/python/verify_test_wheel.py "$wheelPath"
+
       - name: Upload compiled plugin package
         uses: actions/upload-artifact@v7
         with:
@@ -173,21 +196,29 @@ jobs:
 
   test-wheel:
     name: Build and verify the BlockData command test wheel
-    needs: [metadata]
+    needs: [metadata, exact]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
-      - name: Install wheel build and Endstone runtime dependencies
-        run: python -m pip install build wheel "endstone==0.11.6"
-      - name: Build test plugin wheel once
-        run: python -m build --wheel examples/python/block_data_inspector_plugin -o dist/test-wheel
-      - name: Verify wheel contents, entry point, commands, and permissions
-        run: >-
-          python tests/python/verify_test_wheel.py
-          dist/test-wheel/*.whl
+      - name: Install Endstone runtime dependency
+        run: python -m pip install "endstone==0.11.6"
+      - name: Download both exact-built command wheels
+        uses: actions/download-artifact@v8
+        with:
+          pattern: ${{ env.PROJECT_SLUG }}-exact-*
+          path: dist/test-wheel
+          merge-multiple: true
+      - name: Verify both platform wheels, entry point, commands, and permissions
+        shell: bash
+        run: |
+          mapfile -t wheels < <(find dist/test-wheel -maxdepth 1 -type f -name '*.whl' | sort)
+          test "${#wheels[@]}" -eq 2
+          for wheel in "${wheels[@]}"; do
+            python tests/python/verify_test_wheel.py "$wheel" --structure-only
+          done
       - name: Run Python command-handler tests
         run: python -m unittest discover -s tests/python -v
       - uses: actions/upload-artifact@v7
@@ -228,11 +259,6 @@ jobs:
           pattern: ${{ env.PROJECT_SLUG }}-exact-*
           path: release-assets
           merge-multiple: true
-      - name: Download verified command-test wheel
-        uses: actions/download-artifact@v8
-        with:
-          name: ${{ env.PROJECT_SLUG }}-test-wheel
-          path: release-assets
       - name: Generate combined checksums
         working-directory: release-assets
         shell: bash

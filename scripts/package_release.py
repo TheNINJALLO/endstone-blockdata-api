@@ -15,14 +15,27 @@ PROJECTS = {
     "blockdata": {
         "slug": "endstone-blockdata-api",
         "plugin_prefix": "endstone_blockdata_bds_",
+        "wheel_prefix": "endstone_blockdata_inspector",
         "supported_bds": {"1.26.33"},
     },
     "worldgen": {
         "slug": "endstone-worldgen-api",
         "plugin_prefix": "endstone_worldgen_bds_",
+        "wheel_prefix": "endstone_worldgen_studio",
     },
 }
 SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def pep440_version(release: str) -> str:
+    match = re.fullmatch(r"(\d+\.\d+\.\d+)(?:-(alpha|beta|rc)\.(\d+))?", release)
+    if not match:
+        raise SystemExit(f"Unsupported release version: {release!r}")
+    base, phase, serial = match.groups()
+    if phase is None:
+        return base
+    marker = {"alpha": "a", "beta": "b", "rc": "rc"}[phase]
+    return f"{base}{marker}{serial}"
 
 
 def sha256(path: Path) -> str:
@@ -79,6 +92,21 @@ def main() -> int:
     raw_plugin = release_dir / f"{release_stem}{plugin.suffix.lower()}"
     shutil.copy2(plugin, raw_plugin)
 
+    wheel_platform = "win_amd64" if args.platform.startswith("windows") else "linux_x86_64"
+    wheel_name = (
+        f"{info['wheel_prefix']}-{pep440_version(args.version)}-"
+        f"cp314-cp314-{wheel_platform}.whl"
+    )
+    bundled_wheel = stage / "plugins" / wheel_name
+    if not bundled_wheel.is_file() or bundled_wheel.stat().st_size == 0:
+        raise SystemExit(f"Missing exact-built command wheel: {bundled_wheel}")
+    release_wheel = release_dir / wheel_name
+    if release_wheel.exists() and sha256(release_wheel) != sha256(bundled_wheel):
+        raise SystemExit(
+            f"Standalone command wheel does not match bundled wheel: {release_wheel}"
+        )
+    shutil.copy2(bundled_wheel, release_wheel)
+
     manifest_path = stage / "PACKAGE_MANIFEST.json"
     files = []
     for path in sorted(stage.rglob("*")):
@@ -111,12 +139,15 @@ def main() -> int:
 
     checksums = release_dir / f"{release_stem}.sha256"
     checksums.write_text(
-        f"{sha256(raw_plugin)}  {raw_plugin.name}\n{sha256(archive)}  {archive.name}\n",
+        f"{sha256(raw_plugin)}  {raw_plugin.name}\n"
+        f"{sha256(archive)}  {archive.name}\n"
+        f"{sha256(release_wheel)}  {release_wheel.name}\n",
         encoding="utf-8",
     )
 
     print(raw_plugin)
     print(archive)
+    print(release_wheel)
     print(checksums)
     return 0
 

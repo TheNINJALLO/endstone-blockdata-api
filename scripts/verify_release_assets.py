@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from io import BytesIO
 import json
 import re
 import shutil
@@ -14,6 +15,10 @@ from zipfile import ZipFile
 BRIDGE_MODULES = {
     "endstone-blockdata-api": "_endstone_blockdata_live",
     "endstone-worldgen-api": "_endstone_worldgen_live",
+}
+WHEEL_PREFIXES = {
+    "endstone-blockdata-api": "endstone_blockdata_inspector",
+    "endstone-worldgen-api": "endstone_worldgen_studio",
 }
 SUPPORTED_BDS = {
     "endstone-blockdata-api": {"1.26.33"},
@@ -30,6 +35,17 @@ def sha256_file(path: Path) -> str:
 
 def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def pep440_version(release: str) -> str:
+    match = re.fullmatch(r"(\d+\.\d+\.\d+)(?:-(alpha|beta|rc)\.(\d+))?", release)
+    if not match:
+        raise SystemExit(f"Unsupported release version: {release!r}")
+    base, phase, serial = match.groups()
+    if phase is None:
+        return base
+    marker = {"alpha": "a", "beta": "b", "rc": "rc"}[phase]
+    return f"{base}{marker}{serial}"
 
 
 def safe_archive_path(path: str) -> bool:
@@ -135,8 +151,15 @@ def main() -> int:
     raw = args.release_dir / f"{stem}{expected_suffix}"
     archive = args.release_dir / f"{stem}.zip"
     checksums = args.release_dir / f"{stem}.sha256"
+    wheel_prefix = WHEEL_PREFIXES.get(args.slug)
+    if wheel_prefix is None:
+        raise SystemExit(f"No command wheel is defined for project {args.slug!r}")
+    wheel_platform = "win_amd64" if args.platform.startswith("windows") else "linux_x86_64"
+    wheel = args.release_dir / (
+        f"{wheel_prefix}-{pep440_version(args.version)}-cp314-cp314-{wheel_platform}.whl"
+    )
 
-    for path in (raw, archive, checksums):
+    for path in (raw, archive, wheel, checksums):
         if not path.is_file() or path.stat().st_size == 0:
             raise SystemExit(f"Missing or empty release asset: {path}")
 
@@ -150,6 +173,7 @@ def main() -> int:
         {
             raw.name: sha256_file(raw),
             archive.name: sha256_file(archive),
+            wheel.name: sha256_file(wheel),
         },
     )
 
@@ -215,6 +239,12 @@ def main() -> int:
             extra = sorted(actual_payload - declared_members)
             raise SystemExit(f"Archive/manifest file-set mismatch; missing={missing}, extra={extra}")
 
+        bundled_wheel = f"{archive_root}plugins/{wheel.name}"
+        if bundled_wheel not in declared_members:
+            raise SystemExit(f"Complete ZIP is missing its platform command wheel: {wheel.name}")
+        if sha256_bytes(zf.read(bundled_wheel)) != sha256_file(wheel):
+            raise SystemExit("Standalone command wheel does not match the wheel stored in the ZIP")
+
         primary = manifest.get("primary_plugin")
         if not isinstance(primary, str) or f"{archive_root}{primary}" not in declared_members:
             raise SystemExit(f"Invalid primary_plugin in package manifest: {primary!r}")
@@ -252,6 +282,20 @@ def main() -> int:
                 f"Expected exactly one {bridge_base} native bridge in archive python/, "
                 f"found {bridge_members}"
             )
+        with ZipFile(BytesIO(zf.read(bundled_wheel))) as wheel_archive:
+            wheel_bridges = [
+                name for name in wheel_archive.namelist()
+                if PurePosixPath(name).parent == PurePosixPath("endstone_blockdata_inspector")
+                and PurePosixPath(name).name.startswith(f"{bridge_base}.")
+                and PurePosixPath(name).suffix.lower() in supported_native_suffixes
+            ]
+            if len(wheel_bridges) != 1:
+                raise SystemExit(
+                    f"Expected exactly one package-local {bridge_base} in command wheel, "
+                    f"found {wheel_bridges}"
+                )
+            if wheel_archive.read(wheel_bridges[0]) != zf.read(bridge_members[0]):
+                raise SystemExit("Command wheel bridge does not match the exact bundle bridge")
         bridge_filename = PurePosixPath(bridge_members[0]).name
         expected_abi_marker = (
             ".cp314-" if args.platform.startswith("windows") else ".cpython-314-"
@@ -279,6 +323,7 @@ def main() -> int:
 
     print(f"Verified {raw.name}")
     print(f"Verified {archive.name}")
+    print(f"Verified {wheel.name}")
     print(f"Verified {checksums.name}")
     return 0
 

@@ -1,3 +1,11 @@
+## 0.4.5-beta.31
+
+- Fixed Endstone 0.11 logger calls so the inspector passes one rendered string instead of unsupported logging-style positional arguments.
+- Replaced the universal command wheel with exact-built CPython 3.14 Linux and Windows wheels that bundle `_endstone_blockdata_live` package-locally.
+- Added strict package-local bridge loading that ignores stale top-level extensions and preserves dependency or ABI import failures.
+- Added same-platform relocated-wheel smoke tests plus cross-platform wheel-tag, binary-format, entry-point, command, permission, and packaging validation.
+- Included the matching wheel inside every complete BDS 1.26.33 ZIP and its per-platform checksum contract.
+
 ## 0.4.5-beta.30
 
 - Normalized Endstone's `26.33` runtime build string against the packaged `1.26.33` target so the exact native adapter can enable on the supported server.
