@@ -1,4 +1,6 @@
 #include "endstone_blockdata/adapter.h"
+#include <algorithm>
+#include <limits>
 #include <mutex>
 #include <unordered_map>
 
@@ -31,6 +33,7 @@ public:
         for(const auto &k:p.state_removals) s.states.erase(k);
         if(!p.nbt_updates.empty() || !p.nbt_removals.empty() || !p.inventory_updates.empty() || !p.inventory_removals.empty()) {
             if(!s.block_entity) s.block_entity=BlockEntitySnapshot{"generic",NbtValue::compound({}),{}};
+            s.block_entity_status=BlockEntityCaptureStatus::Captured;
             auto ptr=std::get_if<NbtValue::CompoundPtr>(&s.block_entity->nbt.value);
             if(!ptr || !*ptr) s.block_entity->nbt=NbtValue::compound({});
             auto compound=std::get<NbtValue::CompoundPtr>(s.block_entity->nbt.value);
@@ -41,6 +44,17 @@ public:
                 std::erase_if(s.block_entity->inventory,[&](const auto &x){return x.slot==slot;});
                 auto stored=val; stored.slot=slot; stored.revision=hashNbt(stored.item);
                 s.block_entity->inventory.push_back(std::move(stored));
+            }
+            if(!p.inventory_updates.empty() || !p.inventory_removals.empty()) {
+                s.block_entity->is_container=true;
+                for(const auto &[slot,_]:p.inventory_updates)
+                    s.block_entity->container_size=std::max(
+                        s.block_entity->container_size,
+                        slot==std::numeric_limits<std::int32_t>::max()?slot:slot+1);
+                for(const auto &slot:p.inventory_removals)
+                    s.block_entity->container_size=std::max(
+                        s.block_entity->container_size,
+                        slot==std::numeric_limits<std::int32_t>::max()?slot:slot+1);
             }
         }
         s.revision=calculateRevision(s);

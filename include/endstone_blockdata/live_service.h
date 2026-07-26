@@ -1,11 +1,16 @@
 #pragma once
 #include "endstone_blockdata/block_data_service.h"
 #include <endstone/plugin/service.h>
+#include <cstdint>
 #include <memory>
 #include <string_view>
 
 namespace endstone_blockdata {
-inline constexpr std::string_view BlockDataServiceName = "endstone:blockdata";
+// Snapshots cross the plugin/consumer DSO boundary by value. The ABI suffix
+// makes a differently compiled bridge fail lookup instead of interpreting a
+// different C++ object layout.
+inline constexpr std::uint32_t BlockDataServiceAbiVersion = 2;
+inline constexpr std::string_view BlockDataServiceName = "endstone:blockdata:v2";
 
 // Public Endstone service contract. Native anti-grief and logging plugins can
 // load this interface from Server::getServiceManager() without depending on the

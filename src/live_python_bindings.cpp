@@ -331,6 +331,8 @@ py::dict snapshotToPython(const BlockSnapshot &snapshot) {
     out["runtime_id"] = snapshot.runtime_id;
     out["states"] = std::move(states);
     out["revision"] = snapshot.revision;
+    out["block_entity_status"] =
+        std::string(blockEntityCaptureStatusName(snapshot.block_entity_status));
 
     if (!snapshot.block_entity) {
         out["block_entity"] = py::none();
@@ -342,6 +344,8 @@ py::dict snapshotToPython(const BlockSnapshot &snapshot) {
     actor["nbt"] = nbtToPython(snapshot.block_entity->nbt);
     actor["snbt"] = snapshot.block_entity->raw_snbt;
     actor["canonical"] = snapshot.block_entity->canonical_nbt;
+    actor["is_container"] = snapshot.block_entity->is_container;
+    actor["container_size"] = snapshot.block_entity->container_size;
     py::list inventory;
     for (const auto &slot : snapshot.block_entity->inventory) {
         py::dict item;
@@ -368,7 +372,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
 
     module.def("capabilities", [](endstone::Server &server) {
         auto service = loadService(server);
-        if (!service) throw std::runtime_error("endstone:blockdata service is not registered");
+        if (!service) throw std::runtime_error(std::string(BlockDataServiceName) + " service is not registered");
         const auto c = service->capabilities();
         py::dict out;
         out["adapter"] = service->adapterName();
@@ -389,7 +393,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         if (!server.isPrimaryThread())
             throw std::runtime_error("live BlockData capture must run on the Endstone primary thread");
         auto service = loadService(server);
-        if (!service) throw std::runtime_error("endstone:blockdata service is not registered");
+        if (!service) throw std::runtime_error(std::string(BlockDataServiceName) + " service is not registered");
         auto snapshot = service->capture({dimension, x, y, z});
         if (!snapshot) return py::none();
         return snapshotToPython(*snapshot);
@@ -402,7 +406,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
             throw std::runtime_error("live BlockData region capture must run on the Endstone primary thread");
         checkedRegionVolume(min_x, min_y, min_z, max_x, max_y, max_z);
         auto service = loadService(server);
-        if (!service) throw std::runtime_error("endstone:blockdata service is not registered");
+        if (!service) throw std::runtime_error(std::string(BlockDataServiceName) + " service is not registered");
         auto snapshots = service->captureRegion({{dimension, min_x, min_y, min_z},
                                                  {dimension, max_x, max_y, max_z}});
         py::list out;
@@ -417,7 +421,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         if (!server.isPrimaryThread())
             throw std::runtime_error("live BlockData apply must run on the Endstone primary thread");
         auto service = loadService(server);
-        if (!service) throw std::runtime_error("endstone:blockdata service is not registered");
+        if (!service) throw std::runtime_error(std::string(BlockDataServiceName) + " service is not registered");
         return applyResultToPython(service->apply(patchFromPython(patch),
                                                   conflictPolicyFromPython(conflict_policy)));
     }, py::arg("server"), py::arg("patch"), py::arg("conflict_policy") = "fail_if_changed");

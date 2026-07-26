@@ -26,6 +26,8 @@ class BlockEntitySnapshot:
     raw_snbt:str=""
     canonical_nbt:bool=False
     inventory:list[InventorySlotSnapshot]=field(default_factory=list)
+    is_container:bool=False
+    container_size:int=0
 
 @dataclass(slots=True)
 class BlockSnapshot:
@@ -35,9 +37,12 @@ class BlockSnapshot:
     states:dict[str,bool|int|str]=field(default_factory=dict)
     block_entity:BlockEntitySnapshot|None=None
     revision:int=0
+    block_entity_status:str="not_supported"
     def refresh_revision(self)->int:
         raw=json.dumps({"type":self.type,"runtime":self.runtime_id,"states":self.states,
+          "entity_status":self.block_entity_status,
           "entity":None if self.block_entity is None else {"type":self.block_entity.type,"nbt":self.block_entity.nbt,
+          "is_container":self.block_entity.is_container,"container_size":self.block_entity.container_size,
           "inventory":[{"slot":s.slot,"item":s.item} for s in sorted(self.block_entity.inventory,key=lambda entry:entry.slot)]}},sort_keys=True,separators=(",",":"),default=str)
         self.revision=int.from_bytes(hashlib.blake2b(raw.encode(),digest_size=8).digest(),"big")
         return self.revision

@@ -187,8 +187,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         target_compile_options(blockdata_api PRIVATE -fms-extensions)
         # Bedrock is a private, exact-build ABI implementation. Do not export
         # or interpose its static-library symbols into Endstone's plugin scope.
+        # Endstone's public plugin ABI is supplied by the host process, so a
+        # blanket --no-undefined link would incorrectly reject those imports.
+        # The post-build gate below rejects unresolved Bedrock ABI symbols.
         target_link_options(blockdata_api PRIVATE "LINKER:--exclude-libs,ALL")
-        target_link_options(blockdata_api PRIVATE -Wl,--no-undefined)
     endif()
 
     if(UNIX AND NOT APPLE)
