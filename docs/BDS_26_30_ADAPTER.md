@@ -2,9 +2,8 @@
 
 | BDS build | Endstone tag | Runtime result |
 |---|---|---|
-| 1.26.32 | v0.11.5 | accepted |
 | 1.26.33 | v0.11.6 | accepted |
-| supported BDS with any other Endstone version | mismatch | refused; public adapter only |
+| 1.26.33 with any other Endstone version | mismatch | refused; public adapter only |
 | anything else | none | refused |
 
 ## Capture path
@@ -24,7 +23,7 @@
 
 ## Apply path
 
-Supported changes are applied on the Endstone primary thread through typed BDS interfaces. The adapter validates the resulting actor data, calls `setChanged`, notifies the main `BlockSource`, and fires the block-entity update.
+Supported changes are applied on the Endstone primary thread through typed BDS interfaces. A scoped native bridge supplies the active `Level` item registry while item stacks are validated and copied; placement and destroy restrictions are resolved completely before either list is committed. The adapter validates the resulting actor data, calls `setChanged`, notifies the main `BlockSource`, and fires the block-entity update.
 
 ## Service access
 
@@ -44,4 +43,4 @@ Windows requires clang-cl, CMake 3.29+ and Ninja:
 ./scripts/build_exact.ps1 -BdsBuild 1.26.33
 ```
 
-Use `1.26.32` for Endstone v0.11.5. Back up the world before enabling native writes.
+Only BDS `1.26.33` with Endstone `v0.11.6` is supported. Back up the world before enabling native writes.

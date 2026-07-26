@@ -15,6 +15,9 @@ BRIDGE_MODULES = {
     "endstone-blockdata-api": "_endstone_blockdata_live",
     "endstone-worldgen-api": "_endstone_worldgen_live",
 }
+SUPPORTED_BDS = {
+    "endstone-blockdata-api": {"1.26.33"},
+}
 
 
 def sha256_file(path: Path) -> str:
@@ -119,6 +122,13 @@ def main() -> int:
     parser.add_argument("--platform", required=True)
     parser.add_argument("--release-dir", type=Path, default=Path("dist/release"))
     args = parser.parse_args()
+
+    supported_bds = SUPPORTED_BDS.get(args.slug)
+    if supported_bds is not None and args.bds not in supported_bds:
+        raise SystemExit(
+            f"Unsupported BDS build for {args.slug}: {args.bds}; "
+            f"expected one of {sorted(supported_bds)}"
+        )
 
     stem = f"{args.slug}-v{args.version}-bds-{args.bds}-{args.platform}"
     expected_suffix = ".dll" if args.platform.startswith("windows") else ".so"

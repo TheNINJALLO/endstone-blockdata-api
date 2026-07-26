@@ -1,5 +1,6 @@
 #include "endstone_blockdata/bds_26_30_adapter.h"
 #include "endstone_blockdata/endstone_adapter.h"
+#include "native_item_bridge.h"
 
 #include <endstone/endstone.hpp>
 #include "bedrock/nbt/compound_tag.h"
@@ -280,6 +281,7 @@ std::optional<ItemStack> itemFromNbt(const NbtValue &value) {
 }
 
 struct ActorAccess {
+    Level *level{};
     BlockSource *source{};
     BlockActor *actor{};
     IVanillaMainBlockActorComponent *main{};
@@ -292,7 +294,9 @@ std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLoca
     auto *exact_dimension = static_cast<endstone::core::EndstoneDimension *>(dimension);
     if (!exact_dimension) return std::nullopt;
 
-    auto &source = exact_dimension->getHandle().getBlockSourceFromMainChunkSource();
+    auto &native_dimension = exact_dimension->getHandle();
+    auto &native_level = native_dimension.getLevel();
+    auto &source = native_dimension.getBlockSourceFromMainChunkSource();
     const ::BlockPos position(location.x, location.y, location.z);
     auto *actor = const_cast<BlockActor *>(source.getBlockEntity(position));
     if (!actor) return std::nullopt;
@@ -301,7 +305,7 @@ std::optional<ActorAccess> locateActor(endstone::Server &server, const BlockLoca
         reinterpret_cast<std::byte *>(actor) + sizeof(BlockActor));
     if (main->getBlockActorType() != actor->getType()) return std::nullopt;
 
-    return ActorAccess{&source, actor, main, main->getContainer()};
+    return ActorAccess{&native_level, &source, actor, main, main->getContainer()};
 }
 
 CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocation &location,
@@ -479,6 +483,8 @@ public:
         if (!access) return {ApplyStatus::Unsupported, "block has no supported vanilla block actor", current->revision};
         if (!access->container)
             return {ApplyStatus::Unsupported, "block actor is not a supported container", current->revision};
+
+        NativeItemRegistryScope item_registry_scope(*access->level);
 
         NativeMutationPlan plan;
         bool custom_name_seen = false;

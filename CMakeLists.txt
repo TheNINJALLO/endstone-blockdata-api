@@ -23,7 +23,7 @@ option(ENDSTONE_BLOCKDATA_BUILD_PLUGIN "Build the Endstone plugin wrapper" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_PYTHON "Build portable pybind11 bindings" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON "Build live Endstone Python bridge" ON)
 option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630 "Build exact BDS 26.30-family adapter" ON)
-set(ENDSTONE_BDS_BUILD "1.26.33" CACHE STRING "Exact BDS build: 1.26.32 or 1.26.33")
+set(ENDSTONE_BDS_BUILD "1.26.33" CACHE STRING "Exact supported BDS build")
 string(REPLACE "." "_" ENDSTONE_BDS_BUILD_FILE "${ENDSTONE_BDS_BUILD}")
 if(DEFINED ENDSTONE_CONAN_BDS_BUILD AND
    NOT ENDSTONE_CONAN_BDS_BUILD STREQUAL ENDSTONE_BDS_BUILD)
@@ -50,14 +50,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         message(FATAL_ERROR
             "ENDSTONE_CONAN_BDS_BUILD is missing; configure the exact plugin with this project's Conan toolchain")
     endif()
-    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.32")
-        set(ENDSTONE_EXACT_TAG "v0.11.5")
-    elseif(ENDSTONE_BDS_BUILD STREQUAL "1.26.33")
+    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.33")
         set(ENDSTONE_EXACT_TAG "v0.11.6")
-    elseif(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
-        message(FATAL_ERROR "Native 26.30 adapter supports only BDS 1.26.32 and 1.26.33")
     else()
-        set(ENDSTONE_EXACT_TAG "v0.11.6")
+        message(FATAL_ERROR "The exact adapter supports only BDS 1.26.33 with Endstone v0.11.6")
     endif()
     string(REGEX REPLACE "^v" "" ENDSTONE_EXACT_VERSION "${ENDSTONE_EXACT_TAG}")
 
@@ -70,11 +66,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     find_package(date REQUIRED)
     find_package(EnTT REQUIRED)
     find_package(expected-lite REQUIRED)
-    set(ENDSTONE_EXACT_FORMAT_TARGET)
-    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.32")
-        find_package(fmt REQUIRED)
-        list(APPEND ENDSTONE_EXACT_FORMAT_TARGET fmt::fmt)
-    endif()
     find_package(funchook REQUIRED)
     find_package(glm REQUIRED)
     find_package(magic_enum REQUIRED)
@@ -109,6 +100,14 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     if(EXISTS "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h")
         file(READ "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" ENDSTONE_RESULT_H_CONTENT)
         string(REPLACE "std::format(\"Error: {}\\nCall stack:{}\", error, call_stack)" "std::string(\"Error: \") + error" ENDSTONE_RESULT_H_CONTENT "${ENDSTONE_RESULT_H_CONTENT}")
+        set(ENDSTONE_RESULT_ERROR_FORMAT "std::format(\"{}\", error_info.error)")
+        set(ENDSTONE_RESULT_ERROR_MESSAGE "error_info.error.message()")
+        string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_FORMAT}" ENDSTONE_RESULT_ERROR_FORMAT_INDEX)
+        string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_ERROR_MESSAGE_INDEX)
+        if(ENDSTONE_RESULT_ERROR_FORMAT_INDEX EQUAL -1 AND ENDSTONE_RESULT_ERROR_MESSAGE_INDEX EQUAL -1)
+            message(FATAL_ERROR "Endstone v0.11.6 result.h no longer contains the expected std::error_code format expression")
+        endif()
+        string(REPLACE "${ENDSTONE_RESULT_ERROR_FORMAT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_H_CONTENT "${ENDSTONE_RESULT_H_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
     endif()
 
@@ -130,7 +129,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         src/native_runtime_bridge.cpp
     )
     if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
-        list(APPEND BLOCKDATA_PLUGIN_SOURCES src/bds_26_30_adapter.cpp)
+        list(APPEND BLOCKDATA_PLUGIN_SOURCES
+            src/bds_26_30_adapter.cpp
+            src/native_item_bridge.cpp
+        )
     endif()
 
     endstone_add_plugin(blockdata_api ${BLOCKDATA_PLUGIN_SOURCES})
@@ -168,7 +170,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         date::date
         EnTT::EnTT
         nonstd::expected-lite
-        ${ENDSTONE_EXACT_FORMAT_TARGET}
         funchook::funchook
         glm::glm
         magic_enum::magic_enum
@@ -202,10 +203,9 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
     endif()
 
     install(TARGETS blockdata_api
-        RUNTIME DESTINATION plugins
-        LIBRARY DESTINATION plugins
-        ARCHIVE DESTINATION lib
-        COMPONENT blockdata_package
+        RUNTIME DESTINATION plugins COMPONENT blockdata_package
+        LIBRARY DESTINATION plugins COMPONENT blockdata_package
+        ARCHIVE DESTINATION lib COMPONENT blockdata_package
     )
 
     if(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON)
@@ -252,9 +252,8 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         endif()
         add_dependencies(blockdata_api _endstone_blockdata_live)
         install(TARGETS _endstone_blockdata_live
-            RUNTIME DESTINATION python
-            LIBRARY DESTINATION python
-            COMPONENT blockdata_package
+            RUNTIME DESTINATION python COMPONENT blockdata_package
+            LIBRARY DESTINATION python COMPONENT blockdata_package
         )
         if(UNIX AND NOT APPLE)
             add_custom_command(TARGET _endstone_blockdata_live POST_BUILD

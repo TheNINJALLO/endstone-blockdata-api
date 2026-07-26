@@ -9,14 +9,14 @@
 #include <limits>
 using namespace endstone_blockdata;
 int main(){
-    assert(isSupportedBds2630Build("1.26.32"));
     assert(isSupportedBds2630Build("1.26.33"));
+    assert(!isSupportedBds2630Build("1.26.32"));
     assert(!isSupportedBds2630Build(""));
     assert(!isSupportedBds2630Build("1.26.20"));
     assert(!isSupportedBds2630Build("1.26.34"));
     assert(!isSupportedBds2630Build("server-1.26.33-custom"));
     assert(isExpectedEndstoneVersion("0.11.6", "0.11.6"));
-    assert(isExpectedEndstoneVersion("v0.11.5", "0.11.5"));
+    assert(!isExpectedEndstoneVersion("0.11.5", "0.11.6"));
     assert(!isExpectedEndstoneVersion("0.11.6-dev", "0.11.6"));
     std::string nbt_error;
     auto valid_nbt=NbtValue::compound({

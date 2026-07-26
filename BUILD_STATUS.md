@@ -6,17 +6,17 @@ Version: **0.4.5-beta.29**
 
 - Portable C++ BlockData core and tests
 - Python package and tests
-- Exact BDS 1.26.32 / Endstone v0.11.5 adapter source
 - Exact BDS 1.26.33 / Endstone v0.11.6 adapter source
 - Canonical container block-actor NBT and nested item data
 - Native service and live Python bridge
 - Deterministic native install and packaging scripts
-- GitHub Actions Windows x64 and Linux x64 exact build matrix
+- GitHub Actions Windows x64 and Linux x64 exact builds for BDS 1.26.33
 - Downloadable workflow artifacts on every push
 - Automatic tagged GitHub Releases
 - Raw plugin, ZIP package, manifest, and SHA-256 outputs
 - Verified Endstone 0.11 command-test wheel and native bridge packaging
 - Build-time rejection of unresolved Bedrock ABI symbols and release-time RPATH validation
+- Strong native item-registry and placement/destroy restriction bridge with scoped live Level access
 
 ## Validation boundary
 

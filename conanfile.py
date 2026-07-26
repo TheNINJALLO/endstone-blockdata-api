@@ -4,7 +4,7 @@ from conan.tools.cmake import CMakeDeps, CMakeToolchain
 
 class ExactEndstoneDependencies(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
-    options = {"bds_build": ["1.26.32", "1.26.33"]}
+    options = {"bds_build": ["1.26.33"]}
     default_options = {
         "bds_build": "1.26.33",
         "boost/*:header_only": True,
@@ -28,25 +28,14 @@ class ExactEndstoneDependencies(ConanFile):
         self.requires("tomlplusplus/3.3.0")
         self.requires("zstr/1.0.7")
 
-        if str(self.options.bds_build) == "1.26.32":
-            # Endstone v0.11.5
-            self.requires("boost/1.86.0")
-            self.requires("entt/3.15.0")
-            self.requires("expected-lite/0.8.0")
-            self.requires("fmt/11.2.0")
-            self.requires("glm/1.0.1")
-            self.requires("ms-gsl/4.2.0")
-            self.requires("sentry-native/0.14.0")
-            self.requires("spdlog/1.15.3")
-        else:
-            # Endstone v0.11.6
-            self.requires("boost/1.91.0")
-            self.requires("entt/3.16.0")
-            self.requires("expected-lite/0.9.0")
-            self.requires("glm/1.0.3")
-            self.requires("ms-gsl/4.2.2")
-            self.requires("sentry-native/0.14.2")
-            self.requires("spdlog/1.17.0", options={"use_std_fmt": True})
+        # Endstone v0.11.6 exact dependency graph.
+        self.requires("boost/1.91.0")
+        self.requires("entt/3.16.0")
+        self.requires("expected-lite/0.9.0")
+        self.requires("glm/1.0.3")
+        self.requires("ms-gsl/4.2.2")
+        self.requires("sentry-native/0.14.2")
+        self.requires("spdlog/1.17.0", options={"use_std_fmt": True})
 
         if self.settings.os == "Windows":
             self.requires("detours/cci.20220630")

@@ -61,13 +61,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             platform: linux-x64
-            bds: "1.26.32"
-          - os: ubuntu-22.04
-            platform: linux-x64
             bds: "1.26.33"
-          - os: windows-2022
-            platform: windows-x64
-            bds: "1.26.32"
           - os: windows-2022
             platform: windows-x64
             bds: "1.26.33"

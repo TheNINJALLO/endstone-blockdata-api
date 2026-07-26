@@ -184,6 +184,25 @@ class TestReleaseTools(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("Invalid version value", result.stderr + result.stdout)
 
+    def test_rejects_unsupported_blockdata_bds(self):
+        scratch_root = ROOT / "build" / "release-tool-tests"
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch_root) as temporary:
+            stage = Path(temporary) / "stage"
+            stage.mkdir()
+            result = self.run_tool(
+                "package_release.py",
+                "--project", CONFIG["project"],
+                "--version", CONFIG["version"],
+                "--bds", "1.26.32",
+                "--platform", "windows-x64",
+                "--stage", str(stage),
+                "--release-dir", str(Path(temporary) / "release"),
+                check=False,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Unsupported BDS build", result.stderr + result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,7 @@
 
 namespace endstone_blockdata {
 bool isSupportedBds2630Build(std::string_view build) noexcept {
-    return build == "1.26.32" || build == "1.26.33";
+    return build == "1.26.33";
 }
 
 bool isExpectedEndstoneVersion(std::string_view runtime_version,

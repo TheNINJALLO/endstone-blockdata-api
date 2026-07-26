@@ -1,8 +1,8 @@
 # Endstone BlockData API
 
 [![Version](https://img.shields.io/badge/version-v0.4.5--beta.29-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.4.5-beta.29)
-[![Endstone](https://img.shields.io/badge/Endstone-v0.11.5%20%7C%20v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
-[![BDS Version](https://img.shields.io/badge/BDS-1.26.32%20%7C%201.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
+[![Endstone](https://img.shields.io/badge/Endstone-v0.11.6-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
+[![BDS Version](https://img.shields.io/badge/BDS-1.26.33-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v045-beta29)
 [![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
@@ -26,13 +26,9 @@ Use the **complete ZIP** matching the server's exact BDS build and platform when
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Windows x64 ZIP (recommended)** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.zip) |
 | **Windows x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.zip) |
-| **Linux x64 ZIP (recommended)** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.zip) |
 | **Linux x64 ZIP (recommended)** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.zip) |
-| **Windows x64 raw plugin** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-windows-x64.dll) |
 | **Windows x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.dll` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-windows-x64.dll) |
-| **Linux x64 raw plugin** | `1.26.32` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.32-linux-x64.so) |
 | **Linux x64 raw plugin** | `1.26.33` | `endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone-blockdata-api-v0.4.5-beta.29-bds-1.26.33-linux-x64.so) |
 | **Python Wheel** | `CPython 3.12` | `endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.4.5-beta.29/endstone_blockdata_inspector-0.4.5b29-py3-none-any.whl) |
 

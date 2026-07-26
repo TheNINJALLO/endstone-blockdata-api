@@ -124,6 +124,20 @@ def main() -> int:
     ]
     supported_bds = source.get("supported_bds", [])
     endstone_tags = source.get("endstone_tags", [])
+    if slug == "endstone-blockdata-api":
+        if supported_bds != ["1.26.33"]:
+            failures.append(
+                f"BlockData exact BDS support must be ['1.26.33'], got {supported_bds!r}"
+            )
+        if endstone_tags != ["v0.11.6"]:
+            failures.append(
+                f"BlockData exact Endstone support must be ['v0.11.6'], got {endstone_tags!r}"
+            )
+        workflow_bds = source.get("github_actions", {}).get("bds")
+        if workflow_bds != supported_bds:
+            failures.append(
+                f"GitHub Actions BDS matrix metadata must equal supported_bds, got {workflow_bds!r}"
+            )
     if len(supported_bds) != len(endstone_tags):
         failures.append("supported_bds and endstone_tags must have a one-to-one mapping")
     expected_tag_map = dict(zip(supported_bds, endstone_tags))
@@ -139,6 +153,16 @@ def main() -> int:
         failures.append(
             f"CMake exact BDS/tag mapping: expected {expected_tag_map!r}, "
             f"got {configured_tag_map!r}"
+        )
+    compatibility_map = {
+        adapter.get("bds"): f"v{adapter.get('endstone')}"
+        for adapter in compatibility.get("adapters", [])
+        if isinstance(adapter, dict)
+    }
+    if compatibility_map != expected_tag_map:
+        failures.append(
+            f"compatibility adapter mapping: expected {expected_tag_map!r}, "
+            f"got {compatibility_map!r}"
         )
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     if f"v{release}" not in readme:
