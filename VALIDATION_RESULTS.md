@@ -1,13 +1,13 @@
 # Validation results
 
-Validated on 2026-07-26:
+Validated on 2026-07-27:
 
 - Portable MSVC Release configuration and C++20 build
 - CTest BlockData suite (3/3)
-- Python unit, release-tool, metadata, native source-guard, strict logger, command-overload, and bridge-loader tests (37/37)
+- Python unit, release-tool, metadata, native source-guard, strict logger, command-overload, form-navigation, and bridge-loader tests (46/46; 26 command-route subtests)
 - Platform-wheel contracts for entry points, native-plugin dependencies, commands,
   permissions, CPython 3.14 tags, package-local bridges, binary magic, and RECORD integrity
-- Project/version/dependency metadata consistency for `0.4.5`
+- Project/version/dependency metadata consistency for `0.4.6`
 - GitHub Actions YAML parsing
 - Release packaging round-trip with a synthetic Windows plugin stage
 - Checksum, ZIP path, manifest, native bridge, unresolved Bedrock symbol,

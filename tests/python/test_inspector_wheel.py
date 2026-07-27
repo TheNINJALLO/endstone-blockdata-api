@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import inspect
 import json
 from pathlib import Path
 import re
@@ -9,6 +10,7 @@ import sys
 import tomllib
 import unittest
 from unittest.mock import patch
+from uuid import UUID, uuid4
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,12 +36,135 @@ def install_endstone_test_double() -> None:
 
     endstone_module = ModuleType("endstone")
     command_module = ModuleType("endstone.command")
+    event_module = ModuleType("endstone.event")
+    form_module = ModuleType("endstone.form")
     plugin_module = ModuleType("endstone.plugin")
+
+    def event_handler(func=None, **_kwargs):
+        def decorate(handler):
+            handler._is_event_handler = True
+            return handler
+
+        return decorate(func) if func is not None else decorate
+
+    class PlayerQuitEvent:
+        def __init__(self, player) -> None:
+            self.player = player
+
+    class PlayerDeathEvent:
+        def __init__(self, player) -> None:
+            self.player = player
+
+    class Button:
+        def __init__(self, text="", icon=None, on_click=None) -> None:
+            self.text = text
+            self.icon = icon
+            self.on_click = on_click
+
+    class ActionForm:
+        def __init__(
+            self,
+            title="",
+            content="",
+            buttons=None,
+            on_submit=None,
+            on_close=None,
+        ) -> None:
+            self.title = title
+            self.content = content
+            self.buttons = list(buttons or [])
+            self.on_submit = on_submit
+            self.on_close = on_close
+
+        def add_button(self, text, icon=None, on_click=None):
+            self.buttons.append(Button(text, icon, on_click))
+            return self
+
+        def submit(self, player, selection) -> None:
+            if self.on_submit is not None:
+                self.on_submit(player, selection)
+            if type(selection) is int and 0 <= selection < len(self.buttons):
+                callback = self.buttons[selection].on_click
+                if callback is not None:
+                    callback(player)
+
+        def close(self, player) -> None:
+            if self.on_close is not None:
+                self.on_close(player)
+
+    class ModalForm:
+        def __init__(
+            self,
+            title="",
+            controls=None,
+            submit_button=None,
+            icon=None,
+            on_submit=None,
+            on_close=None,
+        ) -> None:
+            self.title = title
+            self.controls = list(controls or [])
+            self.submit_button = submit_button
+            self.icon = icon
+            self.on_submit = on_submit
+            self.on_close = on_close
+
+        def add_control(self, control):
+            self.controls.append(control)
+            return self
+
+        def submit(self, player, values) -> None:
+            response = values if isinstance(values, str) else json.dumps(values)
+            if self.on_submit is not None:
+                self.on_submit(player, response)
+
+        def close(self, player) -> None:
+            if self.on_close is not None:
+                self.on_close(player)
+
+    class Dropdown:
+        def __init__(self, label="", options=None, default_index=None) -> None:
+            self.label = label
+            self.options = list(options or [])
+            self.default_index = default_index
+
+    class Slider:
+        def __init__(
+            self,
+            label="",
+            min=0,
+            max=100,
+            step=20,
+            default_value=None,
+        ) -> None:
+            self.label = label
+            self.min = min
+            self.max = max
+            self.step = step
+            self.default_value = default_value
+
+    class TextInput:
+        def __init__(self, label="", placeholder="", default_value=None) -> None:
+            self.label = label
+            self.placeholder = placeholder
+            self.default_value = default_value
 
     class Plugin:
         def __init__(self) -> None:
             self.server = object()
             self.logger = StrictEndstoneLogger()
+            self.registered_events: list[tuple[str, type]] = []
+
+        def register_events(self, listener) -> None:
+            for name in dir(listener):
+                handler = getattr(listener, name)
+                function = getattr(handler, "__func__", handler)
+                if not getattr(function, "_is_event_handler", False):
+                    continue
+                annotation = inspect.signature(handler).parameters["event"].annotation
+                if isinstance(annotation, str):
+                    raise TypeError("event handler annotations must be concrete")
+                self.registered_events.append((name, annotation))
 
     class Command:
         def __init__(self, name: str):
@@ -49,19 +174,37 @@ def install_endstone_test_double() -> None:
         pass
 
     plugin_module.Plugin = Plugin
+    event_module.PlayerDeathEvent = PlayerDeathEvent
+    event_module.PlayerQuitEvent = PlayerQuitEvent
+    event_module.event_handler = event_handler
+    form_module.ActionForm = ActionForm
+    form_module.Button = Button
+    form_module.Dropdown = Dropdown
+    form_module.ModalForm = ModalForm
+    form_module.Slider = Slider
+    form_module.TextInput = TextInput
     command_module.Command = Command
     command_module.CommandSender = CommandSender
     endstone_module.plugin = plugin_module
     endstone_module.command = command_module
+    endstone_module.event = event_module
+    endstone_module.form = form_module
     sys.modules["endstone"] = endstone_module
     sys.modules["endstone.plugin"] = plugin_module
     sys.modules["endstone.command"] = command_module
+    sys.modules["endstone.event"] = event_module
+    sys.modules["endstone.form"] = form_module
 
 
 install_endstone_test_double()
 sys.path.insert(0, str(PLUGIN_SOURCE))
 
-from endstone_blockdata_inspector import BlockDataInspectorPlugin, _bridge_loader
+from endstone_blockdata_inspector import (  # noqa: E402
+    BlockDataInspectorPlugin,
+    _bridge_loader,
+)
+from endstone.event import PlayerDeathEvent, PlayerQuitEvent  # noqa: E402
+from endstone.form import ActionForm, ModalForm  # noqa: E402
 
 
 class FakeSender:
@@ -77,6 +220,33 @@ class FakeSender:
 
     def send_message(self, message: str) -> None:
         self.messages.append(message)
+
+
+class FakePlayer(FakeSender):
+    def __init__(
+        self, name: str = "Tester", unique_id: UUID | str | None = None
+    ) -> None:
+        super().__init__(name)
+        self.unique_id = unique_id or f"uuid-{name.casefold()}"
+        self.forms: list[ActionForm | ModalForm] = []
+        self.permission = True
+        self.dead = False
+        self.fail_send: Exception | None = None
+
+    @property
+    def current_form(self) -> ActionForm | ModalForm:
+        return self.forms[-1]
+
+    def has_permission(self, permission: str) -> bool:
+        return permission == "bd.admin" and self.permission
+
+    def is_dead(self) -> bool:
+        return self.dead
+
+    def send_form(self, form: ActionForm | ModalForm) -> None:
+        if self.fail_send is not None:
+            raise self.fail_send
+        self.forms.append(form)
 
 
 def item_slot(
@@ -200,7 +370,11 @@ class FakeLiveBridge:
         inventory[:] = [entry for entry in inventory if int(entry["slot"]) != slot]
         if item is not None:
             inventory.append(
-                {"slot": slot, "item": copy.deepcopy(item), "revision": snapshot["revision"] + 1}
+                {
+                    "slot": slot,
+                    "item": copy.deepcopy(item),
+                    "revision": snapshot["revision"] + 1,
+                }
             )
         snapshot["revision"] += 1
 
@@ -300,7 +474,9 @@ class FakeLiveBridge:
 
 
 class InspectorWheelTests(unittest.TestCase):
-    def make_plugin(self) -> tuple[BlockDataInspectorPlugin, FakeLiveBridge, FakeSender]:
+    def make_plugin(
+        self,
+    ) -> tuple[BlockDataInspectorPlugin, FakeLiveBridge, FakeSender]:
         plugin = BlockDataInspectorPlugin()
         bridge = FakeLiveBridge()
         plugin.live_bridge = bridge
@@ -314,11 +490,20 @@ class InspectorWheelTests(unittest.TestCase):
         plugin.selected_targets = {}
         plugin.audit_baselines = {}
         plugin.audit_logs = []
+        plugin.active_forms = {}
         return plugin, bridge, FakeSender()
+
+    def make_player_plugin(
+        self, name: str = "Tester"
+    ) -> tuple[BlockDataInspectorPlugin, FakeLiveBridge, FakePlayer]:
+        plugin, bridge, _ = self.make_plugin()
+        return plugin, bridge, FakePlayer(name)
 
     def test_packaging_uses_current_endstone_entry_point(self) -> None:
         metadata = tomllib.loads((PLUGIN_PROJECT / "pyproject.toml").read_text("utf-8"))
         project = metadata["project"]
+        self.assertEqual(project["version"], "0.4.6")
+        self.assertEqual(BlockDataInspectorPlugin.version, project["version"])
         self.assertEqual(project["requires-python"], "==3.14.*")
         self.assertEqual(project["dependencies"], ["endstone==0.11.6"])
         self.assertEqual(
@@ -401,6 +586,19 @@ class InspectorWheelTests(unittest.TestCase):
 
         self.assertEqual(plugin.logger.records[-1][0], "info")
         self.assertIn("native adapter 'test'", plugin.logger.records[-1][1])
+        self.assertEqual(
+            set(plugin.registered_events),
+            {
+                ("on_player_death", PlayerDeathEvent),
+                ("on_player_quit", PlayerQuitEvent),
+            },
+        )
+        self.assertTrue(
+            all(
+                not isinstance(annotation, str)
+                for _, annotation in plugin.registered_events
+            )
+        )
 
         unavailable = BlockDataInspectorPlugin()
         with patch(
@@ -423,6 +621,7 @@ class InspectorWheelTests(unittest.TestCase):
             command["usages"],
             [
                 "/bd",
+                "/bd (menu)<action: BlockDataMenuAction>",
                 "/bd (locate)<action: BlockDataLocateAction> [radius: int]",
                 "/bd (inspect)<action: BlockDataInspectAction>",
                 (
@@ -478,7 +677,7 @@ class InspectorWheelTests(unittest.TestCase):
         )
         self.assertEqual(
             set(BlockDataInspectorPlugin._SUBCOMMAND_HANDLERS),
-            {"locate", "inspect", "item", "audit", "state"},
+            {"menu", "locate", "inspect", "item", "audit", "state"},
         )
         usages = "\n".join(command["usages"])
         self.assertNotIn("block_pos", usages)
@@ -494,6 +693,7 @@ class InspectorWheelTests(unittest.TestCase):
         command = SimpleNamespace(name="bd")
         invocations = [
             [],
+            ["menu"],
             ["locate"],
             ["inspect"],
             ["inspect", "8", "64", "8"],
@@ -523,6 +723,422 @@ class InspectorWheelTests(unittest.TestCase):
                 self.assertTrue(plugin.on_command(sender, command, args))
         self.assertEqual(bridge.last_patch["location"]["x"], 10)
 
+    def test_bare_bd_opens_player_menu_and_console_keeps_text_help(self) -> None:
+        plugin, _, player = self.make_player_plugin()
+        command = SimpleNamespace(name="bd")
+
+        self.assertTrue(plugin.on_command(player, command, []))
+        self.assertIsInstance(player.current_form, ActionForm)
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+        self.assertEqual(
+            [button.text for button in player.current_form.buttons],
+            [
+                "Locate Containers",
+                "Inspect / Select Target",
+                "Container Inventory",
+                "Audit Changes",
+                "Block State",
+                "Command Help",
+                "Close",
+            ],
+        )
+        token = plugin.active_forms[plugin._sender_key(player)]
+        self.assertIsInstance(token, UUID)
+
+        player.current_form.close(player)
+        self.assertEqual(plugin.active_forms, {})
+        self.assertTrue(plugin.on_command(player, command, ["menu"]))
+        self.assertIsInstance(player.current_form, ActionForm)
+        player.current_form.submit(player, 5)
+        self.assertTrue(
+            any(
+                "BlockData Inspector Test Plugin" in message
+                for message in player.messages
+            )
+        )
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+        player.current_form.submit(player, 6)
+        self.assertEqual(plugin.active_forms, {})
+
+        console = FakeSender("Console")
+        self.assertTrue(plugin.on_command(console, command, []))
+        self.assertTrue(
+            any("BlockData Inspector" in message for message in console.messages)
+        )
+        self.assertTrue(plugin.on_command(console, command, ["menu"]))
+        self.assertTrue(
+            any("only available to players" in message for message in console.messages)
+        )
+
+    def test_form_lock_stale_callbacks_permissions_and_send_failure(self) -> None:
+        plugin, _, player = self.make_player_plugin()
+
+        self.assertTrue(plugin._show_main_menu(player))
+        first_form = player.current_form
+        first_token = plugin.active_forms[plugin._sender_key(player)]
+        self.assertFalse(plugin._show_main_menu(player))
+        self.assertEqual(len(player.forms), 1)
+        self.assertIn("already open", player.messages[-1])
+
+        first_form.close(player)
+        self.assertEqual(plugin.active_forms, {})
+        self.assertTrue(plugin._show_main_menu(player))
+        current_form = player.current_form
+        current_token = plugin.active_forms[plugin._sender_key(player)]
+        self.assertNotEqual(first_token, current_token)
+
+        first_form.submit(player, 0)
+        self.assertIs(player.current_form, current_form)
+        self.assertEqual(plugin.active_forms[plugin._sender_key(player)], current_token)
+
+        player.permission = False
+        current_form.submit(player, 0)
+        self.assertEqual(plugin.active_forms, {})
+        self.assertIs(player.current_form, current_form)
+        self.assertIn("no longer have permission", player.messages[-1])
+
+        player.permission = True
+        player.fail_send = RuntimeError("client rejected form")
+        self.assertFalse(plugin._show_main_menu(player))
+        self.assertEqual(plugin.active_forms, {})
+        self.assertIn("client rejected form", player.messages[-1])
+        self.assertIn("client rejected form", plugin.logger.records[-1][1])
+
+        player.fail_send = None
+        player.dead = True
+        self.assertFalse(plugin._show_main_menu(player))
+        self.assertEqual(plugin.active_forms, {})
+        self.assertIn("player is dead", player.messages[-1])
+
+        player.dead = False
+        self.assertTrue(plugin._show_main_menu(player))
+        unavailable_form = player.current_form
+        player.dead = True
+        unavailable_form.submit(player, 0)
+        self.assertEqual(plugin.active_forms, {})
+        self.assertIs(player.current_form, unavailable_form)
+
+    def test_form_permission_check_fails_closed_when_sender_cannot_check_it(
+        self,
+    ) -> None:
+        plugin, _, _ = self.make_plugin()
+        messages: list[str] = []
+        sender = SimpleNamespace(
+            unique_id=uuid4(),
+            is_dead=False,
+            send_form=lambda _form: self.fail("form must not be sent"),
+            send_message=messages.append,
+        )
+
+        self.assertFalse(plugin._show_main_menu(sender))
+        self.assertEqual(plugin.active_forms, {})
+        self.assertIn("Unable to verify the bd.admin permission", messages[-1])
+
+    def test_replacement_player_wrapper_shares_uuid_lock_and_stale_token_guard(
+        self,
+    ) -> None:
+        plugin, _, first = self.make_player_plugin("First")
+        shared_id = uuid4()
+        first.unique_id = shared_id
+        replacement = FakePlayer("Replacement", shared_id)
+
+        self.assertTrue(plugin._show_main_menu(first))
+        stale_form = first.current_form
+        self.assertFalse(plugin._show_main_menu(replacement))
+        self.assertEqual(replacement.forms, [])
+
+        plugin.on_player_death(PlayerDeathEvent(replacement))
+        self.assertEqual(plugin.active_forms, {})
+        self.assertTrue(plugin._show_main_menu(replacement))
+        current_token = plugin.active_forms[plugin._sender_key(replacement)]
+
+        stale_form.submit(first, 0)
+        self.assertEqual(
+            plugin.active_forms[plugin._sender_key(replacement)], current_token
+        )
+        self.assertEqual(len(replacement.forms), 1)
+        replacement.current_form.close(replacement)
+        self.assertEqual(plugin.active_forms, {})
+
+    def test_form_locks_are_per_player_and_clear_on_lifecycle_events(self) -> None:
+        plugin, _, first = self.make_player_plugin("First")
+        second = FakePlayer("Second")
+
+        self.assertTrue(plugin._show_main_menu(first))
+        self.assertTrue(plugin._show_main_menu(second))
+        self.assertEqual(len(plugin.active_forms), 2)
+
+        plugin.on_player_death(PlayerDeathEvent(first))
+        self.assertNotIn(plugin._sender_key(first), plugin.active_forms)
+        self.assertIn(plugin._sender_key(second), plugin.active_forms)
+
+        self.assertTrue(plugin._show_main_menu(first))
+        plugin.on_player_quit(PlayerQuitEvent(first))
+        self.assertNotIn(plugin._sender_key(first), plugin.active_forms)
+
+        plugin.on_disable()
+        self.assertEqual(plugin.active_forms, {})
+
+    def test_form_back_close_cancel_and_invalid_responses_keep_one_page(self) -> None:
+        plugin, _, player = self.make_player_plugin()
+
+        self.assertTrue(plugin._show_main_menu(player))
+        player.current_form.submit(player, 1)
+        self.assertEqual(player.current_form.title, "Inspect / Select Target")
+        self.assertEqual(len(plugin.active_forms), 1)
+
+        player.current_form.close(player)
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+        self.assertEqual(len(plugin.active_forms), 1)
+
+        player.current_form.submit(player, 1)
+        player.current_form.submit(player, 2)
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+
+        player.current_form.submit(player, 0)
+        self.assertIsInstance(player.current_form, ModalForm)
+        self.assertEqual(player.current_form.title, "Locate Containers")
+        player.current_form.close(player)
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+
+        player.current_form.submit(player, 0)
+        malformed = player.current_form
+        malformed.submit(player, "{not json")
+        self.assertIsInstance(player.current_form, ModalForm)
+        self.assertIsNot(player.current_form, malformed)
+        self.assertIn("invalid response", player.messages[-1])
+        self.assertEqual(len(plugin.active_forms), 1)
+
+        wrong_length = player.current_form
+        wrong_length.submit(player, [5, 6])
+        self.assertIsNot(player.current_form, wrong_length)
+        self.assertIn("invalid response", player.messages[-1])
+
+        wrong_type = player.current_form
+        wrong_type.submit(player, ["5"])
+        self.assertIsNot(player.current_form, wrong_type)
+        self.assertIn("invalid response", player.messages[-1])
+
+        player.current_form.close(player)
+        invalid_main = player.current_form
+        invalid_main.submit(player, 99)
+        self.assertEqual(player.current_form.title, "BlockData Inspector")
+        self.assertIsNot(player.current_form, invalid_main)
+        self.assertIn("invalid selection", player.messages[-1])
+
+        player.current_form.close(player)
+        self.assertEqual(plugin.active_forms, {})
+
+    def test_every_menu_action_dispatches_the_exact_existing_command_args(self) -> None:
+        plugin, _, player = self.make_player_plugin()
+
+        with patch.object(plugin, "_dispatch", return_value=True) as dispatch:
+            self.assertTrue(plugin._show_main_menu(player))
+
+            player.current_form.submit(player, 0)
+            player.current_form.submit(player, [7])
+
+            player.current_form.submit(player, 1)
+            player.current_form.submit(player, 0)
+            player.current_form.submit(player, 1)
+            player.current_form.submit(player, ["10", "64", "8"])
+            player.current_form.submit(player, 2)
+
+            player.current_form.submit(player, 2)
+            player.current_form.submit(player, 0)
+            before_confirmation = dispatch.call_count
+            player.current_form.submit(player, ["1", "diamond", "", ""])
+            self.assertEqual(dispatch.call_count, before_confirmation)
+            self.assertIn("Confirm", player.current_form.title)
+            player.current_form.submit(player, 0)
+
+            player.current_form.submit(player, 0)
+            player.current_form.submit(
+                player,
+                ["2", "written_book", "", '{"display":{"Name":"Test"}}'],
+            )
+            player.current_form.submit(player, 0)
+
+            player.current_form.submit(player, 1)
+            player.current_form.submit(
+                player,
+                ["10", "64", "8", "3", "apple", "4", '{"foo":1}'],
+            )
+            player.current_form.submit(player, 0)
+
+            player.current_form.submit(player, 2)
+            player.current_form.submit(player, ["4"])
+            player.current_form.submit(player, 0)
+
+            player.current_form.submit(player, 3)
+            player.current_form.submit(player, ["10", "64", "8", "5"])
+            player.current_form.submit(player, 0)
+            player.current_form.submit(player, 4)
+
+            player.current_form.submit(player, 3)
+            player.current_form.submit(player, 0)
+            player.current_form.submit(player, 1)
+            player.current_form.submit(player, 2)
+            player.current_form.submit(player, [0, "10", "64", "8"])
+            player.current_form.submit(player, 2)
+            player.current_form.submit(player, [1, "10", "64", "8"])
+            player.current_form.submit(player, 3)
+            player.current_form.submit(player, 4)
+
+            player.current_form.submit(player, 4)
+            player.current_form.submit(player, 0)
+            before_confirmation = dispatch.call_count
+            player.current_form.submit(player, ["minecraft:open_bit", "true"])
+            self.assertEqual(dispatch.call_count, before_confirmation)
+            player.current_form.submit(player, 0)
+
+            player.current_form.submit(player, 1)
+            player.current_form.submit(
+                player,
+                ["minecraft:facing_direction", "2", "10", "64", "8"],
+            )
+            player.current_form.submit(player, 0)
+
+        self.assertEqual(
+            [call.args[1] for call in dispatch.call_args_list],
+            [
+                ["locate", "7"],
+                ["inspect"],
+                ["inspect", "10", "64", "8"],
+                ["item", "add", "1", "diamond"],
+                [
+                    "item",
+                    "add",
+                    "2",
+                    "written_book",
+                    "1",
+                    '{"display":{"Name":"Test"}}',
+                ],
+                [
+                    "item",
+                    "add",
+                    "at",
+                    "10",
+                    "64",
+                    "8",
+                    "3",
+                    "apple",
+                    "4",
+                    '{"foo":1}',
+                ],
+                ["item", "remove", "4"],
+                ["item", "remove", "at", "10", "64", "8", "5"],
+                ["audit", "start"],
+                ["audit", "stop"],
+                ["audit", "start", "10", "64", "8"],
+                ["audit", "stop", "10", "64", "8"],
+                ["audit", "history"],
+                ["state", "set", "minecraft:open_bit", "true"],
+                [
+                    "state",
+                    "set",
+                    "minecraft:facing_direction",
+                    "2",
+                    "10",
+                    "64",
+                    "8",
+                ],
+            ],
+        )
+
+    def test_write_confirmations_cancel_without_dispatching(self) -> None:
+        plugin, _, player = self.make_player_plugin()
+
+        with patch.object(plugin, "_dispatch", return_value=True) as dispatch:
+            self.assertTrue(plugin._show_inventory_menu(player))
+            player.current_form.submit(player, 0)
+            player.current_form.submit(player, ["1", "diamond", "1", ""])
+            self.assertIn("Confirm", player.current_form.title)
+            self.assertEqual(dispatch.call_count, 0)
+            player.current_form.submit(player, 1)
+            self.assertEqual(player.current_form.title, "Container Inventory")
+            self.assertEqual(dispatch.call_count, 0)
+
+            player.current_form.submit(player, 2)
+            player.current_form.submit(player, ["1"])
+            self.assertIn("Confirm", player.current_form.title)
+            player.current_form.close(player)
+            self.assertEqual(player.current_form.title, "Container Inventory")
+            self.assertEqual(dispatch.call_count, 0)
+
+            player.current_form.close(player)
+            self.assertEqual(player.current_form.title, "BlockData Inspector")
+            player.current_form.close(player)
+            self.assertEqual(plugin.active_forms, {})
+
+    def test_forms_reject_obvious_field_errors_before_dispatch_or_confirmation(
+        self,
+    ) -> None:
+        cases = [
+            (
+                "inspect blank",
+                lambda plugin, sender: plugin._show_inspect_at_form(sender),
+                ["", "64", "8"],
+            ),
+            (
+                "inspect noninteger",
+                lambda plugin, sender: plugin._show_inspect_at_form(sender),
+                ["x", "64", "8"],
+            ),
+            (
+                "negative slot",
+                lambda plugin, sender: plugin._show_item_add_form(
+                    sender, explicit=False
+                ),
+                ["-1", "diamond", "1", ""],
+            ),
+            (
+                "zero count",
+                lambda plugin, sender: plugin._show_item_add_form(
+                    sender, explicit=False
+                ),
+                ["1", "diamond", "0", ""],
+            ),
+            (
+                "non-object nbt",
+                lambda plugin, sender: plugin._show_item_add_form(
+                    sender, explicit=False
+                ),
+                ["1", "diamond", "1", "[]"],
+            ),
+            (
+                "remove slot",
+                lambda plugin, sender: plugin._show_item_remove_form(
+                    sender, explicit=False
+                ),
+                ["slot"],
+            ),
+            (
+                "audit coordinate",
+                lambda plugin, sender: plugin._show_audit_at_form(sender),
+                [0, "x", "64", "8"],
+            ),
+            (
+                "state coordinate",
+                lambda plugin, sender: plugin._show_state_set_form(
+                    sender, explicit=True
+                ),
+                ["open_bit", "true", "x", "64", "8"],
+            ),
+        ]
+
+        for label, opener, response in cases:
+            with self.subTest(label=label):
+                plugin, _, player = self.make_player_plugin()
+                with patch.object(plugin, "_dispatch", return_value=True) as dispatch:
+                    self.assertTrue(opener(plugin, player))
+                    original_form = player.current_form
+                    original_form.submit(player, response)
+                dispatch.assert_not_called()
+                self.assertIsInstance(player.current_form, ModalForm)
+                self.assertIsNot(player.current_form, original_form)
+                self.assertEqual(len(plugin.active_forms), 1)
+
     def test_locate_filters_containers_selects_nearest_and_reports_misses(self) -> None:
         plugin, bridge, sender = self.make_plugin()
         command = SimpleNamespace(name="bd")
@@ -535,10 +1151,16 @@ class InspectorWheelTests(unittest.TestCase):
         self.assertIn("minecraft:barrel", output)
         self.assertIn("minecraft:red_shulker_box", output)
         self.assertNotIn("minecraft:oak_sign", output)
-        chest_line = next(message for message in sender.messages if "minecraft:chest" in message)
-        barrel_line = next(message for message in sender.messages if "minecraft:barrel" in message)
+        chest_line = next(
+            message for message in sender.messages if "minecraft:chest" in message
+        )
+        barrel_line = next(
+            message for message in sender.messages if "minecraft:barrel" in message
+        )
         shulker_line = next(
-            message for message in sender.messages if "minecraft:red_shulker_box" in message
+            message
+            for message in sender.messages
+            if "minecraft:red_shulker_box" in message
         )
         self.assertIn("Capacity: §b27", chest_line)
         self.assertIn("Occupied: §b1", chest_line)
@@ -604,7 +1226,9 @@ class InspectorWheelTests(unittest.TestCase):
         self.assertIn("minecraft:stone x32", output)
         self.assertNotIn("empty", output.casefold())
 
-    def test_inspect_bounds_large_canonical_nbt_and_keeps_inventory_summary(self) -> None:
+    def test_inspect_bounds_large_canonical_nbt_and_keeps_inventory_summary(
+        self,
+    ) -> None:
         plugin, bridge, sender = self.make_plugin()
         command = SimpleNamespace(name="bd")
         snapshot = bridge.snapshots[("overworld", 12, 64, 8)]
@@ -636,7 +1260,9 @@ class InspectorWheelTests(unittest.TestCase):
         )
         self.assertIn("minecraft:stone x32", "\n".join(sender.messages))
 
-    def test_mutations_require_selection_and_item_at_forms_target_coordinates(self) -> None:
+    def test_mutations_require_selection_and_item_at_forms_target_coordinates(
+        self,
+    ) -> None:
         plugin, bridge, sender = self.make_plugin()
         command = SimpleNamespace(name="bd")
 
@@ -698,9 +1324,7 @@ class InspectorWheelTests(unittest.TestCase):
         self.assertEqual(bridge.last_patch["location"]["x"], 12)
         self.assertEqual(bridge.last_patch["inventory_removals"], [5])
 
-        self.assertTrue(
-            plugin.on_command(sender, command, ["inspect", "8", "64", "8"])
-        )
+        self.assertTrue(plugin.on_command(sender, command, ["inspect", "8", "64", "8"]))
         self.assertTrue(
             plugin.on_command(sender, command, ["item", "add", "1", "emerald"])
         )
@@ -872,7 +1496,9 @@ class InspectorWheelTests(unittest.TestCase):
         )
         self.assertEqual(bridge.last_policy, "fail_if_changed")
         self.assertEqual(bridge.snapshot["states"], original_states)
-        self.assertTrue(any("retry the command" in message for message in sender.messages))
+        self.assertTrue(
+            any("retry the command" in message for message in sender.messages)
+        )
 
 
 if __name__ == "__main__":
