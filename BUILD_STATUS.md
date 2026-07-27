@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.4.5-beta.32**
+Version: **0.4.5**
 
 ## Implemented
 

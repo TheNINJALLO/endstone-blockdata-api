@@ -1,3 +1,8 @@
+## 0.4.5
+
+- Promoted the beta.32 native API, package-local CPython 3.14 command wheels, and complete BDS 1.26.33 release bundles to the stable release line.
+- Preserved the Endstone 0.11.6 compatibility target and `endstone:blockdata:v2` service ABI while publishing stable artifact names and release metadata.
+
 ## 0.4.5-beta.32
 
 - Fixed every `/bd` coordinate overload to match Endstone 0.11's real argument contract, removed silent player-feet fallback, and added safe selected-container and explicit `at <x> <y> <z>` mutation targets.

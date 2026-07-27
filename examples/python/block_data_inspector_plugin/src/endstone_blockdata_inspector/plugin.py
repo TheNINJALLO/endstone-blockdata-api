@@ -16,7 +16,7 @@ class BlockDataInspectorPlugin(Plugin):
     """Exercise the native BlockData service from in-game commands."""
 
     api_version = "0.11"
-    version = "0.4.5-beta.32"
+    version = "0.4.5"
     description = "Interactive in-game container, NBT, and block-state test suite"
     depend = ["blockdata_api"]
 
@@ -174,7 +174,7 @@ class BlockDataInspectorPlugin(Plugin):
         return getattr(self, handler_name)(sender, args[1:])
 
     def _send_help(self, sender: CommandSender) -> None:
-        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5-beta.32) ===")
+        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5) ===")
         sender.send_message("§a/bd locate [radius] §7- Find and select the nearest container")
         sender.send_message("§a/bd inspect [x y z] §7- Inspect/select a live container target")
         sender.send_message("§a/bd item add <slot> <id> [count] [nbt] §7- Add at selected target")

@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","version": "0.4.5-beta.32"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.4.5"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -22,11 +22,41 @@ class TestReleaseTools(unittest.TestCase):
             text=True,
         )
 
+    def test_combined_release_asset_set_is_exact_and_nonempty(self):
+        scratch_root = ROOT / "build" / "release-tool-tests"
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch_root) as temporary:
+            release = Path(temporary)
+            stem = f"{CONFIG['slug']}-v{CONFIG['version']}-bds-1.26.33"
+            names = {
+                f"{stem}-linux-x64.so",
+                f"{stem}-linux-x64.zip",
+                f"{stem}-linux-x64.sha256",
+                f"{stem}-windows-x64.dll",
+                f"{stem}-windows-x64.zip",
+                f"{stem}-windows-x64.sha256",
+                f"{CONFIG['wheel_prefix']}-{CONFIG['version']}-cp314-cp314-linux_x86_64.whl",
+                f"{CONFIG['wheel_prefix']}-{CONFIG['version']}-cp314-cp314-win_amd64.whl",
+            }
+            for name in names:
+                (release / name).write_bytes(b"asset")
+            common = (
+                "--slug", CONFIG["slug"], "--version", CONFIG["version"],
+                "--bds", "1.26.33", "--release-dir", str(release),
+            )
+            self.run_tool("verify_combined_release_assets.py", *common)
+            (release / "unexpected.txt").write_bytes(b"unexpected")
+            failed = self.run_tool(
+                "verify_combined_release_assets.py", *common, check=False
+            )
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertIn("Release asset set mismatch", failed.stderr + failed.stdout)
+
     @staticmethod
     def add_command_wheel(stage: Path) -> Path:
         wheel = (
             stage / "plugins" /
-            "endstone_blockdata_inspector-0.4.5b32-cp314-cp314-win_amd64.whl"
+            "endstone_blockdata_inspector-0.4.5-cp314-cp314-win_amd64.whl"
         )
         wheel.parent.mkdir(parents=True, exist_ok=True)
         bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))

@@ -210,6 +210,11 @@ def main() -> int:
         "--structure-only",
         "Smoke-test relocated Linux command wheel",
         "Smoke-test relocated Windows command wheel",
+        "Verify complete release asset set",
+        "verify_combined_release_assets.py",
+        "create_flags=(--latest)",
+        "create_flags=(--prerelease --latest=false)",
+        "wc -l < SHA256SUMS.txt",
     ):
         if required not in workflow_text:
             failures.append(f"Workflow platform-wheel contract is missing {required!r}")
