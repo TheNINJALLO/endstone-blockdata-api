@@ -1,3 +1,9 @@
+## 0.4.6
+
+- Added `/bd menu` and made bare `/bd` open a single guarded player form that navigates every registered locate, inspect, inventory, audit, and state command.
+- Added strict form-result validation, stale-callback and duplicate-form suppression, permission rechecks, lifecycle cleanup, back navigation, and confirmations for inventory and block-state writes.
+- Kept typed commands and console help fully available while adding route, malformed-input, close, send-failure, quit, death, and command-registration regression coverage to the CPython 3.14 test wheel.
+
 ## 0.4.5
 
 - Promoted the beta.32 native API, package-local CPython 3.14 command wheels, and complete BDS 1.26.33 release bundles to the stable release line.

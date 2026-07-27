@@ -1,12 +1,13 @@
 """Endstone BlockData live-service command test plugin."""
 
-from __future__ import annotations
-
 import json
 import math
-from typing import Any
+from typing import Any, Callable
+from uuid import UUID, uuid4
 
 from endstone.command import Command, CommandSender
+from endstone.event import PlayerDeathEvent, PlayerQuitEvent, event_handler
+from endstone.form import ActionForm, Dropdown, ModalForm, Slider, TextInput
 from endstone.plugin import Plugin
 
 from ._bridge_loader import import_live_bridge
@@ -16,7 +17,7 @@ class BlockDataInspectorPlugin(Plugin):
     """Exercise the native BlockData service from in-game commands."""
 
     api_version = "0.11"
-    version = "0.4.5"
+    version = "0.4.6"
     description = "Interactive in-game container, NBT, and block-state test suite"
     depend = ["blockdata_api"]
 
@@ -25,6 +26,7 @@ class BlockDataInspectorPlugin(Plugin):
             "description": "BlockData inspector and container NBT test suite",
             "usages": [
                 "/bd",
+                "/bd (menu)<action: BlockDataMenuAction>",
                 "/bd (locate)<action: BlockDataLocateAction> [radius: int]",
                 "/bd (inspect)<action: BlockDataInspectAction>",
                 (
@@ -90,6 +92,7 @@ class BlockDataInspectorPlugin(Plugin):
     }
 
     _SUBCOMMAND_HANDLERS = {
+        "menu": "_handle_menu",
         "locate": "_handle_locate",
         "inspect": "_handle_inspect",
         "item": "_handle_item",
@@ -116,13 +119,13 @@ class BlockDataInspectorPlugin(Plugin):
 
     def on_enable(self) -> None:
         self.selected_targets: dict[str, tuple[str, int, int, int]] = {}
-        self.audit_baselines: dict[
-            tuple[str, str, int, int, int], dict[str, Any]
-        ] = {}
+        self.audit_baselines: dict[tuple[str, str, int, int, int], dict[str, Any]] = {}
         self.audit_logs: list[dict[str, Any]] = []
+        self.active_forms: dict[str, UUID] = {}
         self.live_bridge = None
         self.native_capabilities: dict[str, Any] = {}
         self.bridge_error = "native bridge was not initialized"
+        self.register_events(self)
         self._connect_bridge()
 
         if self.live_bridge is None:
@@ -134,8 +137,19 @@ class BlockDataInspectorPlugin(Plugin):
             adapter = self.native_capabilities.get("adapter", "unknown")
             self.logger.info(
                 f"BlockData Inspector enabled against native adapter '{adapter}'. "
-                "Type '/bd' for help."
+                "Type '/bd' to open the menu."
             )
+
+    def on_disable(self) -> None:
+        self.active_forms.clear()
+
+    @event_handler
+    def on_player_quit(self, event: PlayerQuitEvent) -> None:
+        self._clear_form_lock(event.player)
+
+    @event_handler
+    def on_player_death(self, event: PlayerDeathEvent) -> None:
+        self._clear_form_lock(event.player)
 
     def _connect_bridge(self) -> Any | None:
         """Connect to the native service, allowing command-time recovery."""
@@ -144,7 +158,9 @@ class BlockDataInspectorPlugin(Plugin):
             if not bridge.available(self.server):
                 self.live_bridge = None
                 self.native_capabilities = {}
-                self.bridge_error = "endstone:blockdata:v2 native service is not registered"
+                self.bridge_error = (
+                    "endstone:blockdata:v2 native service is not registered"
+                )
                 return None
             capabilities = dict(bridge.capabilities(self.server))
         except Exception as error:
@@ -163,8 +179,14 @@ class BlockDataInspectorPlugin(Plugin):
     ) -> bool:
         if command.name not in {"bd", "blockdata"}:
             return False
+        return self._dispatch(sender, args)
+
+    def _dispatch(self, sender: CommandSender, args: list[str]) -> bool:
         if not args:
-            self._send_help(sender)
+            if self._supports_forms(sender):
+                self._show_main_menu(sender)
+            else:
+                self._send_help(sender)
             return True
 
         handler_name = self._SUBCOMMAND_HANDLERS.get(args[0].lower())
@@ -173,11 +195,31 @@ class BlockDataInspectorPlugin(Plugin):
             return True
         return getattr(self, handler_name)(sender, args[1:])
 
+    def _handle_menu(self, sender: CommandSender, args: list[str]) -> bool:
+        if args:
+            sender.send_message("Usage: /bd menu")
+            return True
+        if not self._supports_forms(sender):
+            sender.send_message("The BlockData menu is only available to players.")
+            self._send_help(sender)
+            return True
+        self._show_main_menu(sender)
+        return True
+
     def _send_help(self, sender: CommandSender) -> None:
-        sender.send_message("§e=== BlockData Inspector Test Plugin (v0.4.5) ===")
-        sender.send_message("§a/bd locate [radius] §7- Find and select the nearest container")
-        sender.send_message("§a/bd inspect [x y z] §7- Inspect/select a live container target")
-        sender.send_message("§a/bd item add <slot> <id> [count] [nbt] §7- Add at selected target")
+        sender.send_message("/bd menu - Open the interactive BlockData menu")
+        sender.send_message(
+            f"§e=== BlockData Inspector Test Plugin (v{self.version}) ==="
+        )
+        sender.send_message(
+            "§a/bd locate [radius] §7- Find and select the nearest container"
+        )
+        sender.send_message(
+            "§a/bd inspect [x y z] §7- Inspect/select a live container target"
+        )
+        sender.send_message(
+            "§a/bd item add <slot> <id> [count] [nbt] §7- Add at selected target"
+        )
         sender.send_message(
             "§a/bd item add at <x> <y> <z> <slot> <id> [count] [nbt] §7- Add by position"
         )
@@ -189,6 +231,721 @@ class BlockDataInspectorPlugin(Plugin):
         sender.send_message("§a/bd audit history §7- Show recent audit sessions")
         sender.send_message(
             "§a/bd state set <property> <value> [x y z] §7- Mutate live block state"
+        )
+
+    @staticmethod
+    def _supports_forms(sender: CommandSender) -> bool:
+        return callable(getattr(sender, "send_form", None))
+
+    def _has_form_permission(self, sender: CommandSender) -> bool:
+        checker = getattr(sender, "has_permission", None)
+        if not callable(checker):
+            sender.send_message(
+                "Unable to verify the bd.admin permission; no form was opened."
+            )
+            return False
+        try:
+            allowed = bool(checker("bd.admin"))
+        except Exception as error:
+            sender.send_message(f"Unable to verify the bd.admin permission: {error}")
+            return False
+        if not allowed:
+            sender.send_message(
+                "You no longer have permission to use the BlockData menu."
+            )
+        return allowed
+
+    @staticmethod
+    def _sender_is_dead(sender: CommandSender) -> bool:
+        state = getattr(sender, "is_dead", False)
+        try:
+            return bool(state() if callable(state) else state)
+        except Exception:
+            return True
+
+    def _form_tokens(self) -> dict[str, UUID]:
+        tokens = getattr(self, "active_forms", None)
+        if tokens is None:
+            tokens = {}
+            self.active_forms = tokens
+        return tokens
+
+    def _send_locked_form(
+        self, sender: CommandSender, builder: Callable[[UUID], Any]
+    ) -> bool:
+        if not self._supports_forms(sender):
+            sender.send_message("Interactive forms are only available to players.")
+            return False
+        if not self._has_form_permission(sender):
+            return False
+        if self._sender_is_dead(sender):
+            self._clear_form_lock(sender)
+            sender.send_message(
+                "Cannot open a BlockData form while the player is dead."
+            )
+            return False
+
+        key = self._sender_key(sender)
+        tokens = self._form_tokens()
+        if key in tokens:
+            sender.send_message("A BlockData form is already open.")
+            return False
+
+        token = uuid4()
+        tokens[key] = token
+        try:
+            form = builder(token)
+            sender.send_form(form)
+        except Exception as error:
+            self._release_form(sender, token)
+            self.logger.error(f"Failed to send a BlockData form: {error}")
+            sender.send_message(f"Failed to open the BlockData form: {error}")
+            return False
+        return True
+
+    def _release_form(self, sender: CommandSender, token: UUID) -> bool:
+        key = self._sender_key(sender)
+        tokens = self._form_tokens()
+        if tokens.get(key) != token:
+            return False
+        tokens.pop(key, None)
+        return True
+
+    def _clear_form_lock(self, sender: CommandSender) -> None:
+        self._form_tokens().pop(self._sender_key(sender), None)
+
+    def _run_form_action(
+        self,
+        sender: CommandSender,
+        token: UUID,
+        action: Callable[[CommandSender], None],
+    ) -> None:
+        if not self._release_form(sender, token):
+            return
+        if self._sender_is_dead(sender):
+            return
+        if not self._has_form_permission(sender):
+            return
+        try:
+            action(sender)
+        except Exception as error:
+            self.logger.error(f"BlockData form callback failed: {error}")
+            sender.send_message(f"BlockData form action failed: {error}")
+
+    def _close_form(
+        self,
+        sender: CommandSender,
+        token: UUID,
+        back: Callable[[CommandSender], None] | None,
+    ) -> None:
+        if not self._release_form(sender, token):
+            return
+        if (
+            back is None
+            or self._sender_is_dead(sender)
+            or not self._has_form_permission(sender)
+        ):
+            return
+        try:
+            back(sender)
+        except Exception as error:
+            self.logger.error(f"BlockData form close callback failed: {error}")
+            sender.send_message(
+                f"Could not return to the previous BlockData page: {error}"
+            )
+
+    def _show_action_page(
+        self,
+        sender: CommandSender,
+        *,
+        title: str,
+        content: str,
+        actions: list[tuple[str, Callable[[CommandSender], None]]],
+        reopen: Callable[[CommandSender], None],
+        back: Callable[[CommandSender], None] | None,
+    ) -> bool:
+        def build(token: UUID) -> ActionForm:
+            def submit(player: CommandSender, selection: int) -> None:
+                def choose(current: CommandSender) -> None:
+                    if type(selection) is not int or not 0 <= selection < len(actions):
+                        current.send_message(
+                            "The BlockData form returned an invalid selection."
+                        )
+                        reopen(current)
+                        return
+                    actions[selection][1](current)
+
+                self._run_form_action(player, token, choose)
+
+            form = ActionForm(
+                title=title,
+                content=content,
+                on_submit=submit,
+                on_close=lambda player: self._close_form(player, token, back),
+            )
+            for label, _ in actions:
+                form.add_button(label)
+            return form
+
+        return self._send_locked_form(sender, build)
+
+    @staticmethod
+    def _is_form_text(value: Any) -> bool:
+        return isinstance(value, str)
+
+    @staticmethod
+    def _is_form_number(value: Any) -> bool:
+        return (
+            not isinstance(value, bool)
+            and isinstance(value, (int, float))
+            and math.isfinite(float(value))
+        )
+
+    @staticmethod
+    def _is_form_index(value: Any) -> bool:
+        return type(value) is int
+
+    def _show_modal_page(
+        self,
+        sender: CommandSender,
+        *,
+        title: str,
+        controls: list[Any],
+        validators: list[Callable[[Any], bool]],
+        on_values: Callable[[CommandSender, list[Any]], None],
+        reopen: Callable[[CommandSender], None],
+        back: Callable[[CommandSender], None],
+        submit_button: str = "Continue",
+    ) -> bool:
+        def build(token: UUID) -> ModalForm:
+            def submit(player: CommandSender, response: str) -> None:
+                def decode(current: CommandSender) -> None:
+                    try:
+                        values = json.loads(response)
+                    except (TypeError, json.JSONDecodeError):
+                        values = None
+                    valid = (
+                        isinstance(values, list)
+                        and len(values) == len(validators)
+                        and all(
+                            validator(value)
+                            for validator, value in zip(validators, values)
+                        )
+                    )
+                    if not valid:
+                        current.send_message(
+                            "The BlockData form returned an invalid response."
+                        )
+                        reopen(current)
+                        return
+                    on_values(current, values)
+
+                self._run_form_action(player, token, decode)
+
+            return ModalForm(
+                title=title,
+                controls=controls,
+                submit_button=submit_button,
+                on_submit=submit,
+                on_close=lambda player: self._close_form(player, token, back),
+            )
+
+        return self._send_locked_form(sender, build)
+
+    @staticmethod
+    def _coordinate_defaults(
+        sender: CommandSender,
+    ) -> tuple[str | None, str | None, str | None]:
+        location = getattr(sender, "location", None)
+        if location is None:
+            return None, None, None
+        try:
+            return (
+                str(math.floor(location.x)),
+                str(math.floor(location.y)),
+                str(math.floor(location.z)),
+            )
+        except (AttributeError, TypeError, ValueError):
+            return None, None, None
+
+    def _coordinate_controls(self, sender: CommandSender) -> list[TextInput]:
+        x, y, z = self._coordinate_defaults(sender)
+        return [
+            TextInput("X", "Absolute block X", x),
+            TextInput("Y", "Absolute block Y", y),
+            TextInput("Z", "Absolute block Z", z),
+        ]
+
+    def _target_summary(self, sender: CommandSender) -> str:
+        target = getattr(self, "selected_targets", {}).get(self._sender_key(sender))
+        if target is None:
+            return "Active target: none. Locate or inspect a container first."
+        dimension, x, y, z = target
+        return f"Active target: ({x}, {y}, {z}) in {dimension}."
+
+    def _dispatch_and_reopen(
+        self,
+        sender: CommandSender,
+        args: list[str],
+        reopen: Callable[[CommandSender], None],
+    ) -> None:
+        self._dispatch(sender, args)
+        reopen(sender)
+
+    def _show_main_menu(self, sender: CommandSender) -> bool:
+        actions = [
+            ("Locate Containers", self._show_locate_form),
+            ("Inspect / Select Target", self._show_inspect_menu),
+            ("Container Inventory", self._show_inventory_menu),
+            ("Audit Changes", self._show_audit_menu),
+            ("Block State", self._show_state_menu),
+            ("Command Help", self._show_help_then_main),
+            ("Close", lambda _sender: None),
+        ]
+        return self._show_action_page(
+            sender,
+            title="BlockData Inspector",
+            content=self._target_summary(sender),
+            actions=actions,
+            reopen=self._show_main_menu,
+            back=None,
+        )
+
+    def _show_help_then_main(self, sender: CommandSender) -> None:
+        self._send_help(sender)
+        self._show_main_menu(sender)
+
+    def _show_locate_form(self, sender: CommandSender) -> bool:
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            radius_value = float(values[0])
+            if not radius_value.is_integer() or not 0 <= radius_value <= 12:
+                player.send_message("Radius must be a whole number from 0 to 12.")
+                self._show_locate_form(player)
+                return
+            self._dispatch_and_reopen(
+                player, ["locate", str(int(radius_value))], self._show_main_menu
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Locate Containers",
+            controls=[Slider("Search radius", 0, 12, 1, 5)],
+            validators=[self._is_form_number],
+            on_values=use_values,
+            reopen=self._show_locate_form,
+            back=self._show_main_menu,
+            submit_button="Scan",
+        )
+
+    def _show_inspect_menu(self, sender: CommandSender) -> bool:
+        return self._show_action_page(
+            sender,
+            title="Inspect / Select Target",
+            content=self._target_summary(sender),
+            actions=[
+                (
+                    "Inspect Active Target",
+                    lambda player: self._dispatch_and_reopen(
+                        player, ["inspect"], self._show_inspect_menu
+                    ),
+                ),
+                ("Inspect Coordinates", self._show_inspect_at_form),
+                ("Back", self._show_main_menu),
+            ],
+            reopen=self._show_inspect_menu,
+            back=self._show_main_menu,
+        )
+
+    def _show_inspect_at_form(self, sender: CommandSender) -> bool:
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            coordinates = [value.strip() for value in values]
+            coordinate_fields = list(zip(("X", "Y", "Z"), coordinates))
+            if not self._require_form_fields(
+                player, coordinate_fields, self._show_inspect_at_form
+            ):
+                return
+            if not self._require_form_integers(
+                player, coordinate_fields, self._show_inspect_at_form
+            ):
+                return
+            self._dispatch_and_reopen(
+                player, ["inspect", *coordinates], self._show_inspect_menu
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Inspect Coordinates",
+            controls=self._coordinate_controls(sender),
+            validators=[self._is_form_text] * 3,
+            on_values=use_values,
+            reopen=self._show_inspect_at_form,
+            back=self._show_inspect_menu,
+            submit_button="Inspect",
+        )
+
+    def _require_form_fields(
+        self,
+        sender: CommandSender,
+        fields: list[tuple[str, str]],
+        reopen: Callable[[CommandSender], None],
+    ) -> bool:
+        missing = [label for label, value in fields if not value]
+        if not missing:
+            return True
+        sender.send_message("Required form field(s) missing: " + ", ".join(missing))
+        reopen(sender)
+        return False
+
+    @staticmethod
+    def _reject_form_value(
+        sender: CommandSender,
+        message: str,
+        reopen: Callable[[CommandSender], None],
+    ) -> bool:
+        sender.send_message(message)
+        reopen(sender)
+        return False
+
+    def _require_form_integers(
+        self,
+        sender: CommandSender,
+        fields: list[tuple[str, str]],
+        reopen: Callable[[CommandSender], None],
+        *,
+        minimum: int | None = None,
+    ) -> bool:
+        invalid: list[str] = []
+        for label, value in fields:
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError):
+                invalid.append(label)
+                continue
+            if minimum is not None and parsed < minimum:
+                invalid.append(label)
+        if not invalid:
+            return True
+        requirement = "integer" if minimum is None else f"integer at least {minimum}"
+        return self._reject_form_value(
+            sender,
+            f"Form field(s) {', '.join(invalid)} must be an {requirement}.",
+            reopen,
+        )
+
+    def _show_write_confirmation(
+        self,
+        sender: CommandSender,
+        *,
+        title: str,
+        args: list[str],
+        back: Callable[[CommandSender], None],
+    ) -> bool:
+        command_preview = "/bd " + " ".join(args)
+        if len(command_preview) > 480:
+            command_preview = command_preview[:450] + "... [truncated]"
+
+        def reopen(player: CommandSender) -> None:
+            self._show_write_confirmation(player, title=title, args=args, back=back)
+
+        return self._show_action_page(
+            sender,
+            title=title,
+            content="This action writes live server data. Confirm the command:\n"
+            + command_preview,
+            actions=[
+                (
+                    "Confirm Write",
+                    lambda player: self._dispatch_and_reopen(player, args, back),
+                ),
+                ("Cancel", back),
+            ],
+            reopen=reopen,
+            back=back,
+        )
+
+    def _show_inventory_menu(self, sender: CommandSender) -> bool:
+        return self._show_action_page(
+            sender,
+            title="Container Inventory",
+            content=self._target_summary(sender),
+            actions=[
+                (
+                    "Add Item to Active Target",
+                    lambda player: self._show_item_add_form(player, explicit=False),
+                ),
+                (
+                    "Add Item at Coordinates",
+                    lambda player: self._show_item_add_form(player, explicit=True),
+                ),
+                (
+                    "Remove Item from Active Target",
+                    lambda player: self._show_item_remove_form(player, explicit=False),
+                ),
+                (
+                    "Remove Item at Coordinates",
+                    lambda player: self._show_item_remove_form(player, explicit=True),
+                ),
+                ("Back", self._show_main_menu),
+            ],
+            reopen=self._show_inventory_menu,
+            back=self._show_main_menu,
+        )
+
+    def _show_item_add_form(self, sender: CommandSender, *, explicit: bool) -> bool:
+        controls: list[Any] = []
+        if explicit:
+            controls.extend(self._coordinate_controls(sender))
+        controls.extend(
+            [
+                TextInput("Slot", "Non-negative slot number"),
+                TextInput("Item ID", "minecraft:diamond"),
+                TextInput("Count", "Positive count", "1"),
+                TextInput("NBT JSON (optional)", '{"display":{"Name":"Example"}}'),
+            ]
+        )
+
+        def reopen(player: CommandSender) -> None:
+            self._show_item_add_form(player, explicit=explicit)
+
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            text_values = [value.strip() for value in values]
+            if explicit:
+                x, y, z, slot, item_id, count, nbt = text_values
+                required = [("X", x), ("Y", y), ("Z", z)]
+                args = ["item", "add", "at", x, y, z, slot, item_id]
+            else:
+                slot, item_id, count, nbt = text_values
+                required = []
+                args = ["item", "add", slot, item_id]
+            required.extend([("Slot", slot), ("Item ID", item_id)])
+            if not self._require_form_fields(player, required, reopen):
+                return
+            if explicit and not self._require_form_integers(
+                player, [("X", x), ("Y", y), ("Z", z)], reopen
+            ):
+                return
+            if not self._require_form_integers(
+                player, [("Slot", slot)], reopen, minimum=0
+            ):
+                return
+            if count and not self._require_form_integers(
+                player, [("Count", count)], reopen, minimum=1
+            ):
+                return
+            if nbt:
+                try:
+                    decoded_nbt = json.loads(nbt)
+                except json.JSONDecodeError:
+                    decoded_nbt = None
+                if not isinstance(decoded_nbt, dict):
+                    self._reject_form_value(
+                        player, "NBT JSON must be a valid JSON object.", reopen
+                    )
+                    return
+            if count or nbt:
+                args.append(count or "1")
+            if nbt:
+                args.append(nbt)
+            self._show_write_confirmation(
+                player,
+                title="Confirm Item Add",
+                args=args,
+                back=self._show_inventory_menu,
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Add Item" + (" at Coordinates" if explicit else ""),
+            controls=controls,
+            validators=[self._is_form_text] * len(controls),
+            on_values=use_values,
+            reopen=reopen,
+            back=self._show_inventory_menu,
+            submit_button="Review Write",
+        )
+
+    def _show_item_remove_form(self, sender: CommandSender, *, explicit: bool) -> bool:
+        controls: list[Any] = []
+        if explicit:
+            controls.extend(self._coordinate_controls(sender))
+        controls.append(TextInput("Slot", "Non-negative slot number"))
+
+        def reopen(player: CommandSender) -> None:
+            self._show_item_remove_form(player, explicit=explicit)
+
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            text_values = [value.strip() for value in values]
+            if explicit:
+                x, y, z, slot = text_values
+                required = [("X", x), ("Y", y), ("Z", z), ("Slot", slot)]
+                args = ["item", "remove", "at", x, y, z, slot]
+            else:
+                (slot,) = text_values
+                required = [("Slot", slot)]
+                args = ["item", "remove", slot]
+            if not self._require_form_fields(player, required, reopen):
+                return
+            if explicit and not self._require_form_integers(
+                player, [("X", x), ("Y", y), ("Z", z)], reopen
+            ):
+                return
+            if not self._require_form_integers(
+                player, [("Slot", slot)], reopen, minimum=0
+            ):
+                return
+            self._show_write_confirmation(
+                player,
+                title="Confirm Item Removal",
+                args=args,
+                back=self._show_inventory_menu,
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Remove Item" + (" at Coordinates" if explicit else ""),
+            controls=controls,
+            validators=[self._is_form_text] * len(controls),
+            on_values=use_values,
+            reopen=reopen,
+            back=self._show_inventory_menu,
+            submit_button="Review Write",
+        )
+
+    def _show_audit_menu(self, sender: CommandSender) -> bool:
+        return self._show_action_page(
+            sender,
+            title="Audit Changes",
+            content=self._target_summary(sender),
+            actions=[
+                (
+                    "Start Audit on Active Target",
+                    lambda player: self._dispatch_and_reopen(
+                        player, ["audit", "start"], self._show_audit_menu
+                    ),
+                ),
+                (
+                    "Stop Audit on Active Target",
+                    lambda player: self._dispatch_and_reopen(
+                        player, ["audit", "stop"], self._show_audit_menu
+                    ),
+                ),
+                ("Start / Stop at Coordinates", self._show_audit_at_form),
+                (
+                    "Audit History",
+                    lambda player: self._dispatch_and_reopen(
+                        player, ["audit", "history"], self._show_audit_menu
+                    ),
+                ),
+                ("Back", self._show_main_menu),
+            ],
+            reopen=self._show_audit_menu,
+            back=self._show_main_menu,
+        )
+
+    def _show_audit_at_form(self, sender: CommandSender) -> bool:
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            operation_index, *raw_coordinates = values
+            if operation_index not in {0, 1}:
+                player.send_message("The audit operation selection was invalid.")
+                self._show_audit_at_form(player)
+                return
+            operation = ("start", "stop")[operation_index]
+            coordinates = [value.strip() for value in raw_coordinates]
+            coordinate_fields = list(zip(("X", "Y", "Z"), coordinates))
+            if not self._require_form_fields(
+                player, coordinate_fields, self._show_audit_at_form
+            ):
+                return
+            if not self._require_form_integers(
+                player, coordinate_fields, self._show_audit_at_form
+            ):
+                return
+            self._dispatch_and_reopen(
+                player,
+                ["audit", operation, *coordinates],
+                self._show_audit_menu,
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Audit Coordinates",
+            controls=[
+                Dropdown("Operation", ["Start", "Stop"], 0),
+                *self._coordinate_controls(sender),
+            ],
+            validators=[self._is_form_index, *([self._is_form_text] * 3)],
+            on_values=use_values,
+            reopen=self._show_audit_at_form,
+            back=self._show_audit_menu,
+            submit_button="Run Audit Action",
+        )
+
+    def _show_state_menu(self, sender: CommandSender) -> bool:
+        return self._show_action_page(
+            sender,
+            title="Block State",
+            content=self._target_summary(sender),
+            actions=[
+                (
+                    "Set State on Active Target",
+                    lambda player: self._show_state_set_form(player, explicit=False),
+                ),
+                (
+                    "Set State at Coordinates",
+                    lambda player: self._show_state_set_form(player, explicit=True),
+                ),
+                ("Back", self._show_main_menu),
+            ],
+            reopen=self._show_state_menu,
+            back=self._show_main_menu,
+        )
+
+    def _show_state_set_form(self, sender: CommandSender, *, explicit: bool) -> bool:
+        controls: list[Any] = [
+            TextInput("Property", "minecraft:cardinal_direction"),
+            TextInput("Value", "north, true, or an integer"),
+        ]
+        if explicit:
+            controls.extend(self._coordinate_controls(sender))
+
+        def reopen(player: CommandSender) -> None:
+            self._show_state_set_form(player, explicit=explicit)
+
+        def use_values(player: CommandSender, values: list[Any]) -> None:
+            property_name, property_value, *coordinates = [
+                value.strip() for value in values
+            ]
+            required = [("Property", property_name), ("Value", property_value)]
+            if explicit:
+                x, y, z = coordinates
+                required.extend([("X", x), ("Y", y), ("Z", z)])
+            if not self._require_form_fields(player, required, reopen):
+                return
+            if explicit and not self._require_form_integers(
+                player,
+                list(zip(("X", "Y", "Z"), coordinates)),
+                reopen,
+            ):
+                return
+            args = ["state", "set", property_name, property_value]
+            if explicit:
+                args.extend(coordinates)
+            self._show_write_confirmation(
+                player,
+                title="Confirm Block State Write",
+                args=args,
+                back=self._show_state_menu,
+            )
+
+        return self._show_modal_page(
+            sender,
+            title="Set Block State" + (" at Coordinates" if explicit else ""),
+            controls=controls,
+            validators=[self._is_form_text] * len(controls),
+            on_values=use_values,
+            reopen=reopen,
+            back=self._show_state_menu,
+            submit_button="Review Write",
         )
 
     def _require_bridge(
@@ -209,10 +966,15 @@ class BlockDataInspectorPlugin(Plugin):
             )
             return None
 
-        missing = [name for name in capabilities if not self.native_capabilities.get(name, False)]
+        missing = [
+            name
+            for name in capabilities
+            if not self.native_capabilities.get(name, False)
+        ]
         if missing:
             sender.send_message(
-                "§cNative adapter does not support required capability: " + ", ".join(missing)
+                "§cNative adapter does not support required capability: "
+                + ", ".join(missing)
             )
             return None
         return bridge
@@ -258,7 +1020,9 @@ class BlockDataInspectorPlugin(Plugin):
         try:
             x, y, z = (int(value) for value in args)
         except (TypeError, ValueError):
-            sender.send_message("§cCoordinates must be three absolute integers: <x> <y> <z>.")
+            sender.send_message(
+                "§cCoordinates must be three absolute integers: <x> <y> <z>."
+            )
             return None
         return self._dimension_name(sender), x, y, z
 
@@ -477,9 +1241,13 @@ class BlockDataInspectorPlugin(Plugin):
 
         containers.sort(key=distance_squared)
         if containers:
-            sender.send_message(f"§aFound {len(containers)} supported container actors:")
+            sender.send_message(
+                f"§aFound {len(containers)} supported container actors:"
+            )
         else:
-            sender.send_message(f"§cNo supported container actors found within radius {radius}.")
+            sender.send_message(
+                f"§cNo supported container actors found within radius {radius}."
+            )
 
         for snapshot in containers[:10]:
             entity = dict(snapshot["block_entity"])
@@ -565,8 +1333,7 @@ class BlockDataInspectorPlugin(Plugin):
         )
         truncation = "; preview truncated" if nbt_truncated else ""
         sender.send_message(
-            f"§7Canonical NBT ({nbt_characters} chars{truncation}): "
-            f"§f{nbt_preview}"
+            f"§7Canonical NBT ({nbt_characters} chars{truncation}): §f{nbt_preview}"
         )
         inventory = self._container_inventory(snapshot)
         if inventory is None:
@@ -576,15 +1343,16 @@ class BlockDataInspectorPlugin(Plugin):
         occupied = self._occupied_inventory(inventory)
         capacity = self._container_capacity(snapshot, inventory)
         sender.send_message(
-            f"§7Container Capacity: §b{capacity} "
-            f"§7Occupied: §b{len(occupied)}"
+            f"§7Container Capacity: §b{capacity} §7Occupied: §b{len(occupied)}"
         )
         if occupied:
             sender.send_message("§7Occupied Contents:")
             for slot in occupied[:12]:
                 sender.send_message(f"  §e- §f{self._item_preview(slot)}")
             if len(occupied) > 12:
-                sender.send_message(f"  §7... and {len(occupied) - 12} more occupied slots")
+                sender.send_message(
+                    f"  §7... and {len(occupied) - 12} more occupied slots"
+                )
         else:
             sender.send_message("§7Occupied Contents: §oEmpty")
 
@@ -634,7 +1402,9 @@ class BlockDataInspectorPlugin(Plugin):
                 "inspect it and retry the command."
             )
             return
-        sender.send_message(f"§cNative write failed: {result.get('message', 'unknown error')}")
+        sender.send_message(
+            f"§cNative write failed: {result.get('message', 'unknown error')}"
+        )
 
     def _handle_item(self, sender: CommandSender, args: list[str]) -> bool:
         if not args or args[0].lower() not in {"add", "remove"}:
@@ -734,7 +1504,9 @@ class BlockDataInspectorPlugin(Plugin):
             result = self._apply(sender, patch)
             if result is not None:
                 if result.get("ok"):
-                    sender.send_message(f"§aCleared live item in slot {slot} at ({x}, {y}, {z}).")
+                    sender.send_message(
+                        f"§aCleared live item in slot {slot} at ({x}, {y}, {z})."
+                    )
                 else:
                     self._send_apply_failure(sender, result)
             return True
@@ -771,12 +1543,25 @@ class BlockDataInspectorPlugin(Plugin):
             old, new = left.get(slot), right.get(slot)
             if old == new:
                 continue
-            kind = "added" if slot not in left else "removed" if slot not in right else "changed"
+            kind = (
+                "added"
+                if slot not in left
+                else "removed"
+                if slot not in right
+                else "changed"
+            )
             changes.append({"slot": slot, "kind": kind, "before": old, "after": new})
-        before_entity, after_entity = before.get("block_entity"), after.get("block_entity")
+        before_entity, after_entity = (
+            before.get("block_entity"),
+            after.get("block_entity"),
+        )
         return {
             "location": dict(after["location"]),
-            "block_changed": (before.get("type"), before.get("runtime_id"), before.get("states"))
+            "block_changed": (
+                before.get("type"),
+                before.get("runtime_id"),
+                before.get("states"),
+            )
             != (after.get("type"), after.get("runtime_id"), after.get("states")),
             "actor_nbt_changed": (before_entity or {}).get("nbt")
             != (after_entity or {}).get("nbt"),
@@ -795,7 +1580,9 @@ class BlockDataInspectorPlugin(Plugin):
                 sender.send_message("§cUsage: /bd audit history")
                 return True
             audit_logs = getattr(self, "audit_logs", [])
-            sender.send_message(f"§e=== Live Audit History ({len(audit_logs)} sessions) ===")
+            sender.send_message(
+                f"§e=== Live Audit History ({len(audit_logs)} sessions) ==="
+            )
             for index, delta in enumerate(audit_logs[-5:], 1):
                 location = delta["location"]
                 sender.send_message(
