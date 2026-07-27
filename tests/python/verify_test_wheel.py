@@ -30,7 +30,7 @@ EXPECTED_COMMANDS = {"bd"}
 EXPECTED_DEPENDENCIES = ["blockdata_api"]
 EXPECTED_PACKAGES = {"endstone_blockdata_inspector/"}
 EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.6"]
-EXPECTED_VERSION = "0.4.5b32"
+EXPECTED_VERSION = "0.4.5"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),

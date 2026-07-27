@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.5-beta.32
+  RELEASE_VERSION: 0.4.5
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -259,6 +259,13 @@ jobs:
           pattern: ${{ env.PROJECT_SLUG }}-exact-*
           path: release-assets
           merge-multiple: true
+      - name: Verify complete release asset set
+        run: >-
+          python scripts/verify_combined_release_assets.py
+          --slug "${{ env.PROJECT_SLUG }}"
+          --version "${{ env.RELEASE_VERSION }}"
+          --bds "1.26.33"
+          --release-dir release-assets
       - name: Generate combined checksums
         working-directory: release-assets
         shell: bash
@@ -267,16 +274,17 @@ jobs:
             | sort -z \
             | xargs -0 -r sha256sum > SHA256SUMS.txt
           test -s SHA256SUMS.txt
+          test "$(wc -l < SHA256SUMS.txt)" -eq 6
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
         run: |
-          create_flags=()
+          create_flags=(--latest)
           edit_flags=(--prerelease=false --latest)
           if [[ "$RELEASE_TAG" == *-* ]]; then
-            create_flags+=(--prerelease)
+            create_flags=(--prerelease --latest=false)
             edit_flags=(--prerelease --latest=false)
           fi
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
