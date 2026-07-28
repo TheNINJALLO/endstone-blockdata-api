@@ -112,6 +112,77 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
     endif()
 
+    # BEGIN BlockData Windows player.cpp link fix
+    # The exact plugin statically links Endstone's private Bedrock wrapper objects.
+    # On Windows, using Player::getInventory() pulls player.cpp.obj, whose unrelated
+    # setSelectedSlot() implementation references MinecraftPackets::createPacket.
+    # That factory belongs to the Endstone runtime hook layer and is not available
+    # to a separately linked plugin DLL. Remove only the packet-send tail from the
+    # fetched private copy. The server's loaded Endstone runtime is not modified.
+    set(ENDSTONE_PLAYER_CPP
+        "${endstone_SOURCE_DIR}/src/bedrock/world/actor/player/player.cpp")
+    if(EXISTS "${ENDSTONE_PLAYER_CPP}")
+        file(READ "${ENDSTONE_PLAYER_CPP}" ENDSTONE_PLAYER_CPP_CONTENT)
+        string(REPLACE "\r\n" "\n"
+            ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+
+        set(ENDSTONE_PLAYER_PACKET_FACTORY
+            "MinecraftPackets::createPacket(MinecraftPacketIds::PlayerEquipment)")
+        string(FIND "${ENDSTONE_PLAYER_CPP_CONTENT}"
+            "${ENDSTONE_PLAYER_PACKET_FACTORY}"
+            ENDSTONE_PLAYER_PACKET_FACTORY_INDEX)
+
+        if(NOT ENDSTONE_PLAYER_PACKET_FACTORY_INDEX EQUAL -1)
+            string(REPLACE
+                "    const auto packet = MinecraftPackets::createPacket(MinecraftPacketIds::PlayerEquipment);\n"
+                ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE
+                "    const auto pk = std::static_pointer_cast<MobEquipmentPacket>(packet);\n"
+                ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE "    pk->payload.runtime_id = getRuntimeID();\n" ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE "    pk->payload.item = item;\n" ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE "    pk->payload.slot = slot;\n" ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE "    pk->payload.selected_slot = slot;\n" ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE
+                "    pk->payload.container_id = CONTAINER_ID_INVENTORY;\n"
+                ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+            string(REPLACE
+                "    getDimension().sendPacketForEntity(*this, *pk, nullptr);\n"
+                ""
+                ENDSTONE_PLAYER_CPP_CONTENT "${ENDSTONE_PLAYER_CPP_CONTENT}")
+
+            string(FIND "${ENDSTONE_PLAYER_CPP_CONTENT}"
+                "${ENDSTONE_PLAYER_PACKET_FACTORY}"
+                ENDSTONE_PLAYER_PACKET_FACTORY_REMAINING)
+            if(NOT ENDSTONE_PLAYER_PACKET_FACTORY_REMAINING EQUAL -1)
+                message(FATAL_ERROR
+                    "Failed to remove Endstone PlayerEquipment packet factory reference")
+            endif()
+
+            file(WRITE "${ENDSTONE_PLAYER_CPP}"
+                "${ENDSTONE_PLAYER_CPP_CONTENT}")
+        else()
+            string(FIND "${ENDSTONE_PLAYER_CPP_CONTENT}"
+                "const auto &item = container.getItem(slot);\n    return item;"
+                ENDSTONE_PLAYER_SAFE_RETURN_INDEX)
+            if(ENDSTONE_PLAYER_SAFE_RETURN_INDEX EQUAL -1)
+                message(FATAL_ERROR
+                    "Endstone v0.11.6 player.cpp no longer matches the validated Windows link patch")
+            endif()
+        endif()
+    else()
+        message(FATAL_ERROR
+            "Endstone v0.11.6 player.cpp was not found for the Windows link patch")
+    endif()
+    # END BlockData Windows player.cpp link fix
+
     # The native adapter passes Bedrock-owned types across the ABI. Link the
     # exact Endstone tag's implementations instead of satisfying relocations
     # with untyped no-op weak symbols. Those shims made the library load only
