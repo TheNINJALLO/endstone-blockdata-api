@@ -143,8 +143,6 @@ Full technical documentation, architecture deep dives, and API reference manuals
 - 📖 [Documentation Index](docs/README.md)
 - 🏗️ [Architecture & Memory Model](docs/ARCHITECTURE.md)
 - 📦 [Canonical NBT & Container Systems](docs/nbt_and_containers.md)
-- 🎒 [Bundle & Storage Item Module](docs/storage_items.md)
-- 🧍 [Player Inventory Adapter](docs/player_inventory.md)
 - 🛡️ [Container Transaction Audit Engine](docs/audit_system.md)
 - 📘 [Complete API Reference](docs/api_reference.md)
 - 💡 [Code Examples & Recipes](examples/python/)

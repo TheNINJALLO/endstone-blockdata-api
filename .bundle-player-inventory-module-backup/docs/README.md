@@ -10,8 +10,6 @@ This library provides high-performance, native Bedrock block state mutation, can
 
 - [🏗️ Architecture & Core Concepts](ARCHITECTURE.md) — Learn about memory snapshots, optimistic revision checks, and collision handling policies.
 - [📦 Container NBT & Item Manipulation](nbt_and_containers.md) — Inspect container slots, read/write canonical NBT, and modify item tags in real-time.
-- [🎒 Bundle & Storage Item Module](storage_items.md) — Read, validate, and patch bundle or custom storage-item contents.
-- [🧍 Player Inventory Adapter](player_inventory.md) — Inspect and safely patch live main, armor, offhand, and Ender Chest items.
 - [🛡️ Anti-Grief Transaction Audit Recorder](audit_system.md) — Record baseline container snapshots and calculate delta inventory changes.
 - [🎮 In-Game Command Suite Guide](in_game_testing.md) — Full reference for the `/bd` command suite and packaged test plugin wheel.
 - [📘 Complete API Reference](api_reference.md) — Comprehensive class, interface, and method reference for C++ and Python.

@@ -2,11 +2,9 @@
 #include <endstone/plugin/service_manager.h>
 #include <endstone/plugin/service_priority.h>
 #include "endstone_blockdata/bds_26_30_adapter.h"
-#include "endstone_blockdata/bds_26_30_player_inventory_adapter.h"
 #include "endstone_blockdata/block_data_service.h"
 #include "endstone_blockdata/endstone_adapter.h"
 #include "endstone_blockdata/live_service.h"
-#include "endstone_blockdata/live_player_inventory_service.h"
 #include "version.h"
 #include <memory>
 #include <string>
@@ -32,30 +30,6 @@ public:
             std::string(endstone_blockdata::BlockDataServiceName), provider_, *this,
             endstone::ServicePriority::Normal);
 
-#if ENDSTONE_BLOCKDATA_NATIVE_2630
-        auto player_inventory_adapter =
-            endstone_blockdata::makeBds2630PlayerInventoryAdapter(getServer());
-        if (player_inventory_adapter) {
-            player_inventory_service_ =
-                std::make_shared<endstone_blockdata::PlayerInventoryService>(
-                    std::move(player_inventory_adapter));
-            player_inventory_provider_ = std::make_shared<
-                endstone_blockdata::LivePlayerInventoryServiceProvider>(
-                    player_inventory_service_);
-            getServer().getServiceManager().registerService(
-                std::string(endstone_blockdata::PlayerInventoryServiceName),
-                player_inventory_provider_, *this,
-                endstone::ServicePriority::Normal);
-            getLogger().info(
-                "service={} adapter={} main=true armor=true offhand=true ender_chest=true storage_items=true",
-                endstone_blockdata::PlayerInventoryServiceName,
-                player_inventory_service_->adapterName());
-        } else {
-            getLogger().warning(
-                "Exact player inventory adapter unavailable; live player item NBT is disabled");
-        }
-#endif
-
         const auto caps = service_->capabilities();
         getLogger().info("BlockData API {} enabled; adapter={}; BDS={}",
                          ENDSTONE_BLOCKDATA_VERSION, service_->adapterName(), getServer().getMinecraftVersion());
@@ -67,8 +41,6 @@ public:
 
     void onDisable() override {
         getServer().getServiceManager().unregisterAll(*this);
-        player_inventory_provider_.reset();
-        player_inventory_service_.reset();
         provider_.reset();
         service_.reset();
     }
@@ -76,9 +48,6 @@ public:
 private:
     std::shared_ptr<endstone_blockdata::BlockDataService> service_;
     std::shared_ptr<endstone_blockdata::LiveBlockDataServiceProvider> provider_;
-    std::shared_ptr<endstone_blockdata::PlayerInventoryService> player_inventory_service_;
-    std::shared_ptr<endstone_blockdata::LivePlayerInventoryServiceProvider>
-        player_inventory_provider_;
 };
 
 ENDSTONE_PLUGIN("blockdata_api", ENDSTONE_BLOCKDATA_VERSION, BlockDataPlugin) {
