@@ -38,7 +38,6 @@ add_library(endstone_blockdata_core STATIC
     src/nbt.cpp
     src/audit.cpp
     src/container_audit_reactor.cpp
-    src/player_inventory.cpp
     src/version_gate.cpp
 )
 target_include_directories(endstone_blockdata_core PUBLIC include)
@@ -133,7 +132,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         list(APPEND BLOCKDATA_PLUGIN_SOURCES
             src/bds_26_30_adapter.cpp
             src/native_item_bridge.cpp
-            src/bds_26_30_player_inventory_adapter.cpp
         )
     endif()
 
@@ -281,8 +279,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         docs/INSTALL.md
         docs/CI_TROUBLESHOOTING.md
         docs/BDS_26_30_ADAPTER.md
-        docs/storage_items.md
-        docs/player_inventory.md
         DESTINATION .
         COMPONENT blockdata_package
     )
@@ -311,24 +307,6 @@ if(ENDSTONE_BLOCKDATA_BUILD_TESTS)
         target_compile_options(blockdata_tests PRIVATE -UNDEBUG)
     endif()
     add_test(NAME blockdata_tests COMMAND blockdata_tests)
-
-    add_executable(storage_item_tests tests/cpp/test_storage_item.cpp)
-    target_link_libraries(storage_item_tests PRIVATE endstone_blockdata_core)
-    if(MSVC)
-        target_compile_options(storage_item_tests PRIVATE /UNDEBUG)
-    else()
-        target_compile_options(storage_item_tests PRIVATE -UNDEBUG)
-    endif()
-    add_test(NAME storage_item_tests COMMAND storage_item_tests)
-
-    add_executable(player_inventory_tests tests/cpp/test_player_inventory.cpp)
-    target_link_libraries(player_inventory_tests PRIVATE endstone_blockdata_core)
-    if(MSVC)
-        target_compile_options(player_inventory_tests PRIVATE /UNDEBUG)
-    else()
-        target_compile_options(player_inventory_tests PRIVATE -UNDEBUG)
-    endif()
-    add_test(NAME player_inventory_tests COMMAND player_inventory_tests)
 
     add_test(
         NAME blockdata_symbol_gate_accepts_clean_elf

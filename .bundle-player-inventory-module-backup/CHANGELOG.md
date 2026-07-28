@@ -1,10 +1,3 @@
-## Unreleased
-
-- Added exact live player inventory capture and writes for main inventory, armor, offhand, and Ender Chest slots.
-- Added canonical bundle/storage-item NBT editing inside player inventory slots.
-- Added full preflight item validation, whole-inventory revision conflicts, Python bridge methods, C++ service access, and portable tests.
-- Added header-only C++ and Python views for vanilla bundles and custom `minecraft:storage_item` contents.
-
 ## 0.4.6
 
 - Added `/bd menu` and made bare `/bd` open a single guarded player form that navigates every registered locate, inspect, inventory, audit, and state command.

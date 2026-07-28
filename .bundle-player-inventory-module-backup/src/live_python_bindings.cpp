@@ -1,5 +1,4 @@
 #include "endstone_blockdata/live_service.h"
-#include "endstone_blockdata/live_player_inventory_service.h"
 #include "endstone_blockdata/nbt.h"
 #include <endstone/endstone.hpp>
 #include <pybind11/pybind11.h>
@@ -8,7 +7,6 @@
 #include <cctype>
 #include <cstdint>
 #include <limits>
-#include <map>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -364,90 +362,6 @@ py::dict snapshotToPython(const BlockSnapshot &snapshot) {
 std::shared_ptr<LiveBlockDataService> loadService(endstone::Server &server) {
     return server.getServiceManager().load<LiveBlockDataService>(std::string(BlockDataServiceName));
 }
-
-py::list playerInventoryItemsToPython(
-    const std::vector<PlayerInventoryItemSnapshot> &items)
-{
-    py::list output;
-    for (const auto &entry : items) {
-        py::dict item;
-        item["slot"] = entry.slot;
-        item["item"] = nbtToPython(entry.item);
-        item["revision"] = entry.revision;
-        output.append(std::move(item));
-    }
-    return output;
-}
-
-py::dict playerInventorySnapshotToPython(
-    const PlayerInventorySnapshot &snapshot)
-{
-    py::dict output;
-    output["player_name"] = snapshot.player_name;
-    output["xuid"] = snapshot.xuid;
-    output["selected_hotbar_slot"] = snapshot.selected_hotbar_slot;
-    output["main_size"] = snapshot.main_size;
-    output["armor_size"] = snapshot.armor_size;
-    output["offhand_size"] = snapshot.offhand_size;
-    output["ender_chest_size"] = snapshot.ender_chest_size;
-    output["main"] = playerInventoryItemsToPython(snapshot.main);
-    output["armor"] = playerInventoryItemsToPython(snapshot.armor);
-    output["offhand"] = playerInventoryItemsToPython(snapshot.offhand);
-    output["ender_chest"] = playerInventoryItemsToPython(snapshot.ender_chest);
-    output["revision"] = snapshot.revision;
-    return output;
-}
-
-void readPlayerInventoryUpdates(
-    const py::dict &source,
-    const char *name,
-    std::map<std::int32_t, PlayerInventoryItemSnapshot> &destination)
-{
-    if (!source.contains(name)) return;
-    const auto values = field(source, name);
-    if (values.is_none()) return;
-    if (!py::isinstance<py::dict>(values)) {
-        throw py::type_error(std::string(name) + " must be a dict");
-    }
-    for (const auto &[key, value] : py::cast<py::dict>(values)) {
-        const auto slot = py::cast<std::int32_t>(key);
-        if (slot < 0) {
-            throw py::value_error(std::string(name) + " keys must be non-negative slots");
-        }
-        destination.emplace(
-            slot,
-            PlayerInventoryItemSnapshot{slot, nbtFromPython(value), 0});
-    }
-}
-
-PlayerInventoryPatch playerInventoryPatchFromPython(const py::dict &source)
-{
-    PlayerInventoryPatch patch;
-    if (source.contains("expected_revision") &&
-        !field(source, "expected_revision").is_none()) {
-        patch.expected_revision =
-            py::cast<std::uint64_t>(field(source, "expected_revision"));
-    }
-
-    readPlayerInventoryUpdates(source, "main_updates", patch.main_updates);
-    readSlotSet(source, "main_removals", patch.main_removals);
-    readPlayerInventoryUpdates(source, "armor_updates", patch.armor_updates);
-    readSlotSet(source, "armor_removals", patch.armor_removals);
-    readPlayerInventoryUpdates(source, "offhand_updates", patch.offhand_updates);
-    readSlotSet(source, "offhand_removals", patch.offhand_removals);
-    readPlayerInventoryUpdates(
-        source, "ender_chest_updates", patch.ender_chest_updates);
-    readSlotSet(
-        source, "ender_chest_removals", patch.ender_chest_removals);
-    return patch;
-}
-
-std::shared_ptr<LivePlayerInventoryService> loadPlayerInventoryService(
-    endstone::Server &server)
-{
-    return server.getServiceManager().load<LivePlayerInventoryService>(
-        std::string(PlayerInventoryServiceName));
-}
 } // namespace
 
 PYBIND11_MODULE(_endstone_blockdata_live, module) {
@@ -511,78 +425,4 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         return applyResultToPython(service->apply(patchFromPython(patch),
                                                   conflictPolicyFromPython(conflict_policy)));
     }, py::arg("server"), py::arg("patch"), py::arg("conflict_policy") = "fail_if_changed");
-    module.def(
-        "player_inventory_available",
-        [](endstone::Server &server) {
-            return static_cast<bool>(loadPlayerInventoryService(server));
-        },
-        py::arg("server"));
-
-    module.def(
-        "player_inventory_capabilities",
-        [](endstone::Server &server) {
-            auto service = loadPlayerInventoryService(server);
-            if (!service) {
-                throw std::runtime_error(
-                    std::string(PlayerInventoryServiceName) +
-                    " service is not registered");
-            }
-            py::dict output;
-            output["adapter"] = service->adapterName();
-            output["main"] = true;
-            output["armor"] = true;
-            output["offhand"] = true;
-            output["ender_chest"] = true;
-            output["item_user_nbt"] = true;
-            output["storage_items"] = true;
-            return output;
-        },
-        py::arg("server"));
-
-    module.def(
-        "capture_player_inventory",
-        [](endstone::Server &server, endstone::Player &player) -> py::object {
-            if (!server.isPrimaryThread()) {
-                throw std::runtime_error(
-                    "live player inventory capture must run on the Endstone primary thread");
-            }
-            auto service = loadPlayerInventoryService(server);
-            if (!service) {
-                throw std::runtime_error(
-                    std::string(PlayerInventoryServiceName) +
-                    " service is not registered");
-            }
-            auto snapshot = service->capture(player);
-            if (!snapshot) return py::none();
-            return playerInventorySnapshotToPython(*snapshot);
-        },
-        py::arg("server"),
-        py::arg("player"));
-
-    module.def(
-        "apply_player_inventory",
-        [](endstone::Server &server,
-           endstone::Player &player,
-           const py::dict &patch,
-           const std::string &conflict_policy) {
-            if (!server.isPrimaryThread()) {
-                throw std::runtime_error(
-                    "live player inventory apply must run on the Endstone primary thread");
-            }
-            auto service = loadPlayerInventoryService(server);
-            if (!service) {
-                throw std::runtime_error(
-                    std::string(PlayerInventoryServiceName) +
-                    " service is not registered");
-            }
-            return applyResultToPython(service->apply(
-                player,
-                playerInventoryPatchFromPython(patch),
-                conflictPolicyFromPython(conflict_policy)));
-        },
-        py::arg("server"),
-        py::arg("player"),
-        py::arg("patch"),
-        py::arg("conflict_policy") = "fail_if_changed");
-
 }
