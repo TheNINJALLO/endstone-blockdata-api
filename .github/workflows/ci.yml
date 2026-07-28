@@ -205,6 +205,8 @@ jobs:
           python-version: "3.14"
       - name: Install Endstone runtime dependency
         run: python -m pip install "endstone==0.11.6"
+      - name: Install local Python package
+        run: python -m pip install -e .
       - name: Download both exact-built command wheels
         uses: actions/download-artifact@v8
         with:
