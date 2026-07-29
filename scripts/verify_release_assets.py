@@ -70,8 +70,10 @@ def verify_checksum_file(checksums: Path, expected: dict[str, str]) -> None:
 FORBIDDEN_UNDEFINED_SYMBOL = re.compile(
     r"^_Z(?:NK?|TV|TI|TS)(?:[0-9]+(?:BaseGameVersion|Block|BlockActor|"
     r"BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|"
-    r"Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|"
-    r"IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|"
+    r"Dimension|DoubleTag|DynamicContainerManager|DynamicContainerTracker|"
+    r"EndTag|FloatTag|HashedString|IContainerRegistryAccess|"
+    r"IContainerRegistryTracker|Int64Tag|IntArrayTag|IntTag|Item|"
+    r"ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|"
     r"ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|"
     r"EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|"
     r"ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|N?8endstone4core)"

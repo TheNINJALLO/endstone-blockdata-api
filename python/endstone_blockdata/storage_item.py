@@ -32,6 +32,7 @@ class StorageItemStatus(str, Enum):
     NESTED_STORAGE_DISABLED = "nested_storage_disabled"
     OVERWEIGHT = "overweight"
     NESTING_TOO_DEEP = "nesting_too_deep"
+    CONTENTS_UNAVAILABLE = "contents_unavailable"
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,11 +46,23 @@ class StorageItemRules:
     banned_items: frozenset[str] = field(default_factory=frozenset)
 
     def __post_init__(self) -> None:
-        if not 1 <= self.slot_capacity <= 64:
+        if (
+            isinstance(self.slot_capacity, bool)
+            or not isinstance(self.slot_capacity, int)
+            or not 1 <= self.slot_capacity <= 64
+        ):
             raise ValueError("storage item slot capacity must be between 1 and 64")
-        if not 1 <= self.max_weight <= 64:
+        if (
+            isinstance(self.max_weight, bool)
+            or not isinstance(self.max_weight, int)
+            or not 1 <= self.max_weight <= 64
+        ):
             raise ValueError("storage item maximum weight must be between 1 and 64")
-        if not 0 <= self.nested_storage_item_weight <= self.max_weight:
+        if (
+            isinstance(self.nested_storage_item_weight, bool)
+            or not isinstance(self.nested_storage_item_weight, int)
+            or not 0 <= self.nested_storage_item_weight <= self.max_weight
+        ):
             raise ValueError("nested storage item weight is outside the supported range")
 
 
@@ -92,6 +105,10 @@ def _tag(item: ItemNbt, *, create: bool = False) -> ItemNbt | None:
         value = {}
         item["tag"] = value
     return value if isinstance(value, dict) else None
+
+
+def _has_tag_field(item: ItemNbt) -> bool:
+    return "tag" in item or "user_data" in item
 
 
 def _contents(item: ItemNbt) -> list[ItemNbt] | None:
@@ -178,10 +195,11 @@ def validate_storage_item(
         return StorageItemValidation(StorageItemStatus.INVALID_ITEM, "storage item must be an item compound")
 
     identifier = _identifier(item)
-    if identifier is None:
+    item_count = _count(item)
+    if identifier is None or item_count is None:
         return StorageItemValidation(
             StorageItemStatus.INVALID_ITEM,
-            "storage item must contain a valid item identifier",
+            "storage item must contain a valid item identifier and count",
         )
 
     contents = _contents(item)
@@ -191,8 +209,16 @@ def validate_storage_item(
                 StorageItemStatus.INVALID_CONTENTS,
                 "storage_item_component_content must be a list",
             )
+        if _has_tag_field(item) and _tag(item) is None:
+            return StorageItemValidation(
+                StorageItemStatus.INVALID_CONTENTS,
+                "storage item tag must be an NBT compound",
+            )
         if is_vanilla_bundle_identifier(identifier):
-            return StorageItemValidation(StorageItemStatus.VALID, "empty bundle", 0, True)
+            return StorageItemValidation(
+                StorageItemStatus.CONTENTS_UNAVAILABLE,
+                "storage item contents are unavailable",
+            )
         return StorageItemValidation(
             StorageItemStatus.NOT_STORAGE_ITEM,
             "item has no storage_item_component_content list",
@@ -333,7 +359,12 @@ def validate_storage_item(
 
 
 class StorageItemView:
-    """A detached, editable view of one serialized storage-item stack."""
+    """A detached, editable view of one storage item with serialized contents.
+
+    ``create_if_missing`` is reserved for intentionally authoring a new,
+    known-empty serialized storage item. Captured items fail closed when their
+    contents payload is unavailable.
+    """
 
     def __init__(
         self,
@@ -348,7 +379,7 @@ class StorageItemView:
             raise ValueError("item is not a bundle or serialized storage item")
         self._item = deepcopy(item)
         self.rules = rules
-        self._mutable_contents()
+        self._mutable_contents(create_if_missing=create_if_missing)
 
     @property
     def item(self) -> ItemNbt:
@@ -417,7 +448,7 @@ class StorageItemView:
         return self
 
     def replace_contents(self, entries: list[StorageItemEntry]) -> StorageItemView:
-        candidate = StorageItemView(self._item, self.rules, create_if_missing=True)
+        candidate = StorageItemView(self._item, self.rules)
         candidate._mutable_contents().clear()
         occupied: set[int] = set()
         for entry in entries:
@@ -444,11 +475,19 @@ class StorageItemView:
             inventory_updates={parent_slot: self.item},
         )
 
-    def _mutable_contents(self) -> list[ItemNbt]:
-        tag = _tag(self._item, create=True)
+    def _mutable_contents(self, *, create_if_missing: bool = False) -> list[ItemNbt]:
+        tag = _tag(self._item, create=create_if_missing)
         if tag is None:
-            raise ValueError("storage item tag must be an NBT compound")
-        value = tag.setdefault(STORAGE_ITEM_CONTENTS_KEY, [])
+            if _has_tag_field(self._item):
+                raise ValueError("storage item tag must be an NBT compound")
+            if not create_if_missing:
+                raise ValueError("storage item contents are unavailable")
+            raise RuntimeError("failed to initialize storage item tag")
+        if STORAGE_ITEM_CONTENTS_KEY not in tag:
+            if not create_if_missing:
+                raise ValueError("storage item contents are unavailable")
+            tag[STORAGE_ITEM_CONTENTS_KEY] = []
+        value = tag[STORAGE_ITEM_CONTENTS_KEY]
         if not isinstance(value, list):
             raise ValueError("storage_item_component_content must be a list")
         return value

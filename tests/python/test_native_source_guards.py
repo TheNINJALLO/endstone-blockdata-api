@@ -58,6 +58,14 @@ class TestNativeSourceGuards(unittest.TestCase):
                 "_ZNK8endstone4core17EndstoneDimension9getHandleEv"
             )
         )
+        for symbol in (
+            "_ZN23DynamicContainerTrackerD2Ev",
+            "_ZN23DynamicContainerManager12giveLifetimeER14ContainerOwner",
+            "_ZN24IContainerRegistryAccessD2Ev",
+            "_ZN25IContainerRegistryTrackerD2Ev",
+        ):
+            with self.subTest(symbol=symbol):
+                self.assertTrue(is_forbidden_undefined_symbol(symbol))
         self.assertFalse(
             is_forbidden_undefined_symbol("_ZN8endstone6Server8getLevelEv")
         )
@@ -75,6 +83,8 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertNotIn("EndstonePlayer", adapter)
         self.assertNotIn("sendInventory", adapter)
         self.assertEqual(adapter.count("if (!player.isValid())"), 2)
+        self.assertIn("containsStorageItemWrite", adapter)
+        self.assertIn("live player bundle/storage-item writes are disabled", adapter)
 
     def test_native_runtime_gate_uses_normalized_expected_builds(self):
         adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
@@ -107,6 +117,8 @@ class TestNativeSourceGuards(unittest.TestCase):
                 f"{artifact} DESTINATION {destination} COMPONENT blockdata_package",
                 cmake,
             )
+        self.assertIn('PATTERN "__pycache__" EXCLUDE', cmake)
+        self.assertIn('PATTERN "*.pyc" EXCLUDE', cmake)
 
     def test_native_item_bridge_is_functional_and_scoped(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
@@ -118,9 +130,44 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertIn("active_item_registry_level->getItemRegistry()", bridge)
         self.assertEqual(bridge.count("_loadBlocksForCanPlaceOnCanDestroy"), 2)
         self.assertEqual(bridge.count("_updateCompareHashes()"), 2)
-        self.assertNotIn("weak", bridge.lower())
+        self.assertIn("ConstructibleWeakRef", bridge)
+        self.assertIn("CreateTrackerRva", bridge)
+        self.assertIn("TrackStorageItemRva", bridge)
+        self.assertIn("ReceiveContainerLifetimesRva", bridge)
+        self.assertIn("ManagerGiveLifetimeRva", bridge)
+        self.assertIn("NativeStorageItemTransaction::materialize", bridge)
+        self.assertNotIn("tryMoveStorageItem", bridge)
         self.assertNotIn("force-unresolved", cmake.lower())
         self.assertIn("NativeItemRegistryScope item_registry_scope(*access->level)", adapter)
+        self.assertIn("requested_storage->replaceContainerLifetimes", adapter)
+        self.assertIn("rollback_storage->replaceContainerLifetimes", adapter)
+        self.assertIn("requested_storage->escrowContainerLifetimes", adapter)
+        self.assertNotIn("insert_or_assign", adapter)
+        self.assertIn("validContainerOwnerStorage", bridge)
+        self.assertIn("MaxOwnedContainerLifetimes", bridge)
+        self.assertIn("auto *owner = containerOwner(container)", bridge)
+
+        capture = adapter[
+            adapter.index("std::optional<BlockSnapshot> capture"):
+            adapter.index("ApplyResult apply")
+        ]
+        self.assertLess(
+            capture.index("if (!access)"),
+            capture.index("NativeItemRegistryScope item_registry_scope"),
+        )
+        self.assertLess(
+            capture.index("NativeItemRegistryScope item_registry_scope"),
+            capture.index("captureCanonicalActorTag"),
+        )
+        self.assertLess(
+            bridge.index("item.setNull(std::nullopt)"),
+            bridge.index("item = *tracked"),
+        )
+        apply = adapter[adapter.index("ApplyResult apply"):]
+        self.assertLess(
+            apply.index("requested_storage->escrowContainerLifetimes"),
+            apply.index("access->container->setItem("),
+        )
         self.assertLess(
             adapter.index("NativeItemRegistryScope item_registry_scope"),
             adapter.index("NativeMutationPlan plan"),

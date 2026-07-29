@@ -143,6 +143,58 @@ int main(){
     auto slot_patch=initial_view.patchSlot(0,NbtValue::compound({{"Name",std::string("minecraft:gold_ingot")}}));
     assert(slot_patch.inventory_updates.at(0).revision==after->block_entity->inventory[0].revision);
 
+    BlockSnapshot shelf_snapshot;
+    shelf_snapshot.location={"overworld",8,70,8};
+    shelf_snapshot.block_entity_status=BlockEntityCaptureStatus::Captured;
+    shelf_snapshot.revision=1234;
+    shelf_snapshot.block_entity=BlockEntitySnapshot{
+        "minecraft:shelf",NbtValue::compound({}),"",true,true,3,
+        {{1,NbtValue::compound({{"Name",std::string("minecraft:diamond")},
+                                {"Count",std::int8_t(2)}}),77}}};
+    ShelfView shelf(shelf_snapshot);
+    assert(shelf.kind()==ShelfKind::Shelf && shelf.capacity()==3);
+    const auto shelf_slots=shelf.slots();
+    assert(!shelf_slots[0] && shelf_slots[1] && !shelf_slots[2]);
+    const auto shelf_patch=shelf.patchSlot(
+        2,NbtValue::compound({{"Name",std::string("minecraft:emerald")},
+                              {"Count",std::int8_t(4)}}));
+    assert(shelf_patch.expected_revision==1234 && shelf_patch.inventory_updates.contains(2));
+    bool wrong_shelf_count_type=false;
+    try {
+        (void)shelf.patchSlot(0,NbtValue::compound({
+            {"Name",std::string("minecraft:stone")},{"Count",false}}));
+    } catch(const std::invalid_argument &) { wrong_shelf_count_type=true; }
+    assert(wrong_shelf_count_type);
+    const auto shelf_batch=shelf.patchSlots(
+        {{0,NbtValue::compound({{"Name",std::string("minecraft:stone")},
+                                 {"Count",std::int8_t(1)}})}},{1});
+    assert(shelf_batch.inventory_updates.contains(0));
+    assert(shelf_batch.inventory_removals.contains(1));
+    auto shelf_replacement=shelf.replaceSlots({
+        NbtValue::compound({{"Name",std::string("minecraft:diamond")},
+                            {"Count",std::int8_t(1)}}),
+        std::nullopt,
+        NbtValue::compound({{"Name",std::string("minecraft:emerald")},
+                            {"Count",std::int8_t(2)}}),
+    });
+    assert(shelf_replacement.inventory_updates.size()==2);
+    assert(shelf_replacement.inventory_removals==std::set<std::int32_t>{1});
+
+    BlockSnapshot chiseled=shelf_snapshot;
+    chiseled.block_entity->type="minecraft:chiseled_bookshelf";
+    chiseled.block_entity->container_size=6;
+    chiseled.block_entity->inventory.clear();
+    ShelfView books(chiseled);
+    assert(books.kind()==ShelfKind::ChiseledBookshelf && books.capacity()==6);
+    (void)books.patchSlot(5,NbtValue::compound({
+        {"Name",std::string("minecraft:written_book")},{"Count",std::int8_t(1)}}));
+    bool invalid_chiseled=false;
+    try {
+        (void)books.patchSlot(0,NbtValue::compound({
+            {"Name",std::string("minecraft:diamond")},{"Count",std::int8_t(1)}}));
+    } catch(const std::invalid_argument &) { invalid_chiseled=true; }
+    assert(invalid_chiseled);
+
     BlockPatch unsupported; unsupported.location=loc; unsupported.replacement_type="minecraft:stone";
     for(auto policy:{ConflictPolicy::MergeChangedPaths,ConflictPolicy::MergeInventorySlots,ConflictPolicy::Replace})
         assert(svc.apply(unsupported,policy).status==ApplyStatus::Unsupported);

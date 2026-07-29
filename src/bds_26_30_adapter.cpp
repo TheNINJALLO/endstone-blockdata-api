@@ -19,6 +19,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -52,9 +53,11 @@ std::string blockActorTypeName(BlockActorType type) {
     case BlockActorType::BarrelBlock: return "minecraft:barrel";
     case BlockActorType::Beehive: return "minecraft:beehive";
     case BlockActorType::HangingSign: return "minecraft:hanging_sign";
+    case BlockActorType::ChiseledBookshelf: return "minecraft:chiseled_bookshelf";
     case BlockActorType::Crafter: return "minecraft:crafter";
     case BlockActorType::TrialSpawner: return "minecraft:trial_spawner";
     case BlockActorType::Vault: return "minecraft:vault";
+    case BlockActorType::Shelf: return "minecraft:shelf";
     default: return "minecraft:block_actor_" + std::to_string(static_cast<unsigned>(type));
     }
 }
@@ -192,29 +195,35 @@ std::unique_ptr<CompoundTag> toNativeCompound(const NbtValue &value) {
 }
 
 CompoundTag makeItemTag(int slot, const ItemStack &item) {
+    // Bundle/storage-item contents live in Bedrock's dynamic container, not in
+    // ItemStackBase::mUserData. Flatten a copy so reads expose the serialized
+    // contents without consuming or changing the live stack.
+    ItemStack serialized(item);
+    flattenNativeStorageItem(serialized);
+
     CompoundTag out;
     out.putByte("Slot", static_cast<std::uint8_t>(slot));
     // ItemStackBase::getName() is the translated/display name. Canonical item
     // NBT needs the registry identifier so a captured stack can be reapplied.
-    const auto *definition = item.getItem();
-    out.putString("Name", definition ? definition->getFullItemName() : item.getName());
-    out.putByte("Count", item.getCount());
-    out.putShort("Damage", item.getDamageValue());
-    out.putShort("Aux", item.getAuxValue());
-    out.putShort("LegacyId", item.getId());
-    if (!item.getCustomName().empty()) out.putString("CustomName", item.getCustomName());
-    if (const auto *user = item.getUserData()) out.putCompound("tag", user->clone());
+    const auto *definition = serialized.getItem();
+    out.putString("Name", definition ? definition->getFullItemName() : serialized.getName());
+    out.putByte("Count", serialized.getCount());
+    out.putShort("Damage", serialized.getDamageValue());
+    out.putShort("Aux", serialized.getAuxValue());
+    out.putShort("LegacyId", serialized.getId());
+    if (!serialized.getCustomName().empty()) out.putString("CustomName", serialized.getCustomName());
+    if (const auto *user = serialized.getUserData()) out.putCompound("tag", user->clone());
 
-    if (!item.getCanPlaceOn().empty()) {
+    if (!serialized.getCanPlaceOn().empty()) {
         ListTag list;
-        for (const auto &type : item.getCanPlaceOn()) {
+        for (const auto &type : serialized.getCanPlaceOn()) {
             if (type) list.add(std::make_unique<StringTag>(type->getName().getString()));
         }
         out.put("CanPlaceOn", list.copy());
     }
-    if (!item.getCanDestroy().empty()) {
+    if (!serialized.getCanDestroy().empty()) {
         ListTag list;
-        for (const auto &type : item.getCanDestroy()) {
+        for (const auto &type : serialized.getCanDestroy()) {
             if (type) list.add(std::make_unique<StringTag>(type->getName().getString()));
         }
         out.put("CanDestroy", list.copy());
@@ -238,6 +247,22 @@ std::vector<std::string> stringListField(const NbtCompound &compound, std::initi
     return out;
 }
 
+bool isVanillaBundleIdentifier(std::string_view identifier) {
+    constexpr std::string_view prefix = "minecraft:";
+    if (!identifier.starts_with(prefix)) return false;
+    const auto name = identifier.substr(prefix.size());
+    return name == "bundle" || name.ends_with("_bundle");
+}
+
+bool hasSerializedStorageContents(const NbtCompound &item) {
+    const auto *tag_value = field(item, {"tag", "user_data"});
+    if (!tag_value) return false;
+    const auto *tag = compoundOf(*tag_value);
+    if (!tag) return false;
+    const auto *contents = field(*tag, {"storage_item_component_content"});
+    return contents && listOf(*contents);
+}
+
 std::optional<ItemStack> itemFromNbt(const NbtValue &value) {
     const auto *item = compoundOf(value);
     if (!item) return std::nullopt;
@@ -247,6 +272,13 @@ std::optional<ItemStack> itemFromNbt(const NbtValue &value) {
     // calls it `Name`. Accept both at the native boundary.
     auto name = stringField(*item, {"Name", "name", "id"});
     if (!name || name->empty()) return std::nullopt;
+    // A bundle identifier without a serialized contents list is an incomplete
+    // live snapshot, not an empty bundle. Refuse it at the native boundary so
+    // direct raw patches cannot erase contents that the caller never saw.
+    if (isVanillaBundleIdentifier(*name) &&
+        !hasSerializedStorageContents(*item)) {
+        return std::nullopt;
+    }
     int count = 1;
     if (const auto *count_value = field(*item, {"Count", "count"})) {
         const auto parsed = integerValue(*count_value);
@@ -395,6 +427,48 @@ bool isKnownContainerActorType(BlockActorType type) {
     }
 }
 
+std::optional<int> exactContainerSize(BlockActorType type) {
+    switch (type) {
+    case BlockActorType::Shelf: return 3;
+    case BlockActorType::ChiseledBookshelf: return 6;
+    default: return std::nullopt;
+    }
+}
+
+bool isShelfActorType(BlockActorType type) {
+    return type == BlockActorType::Shelf || type == BlockActorType::ChiseledBookshelf;
+}
+
+bool isChiseledBookshelfItem(const ItemStack &stack) {
+    if (stack.isNull()) return true;
+    const auto *definition = stack.getItem();
+    if (!definition) return false;
+    const auto name = definition->getFullItemName();
+    return name == "minecraft:book" || name == "minecraft:writable_book" ||
+           name == "minecraft:written_book" || name == "minecraft:enchanted_book";
+}
+
+bool validateContainerItem(const Container &container, BlockActorType actor_type,
+                           const ItemStack &stack, std::string &error) {
+    if (stack.isNull()) return true;
+    const int container_max = container.getMaxStackSize();
+    if (container_max < 1 || stack.getCount() > container_max) {
+        error = "item count exceeds the live container stack limit";
+        return false;
+    }
+    if (actor_type == BlockActorType::ChiseledBookshelf) {
+        if (stack.getCount() != 1) {
+            error = "chiseled bookshelf slots accept exactly one book";
+            return false;
+        }
+        if (!isChiseledBookshelfItem(stack)) {
+            error = "chiseled bookshelf slots accept only book, writable_book, written_book, or enchanted_book";
+            return false;
+        }
+    }
+    return true;
+}
+
 ActorLookup locateActor(endstone::Server &server, const BlockLocation &location) {
     auto *level = server.getLevel();
     auto *dimension = level ? level->getDimension(location.dimension) : nullptr;
@@ -435,6 +509,11 @@ ActorLookup locateActor(endstone::Server &server, const BlockLocation &location)
         return {ActorAccess{&native_level, &source, actor, main, nullptr, 0},
                 BlockEntityCaptureStatus::ContainerUnavailable};
     }
+    if (const auto expected = exactContainerSize(actor->getType());
+        expected && container_size != *expected) {
+        return {ActorAccess{&native_level, &source, actor, main, nullptr, 0},
+                BlockEntityCaptureStatus::ContainerUnavailable};
+    }
     return {ActorAccess{&native_level, &source, actor, main, container, container_size},
             BlockEntityCaptureStatus::Captured};
 }
@@ -448,7 +527,6 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
     root.putInt("z", location.z);
     root.putInt("_endstone_actor_type", static_cast<std::int32_t>(access.actor->getType()));
     root.putString("_endstone_bds_build", std::string(build));
-    root.putBoolean("_endstone_changed", access.main->isChanged());
     if (access.main->hasCustomName()) root.putString("CustomName", access.main->getName());
 
     if (access.container) {
@@ -469,8 +547,8 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
 
 using ItemReplacements = std::vector<std::pair<int, ItemStack>>;
 
-bool parseItems(Container &container, const NbtValue &value, ItemReplacements &replacements,
-                std::string &error) {
+bool parseItems(Container &container, BlockActorType actor_type, const NbtValue &value,
+                ItemReplacements &replacements, std::string &error) {
     const auto *items = listOf(value);
     if (!items) { error = "Items must be an NBT list"; return false; }
 
@@ -485,18 +563,37 @@ bool parseItems(Container &container, const NbtValue &value, ItemReplacements &r
         if (occupied[static_cast<std::size_t>(slot)]) { error = "Items contains a duplicate slot"; return false; }
         auto stack = itemFromNbt(entry);
         if (!stack) { error = "invalid item NBT"; return false; }
+        if (!validateContainerItem(container, actor_type, *stack, error)) return false;
         occupied[static_cast<std::size_t>(slot)] = true;
         replacements.emplace_back(slot, std::move(*stack));
     }
     return true;
 }
 
-void applyItems(Container &container, ItemReplacements &replacements) {
-    container.removeAllItems();
-    for (auto &[slot, stack] : replacements) {
-        container.setItem(slot, stack);
-        container.setContainerChanged(slot);
+using ItemProjection = std::map<int, ItemStack>;
+
+bool itemSlotMatches(const Container &container, int slot, const ItemStack *expected) {
+    const auto &actual = container.getItem(slot);
+    const bool expected_empty = !expected || expected->isNull();
+    if (expected_empty || actual.isNull()) return expected_empty && actual.isNull();
+    return nbtEqual(itemSnapshot(slot, *expected), itemSnapshot(slot, actual));
+}
+
+bool containerMatches(const Container &container, int container_size,
+                      const ItemProjection &expected) {
+    for (int slot = 0; slot < container_size; ++slot) {
+        const auto it = expected.find(slot);
+        const ItemStack *stack = it == expected.end() ? nullptr : &it->second;
+        if (!itemSlotMatches(container, slot, stack)) return false;
     }
+    return true;
+}
+
+void signalContainerChanged(ActorAccess &access, const std::set<int> &slots) {
+    for (int slot : slots) access.container->setContainerChanged(slot);
+    access.main->setChanged();
+    access.main->onChanged(*access.source);
+    access.source->fireBlockEntityChanged(*access.actor);
 }
 
 struct NativeMutationPlan {
@@ -538,7 +635,8 @@ public:
 
     bool verifySymbols() noexcept override {
         try {
-            return isExactRuntimeBuild(server_) && sizeof(void *) == 8;
+            return isExactRuntimeBuild(server_) && sizeof(void *) == 8 &&
+                   verifyNativeStorageItemBridge();
         } catch (...) {
             return false;
         }
@@ -559,6 +657,7 @@ public:
             return snapshot;
         }
 
+        NativeItemRegistryScope item_registry_scope(*access->level);
         auto native = captureCanonicalActorTag(*access, location, server_.getMinecraftVersion());
         BlockEntitySnapshot entity;
         entity.type = blockActorTypeName(access->actor->getType());
@@ -641,6 +740,28 @@ public:
                     current->revision};
 
         NativeItemRegistryScope item_registry_scope(*access->level);
+        const auto actor_type = access->actor->getType();
+
+        // Shelves have actor-specific display, comparator and powered-swap
+        // state. Until the exact actor save/load ABI is exposed, accept only
+        // their live inventory surface; routing arbitrary keys through
+        // Container::readAdditionalSaveData can silently ignore them.
+        if (isShelfActorType(actor_type)) {
+            for (const auto &[key, _] : patch.nbt_updates) {
+                if (key != "Items" && key != "items") {
+                    return {ApplyStatus::Unsupported,
+                            "shelf actors currently accept inventory changes only",
+                            current->revision};
+                }
+            }
+            for (const auto &key : patch.nbt_removals) {
+                if (key != "Items" && key != "items") {
+                    return {ApplyStatus::Unsupported,
+                            "shelf actors currently accept inventory changes only",
+                            current->revision};
+                }
+            }
+        }
 
         NativeMutationPlan plan;
         bool custom_name_seen = false;
@@ -664,7 +785,8 @@ public:
                     return {ApplyStatus::InvalidPatch, "Items was specified more than once", current->revision};
                 plan.replacement_items.emplace();
                 std::string error;
-                if (!parseItems(*access->container, value, *plan.replacement_items, error))
+                if (!parseItems(*access->container, actor_type, value,
+                                *plan.replacement_items, error))
                     return {ApplyStatus::InvalidPatch, error, current->revision};
                 items_seen = true;
             } else if (isIdentityField(key)) {
@@ -696,6 +818,16 @@ public:
         if (items_seen && (!patch.inventory_updates.empty() || !patch.inventory_removals.empty()))
             return {ApplyStatus::InvalidPatch, "Items and per-slot inventory changes cannot be combined", current->revision};
 
+        const bool has_inventory_changes =
+            items_seen || !patch.inventory_updates.empty() ||
+            !patch.inventory_removals.empty();
+        if (has_inventory_changes &&
+            (plan.custom_name || !plan.additional_updates.empty())) {
+            return {ApplyStatus::Unsupported,
+                    "inventory and other block-actor NBT changes are not atomic; apply them separately",
+                    current->revision};
+        }
+
         for (const auto &[slot, item_patch] : patch.inventory_updates) {
             if (slot < 0 || slot >= access->container_size)
                 return {ApplyStatus::InvalidPatch, "inventory slot out of range", current->revision};
@@ -709,6 +841,12 @@ public:
             }
             auto stack = itemFromNbt(item_patch.item);
             if (!stack) return {ApplyStatus::InvalidPatch, "invalid canonical item NBT", current->revision};
+            std::string item_error;
+            if (!validateContainerItem(*access->container, actor_type, *stack, item_error)) {
+                return {ApplyStatus::InvalidPatch,
+                        "slot " + std::to_string(slot) + ": " + item_error,
+                        current->revision};
+            }
             plan.inventory_updates.emplace_back(slot, std::move(*stack));
         }
         for (int slot : patch.inventory_removals) {
@@ -727,25 +865,48 @@ public:
         for (const auto &[key, value] : plan.additional_updates)
             candidate.put(key, toNativeTag(value));
 
-        if (plan.replacement_items || !plan.inventory_updates.empty() || !plan.inventory_removals.empty()) {
-            std::map<int, ItemStack> final_items;
-            if (plan.replacement_items) {
-                for (const auto &[slot, stack] : *plan.replacement_items)
-                    if (!stack.isNull()) final_items.insert_or_assign(slot, stack);
-            } else {
-                for (int slot = 0; slot < access->container_size; ++slot) {
-                    const auto &stack = access->container->getItem(slot);
-                    if (!stack.isNull()) final_items.emplace(slot, stack);
+        ItemProjection originals;
+        if (has_inventory_changes) {
+            for (int slot = 0; slot < access->container_size; ++slot) {
+                const auto &stack = access->container->getItem(slot);
+                if (!stack.isNull()) {
+                    auto serialized = ItemStack(stack);
+                    flattenNativeStorageItem(serialized);
+                    originals.emplace(slot, std::move(serialized));
                 }
             }
-            for (const auto &[slot, stack] : plan.inventory_updates) {
-                if (stack.isNull()) final_items.erase(slot);
-                else final_items.insert_or_assign(slot, stack);
+        }
+
+        std::optional<ItemProjection> final_items;
+        std::set<int> touched_slots;
+        if (has_inventory_changes) {
+            final_items.emplace();
+            if (plan.replacement_items) {
+                for (int slot = 0; slot < access->container_size; ++slot) touched_slots.insert(slot);
+                for (const auto &[slot, stack] : *plan.replacement_items) {
+                    if (!stack.isNull()) {
+                        final_items->erase(slot);
+                        final_items->emplace(slot, stack);
+                    }
+                }
+            } else {
+                *final_items = originals;
             }
-            for (int slot : plan.inventory_removals) final_items.erase(slot);
+            for (const auto &[slot, stack] : plan.inventory_updates) {
+                touched_slots.insert(slot);
+                if (stack.isNull()) final_items->erase(slot);
+                else {
+                    final_items->erase(slot);
+                    final_items->emplace(slot, stack);
+                }
+            }
+            for (int slot : plan.inventory_removals) {
+                touched_slots.insert(slot);
+                final_items->erase(slot);
+            }
 
             ListTag items;
-            for (const auto &[slot, stack] : final_items) {
+            for (const auto &[slot, stack] : *final_items) {
                 auto item_tag = makeItemTag(slot, stack);
                 items.add(item_tag.copy());
             }
@@ -754,26 +915,194 @@ public:
         if (!access->main->validateData(candidate))
             return {ApplyStatus::AdapterError, "block actor rejected the resulting canonical NBT", current->revision};
 
+        std::set<int> write_slots = touched_slots;
+        std::set<int> all_slots;
+        if (final_items) {
+            for (int slot = 0; slot < access->container_size; ++slot)
+                all_slots.insert(slot);
+        }
+        std::unique_ptr<NativeStorageItemTransaction> requested_storage;
+        std::unique_ptr<NativeStorageItemTransaction> rollback_storage;
+        bool needs_storage_lifetimes = false;
+        if (final_items) {
+            for (const auto &[slot, stack] : *final_items) {
+                if (hasSerializedNativeStorageContents(stack)) {
+                    needs_storage_lifetimes = true;
+                    write_slots.insert(slot);
+                }
+            }
+            for (const auto &[slot, stack] : originals) {
+                if (hasSerializedNativeStorageContents(stack)) {
+                    needs_storage_lifetimes = true;
+                }
+            }
+
+            if (needs_storage_lifetimes) {
+                requested_storage =
+                    std::make_unique<NativeStorageItemTransaction>(*access->level);
+                rollback_storage =
+                    std::make_unique<NativeStorageItemTransaction>(*access->level);
+                if (!requested_storage->ready() || !rollback_storage->ready()) {
+                    return {ApplyStatus::AdapterError,
+                            "the exact BDS storage-item tracker is unavailable",
+                            current->revision};
+                }
+                for (auto &[slot, stack] : *final_items) {
+                    if (hasSerializedNativeStorageContents(stack) &&
+                        !requested_storage->materialize(stack)) {
+                        return {touched_slots.contains(slot)
+                                    ? ApplyStatus::InvalidPatch
+                                    : ApplyStatus::AdapterError,
+                                "bundle contents in slot " +
+                                    std::to_string(slot) +
+                                    " could not be materialized",
+                                current->revision};
+                    }
+                }
+                for (auto &[slot, stack] : originals) {
+                    if (hasSerializedNativeStorageContents(stack) &&
+                        !rollback_storage->materialize(stack)) {
+                        return {ApplyStatus::AdapterError,
+                                "the original bundle in slot " +
+                                    std::to_string(slot) +
+                                    " could not be prepared for rollback",
+                                current->revision};
+                    }
+                }
+            }
+        }
+
         // readAdditionalSaveData expects a complete save projection, not a
         // sparse tag. Passing only changed keys can reset unrelated fields.
-        if (!plan.additional_updates.empty()) access->container->readAdditionalSaveData(candidate);
-        if (plan.custom_name) access->container->setCustomName(*plan.custom_name);
-        if (plan.replacement_items) applyItems(*access->container, *plan.replacement_items);
-        for (auto &[slot, stack] : plan.inventory_updates) {
-            access->container->setItem(slot, stack);
-            access->container->setContainerChanged(slot);
-        }
-        for (int slot : plan.inventory_removals) {
-            access->container->setItem(slot, ItemStack::EMPTY_ITEM);
-            access->container->setContainerChanged(slot);
+        if (!final_items) {
+            try {
+                if (!plan.additional_updates.empty())
+                    access->container->readAdditionalSaveData(candidate);
+                if (plan.custom_name)
+                    access->container->setCustomName(*plan.custom_name);
+                signalContainerChanged(*access, {});
+            }
+            catch (...) {
+                return {ApplyStatus::AdapterError,
+                        "block-actor NBT write failed", current->revision};
+            }
+
+            std::optional<BlockSnapshot> updated;
+            try {
+                updated = capture(patch.location);
+            }
+            catch (...) {
+            }
+            return {ApplyStatus::Applied,
+                    updated
+                        ? "applied canonical block-actor NBT through exact BDS 26.30 adapter"
+                        : "block-actor NBT was applied, but readback capture was unavailable",
+                    updated ? updated->revision : 0};
         }
 
-        access->main->setChanged();
-        access->main->onChanged(*access->source);
-        access->source->fireBlockEntityChanged(*access->actor);
+        if (needs_storage_lifetimes &&
+            !requested_storage->escrowContainerLifetimes(
+                *access->container, *rollback_storage)) {
+            return {ApplyStatus::AdapterError,
+                    "bundle lifetime escrow could not be installed before mutation",
+                    current->revision};
+        }
 
-        auto updated = capture(patch.location);
-        return {ApplyStatus::Applied, "applied canonical block-actor NBT through exact BDS 26.30 adapter",
+        bool requested_matches = false;
+        bool requested_lifetimes_installed = false;
+        try {
+            for (int slot : write_slots) {
+                const auto it = final_items->find(slot);
+                access->container->setItem(
+                    slot,
+                    it == final_items->end()
+                        ? ItemStack::EMPTY_ITEM
+                        : it->second);
+            }
+            requested_matches = containerMatches(
+                *access->container, access->container_size, *final_items);
+            requested_lifetimes_installed =
+                !needs_storage_lifetimes ||
+                (requested_matches &&
+                 requested_storage->replaceContainerLifetimes(
+                     *access->container));
+        }
+        catch (...) {
+            requested_matches = false;
+            requested_lifetimes_installed = false;
+        }
+
+        if (!requested_matches || !requested_lifetimes_installed) {
+            bool restored = false;
+            bool rollback_lifetimes_installed = !needs_storage_lifetimes;
+            try {
+                // Restore the complete projection. Special containers can
+                // update neighboring slots as a side effect of one setItem.
+                for (int slot : all_slots) {
+                    const auto it = originals.find(slot);
+                    access->container->setItem(
+                        slot,
+                        it == originals.end()
+                            ? ItemStack::EMPTY_ITEM
+                            : it->second);
+                }
+                restored = containerMatches(
+                    *access->container, access->container_size, originals);
+                if (needs_storage_lifetimes && restored) {
+                    rollback_lifetimes_installed =
+                        rollback_storage->replaceContainerLifetimes(
+                            *access->container);
+                }
+            }
+            catch (...) {
+                restored = false;
+            }
+
+            // If restoration or cleanup failed, the preinstalled owner escrow
+            // intentionally remains as the safe union of the original,
+            // requested, and rollback managers. Local tracker destruction can
+            // therefore never strand a live bundle stack.
+            try {
+                signalContainerChanged(*access, all_slots);
+            }
+            catch (...) {
+            }
+
+            std::uint64_t rolled_back_revision = restored
+                                                      ? current->revision
+                                                      : 0;
+            try {
+                if (auto rolled_back = capture(patch.location))
+                    rolled_back_revision = rolled_back->revision;
+            }
+            catch (...) {
+            }
+            return {ApplyStatus::AdapterError,
+                    restored && rollback_lifetimes_installed
+                        ? "container rejected or canonicalized the requested item; the complete original inventory was restored"
+                        : "container rejected the requested item; rollback was incomplete, so all bundle lifetimes remain safely escrowed",
+                    rolled_back_revision};
+        }
+
+        try {
+            signalContainerChanged(*access, write_slots);
+        }
+        catch (...) {
+            // The mutation and lifetime transfer are already committed. A
+            // notification failure must not be reported as a safe-to-retry
+            // write failure.
+        }
+
+        std::optional<BlockSnapshot> updated;
+        try {
+            updated = capture(patch.location);
+        }
+        catch (...) {
+        }
+        return {ApplyStatus::Applied,
+                updated
+                    ? "applied canonical block-actor NBT through exact BDS 26.30 adapter"
+                    : "container inventory was applied, but readback capture was unavailable",
                 updated ? updated->revision : 0};
     }
 

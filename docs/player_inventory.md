@@ -1,6 +1,8 @@
 # Player Inventory Adapter
 
-The player inventory adapter reads and writes the exact live Bedrock `ItemStack` objects attached to an online player. It uses the same canonical item NBT format as block containers, so bundle and custom `minecraft:storage_item` data is preserved.
+The player inventory adapter reads and writes ordinary live Bedrock `ItemStack` objects attached to an online player. It uses the same canonical item NBT format as block containers. Storage-item helpers expose bundle contents when the captured item includes a serialized `storage_item_component_content` list; a bundle identifier without that payload is reported as `contents_unavailable`.
+
+Player bundle/storage-item contents are currently **read-only**. Bedrock assigns their dynamic-container lifetimes to the owning native inventory, while Endstone's public player-inventory setters do not expose that lifetime transfer. The live adapter therefore rejects storage-item replacements instead of accepting a write that could lose contents or leave a dangling container. Block-container bundle reads and writes are supported by the exact BlockData adapter.
 
 ## Supported sections
 
@@ -31,6 +33,7 @@ from endstone_blockdata import (
     LivePlayerInventoryAdapter,
     PlayerInventorySection,
     PlayerInventoryView,
+    validate_storage_item,
 )
 
 adapter = LivePlayerInventoryAdapter(self.server)
@@ -40,17 +43,20 @@ if snapshot is None:
 
 view = PlayerInventoryView(snapshot)
 
-# Read and modify a bundle in main-inventory slot 2.
-bundle = view.storage_item(PlayerInventorySection.MAIN, 2)
-bundle.set_item(1, {
-    "Name": "minecraft:diamond",
-    "Count": 4,
-})
+# Read a bundle in main-inventory slot 2.
+item = view.get_item(PlayerInventorySection.MAIN, 2)
+if item is None:
+    return
+captured = validate_storage_item(item)
+if not captured.ok:
+    raise RuntimeError(captured.message)
 
-patch = view.patch_storage_item(PlayerInventorySection.MAIN, 2, bundle)
-result = adapter.apply(player, patch)
-print(result)
+bundle = view.storage_item(PlayerInventorySection.MAIN, 2)
+for entry in bundle.contents:
+    print(entry)
 ```
+
+Do not pass `create_if_missing=True` for a captured player item whose contents are unavailable. That option is reserved for intentionally authoring a new, known-empty serialized storage item.
 
 ## C++ service example
 
@@ -73,9 +79,9 @@ void inspect(endstone::Server &server, endstone::Player &player) {
 }
 ```
 
-## Client synchronization
+## Writes and client synchronization
 
-Main inventory and Ender Chest writes use native `Container::setItem` and change notifications. Armor and offhand writes use the player's native equipment setters. The adapter sends a final inventory refresh after the complete patch is applied.
+Ordinary main-inventory and Ender Chest writes use Endstone's inventory setters. Armor and offhand writes use the corresponding public equipment setters. Storage-item updates are rejected with `unsupported`; edit a bundle stored in a block container through `BlockDataService` when live contents must be changed.
 
 ## Offline players
 

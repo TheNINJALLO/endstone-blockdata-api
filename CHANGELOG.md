@@ -1,5 +1,13 @@
 ## Unreleased
 
+## 0.4.9
+
+- Exposed live vanilla bundle contents non-destructively by flattening cloned native stacks, including nested item NBT and player-inventory reads.
+- Added transactional block-container bundle writes with exact 1.26.33 dynamic-container tracking, pre-write lifetime escrow, whole-container verification, and complete rollback.
+- Added live Shelf and Chiseled Bookshelf read/edit views, strict 3/6-slot validation, inspector menu diagnostics, and a revision-safe shelf shop example.
+- Hardened the CPython 3.14 bridge with exact scalar-type identity, a version handshake, dependency-error preservation, nested-NBT wheel smoke tests, and complete vendored-module checks.
+- Expanded the private-symbol release gate and validated pinned container-owner storage before transferring native bundle lifetimes.
+
 ## 0.4.8
 
 - Fixed the Linux BlockData plugin load failure caused by importing private `EndstonePlayer` RTTI from Endstone's runtime.

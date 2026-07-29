@@ -1,6 +1,6 @@
 # Bundle and Storage Item Module
 
-The storage-item module reads and edits the serialized contents of vanilla bundles and custom items that use `minecraft:storage_item`.
+The storage-item module reads and edits the serialized contents of vanilla bundles and custom items that use `minecraft:storage_item`. It only permits edits when the serialized contents are actually present.
 
 It uses the item NBT already captured by BlockData. Bundle contents are stored under:
 
@@ -8,7 +8,7 @@ It uses the item NBT already captured by BlockData. Bundle contents are stored u
 tag.storage_item_component_content
 ```
 
-This means the native BlockData adapter does not need another unsafe Bedrock ABI cast. It already captures the complete item `tag` and writes that tag back when the parent container slot is patched.
+A bundle identifier alone proves that an item is a storage item; it does not prove that its dynamic contents were captured. When the contents field is absent, validation returns `contents_unavailable`, and ordinary `StorageItemView` construction fails instead of interpreting the item as an empty bundle. This prevents an edit from replacing unseen live contents with an empty list.
 
 ## What it supports
 
@@ -30,11 +30,13 @@ from endstone_blockdata import (
     BlockDataService,
     ContainerView,
     ConflictPolicy,
+    LiveBlockDataAdapter,
     StorageItemView,
+    validate_storage_item,
     make_max_stack_size_weight_resolver,
 )
 
-service = BlockDataService()
+service = BlockDataService(LiveBlockDataAdapter(self.server))
 snapshot = service.capture("overworld", (100, 64, 200))
 container = ContainerView(snapshot)
 
@@ -42,6 +44,10 @@ container = ContainerView(snapshot)
 bundle_item = container.get_item(4)
 if bundle_item is None:
     raise RuntimeError("slot 4 is empty")
+
+captured = validate_storage_item(bundle_item)
+if not captured.ok:
+    raise RuntimeError(captured.message)
 
 bundle = StorageItemView(bundle_item)
 bundle.set_item(0, {
@@ -76,6 +82,9 @@ ContainerView container(snapshot);
 auto parent = container.getSlot(4);
 if (!parent) return;
 
+auto captured = validateStorageItem(parent->item);
+if (!captured.ok()) return;
+
 StorageItemView bundle(parent->item);
 bundle.setSlot(0, NbtValue::compound({
     {"Name", std::string("minecraft:diamond")},
@@ -97,9 +106,9 @@ auto patch = container.patchSlot(4, std::move(bundle).releaseItem());
 auto result = service.apply(patch, ConflictPolicy::FailIfChanged);
 ```
 
-## Custom storage items
+## Explicit creation of an empty serialized storage item
 
-A new custom storage item may not have a contents list until Minecraft first initializes it. Pass `create_if_missing=True` in Python or `true` as the third C++ constructor argument:
+When intentionally authoring a new, known-empty item, pass `create_if_missing=True` in Python or `true` as the third C++ constructor argument. This explicitly initializes `tag.storage_item_component_content` to an empty list:
 
 ```python
 backpack = StorageItemView(
@@ -120,6 +129,8 @@ StorageItemView backpack(
 
 The item still needs a valid `minecraft:storage_item` component in its behavior pack. This module edits its serialized contents; it does not register item components with Bedrock.
 
+Do not use `create_if_missing` on a captured live bundle merely because its contents field is absent. That absence means the contents are unavailable, not that the bundle is empty.
+
 ## Weight validation
 
 Structural validation works without a resolver. In that case the result may be `weight_unknown`, which means the NBT layout is valid but the module only knows a lower-bound weight.
@@ -133,8 +144,12 @@ For exact validation, supply one of these:
 
 Custom storage rules are represented by `StorageItemRules`. They include slot capacity, maximum weight, nested-item weight, nested-storage permission, allowed items, and banned items.
 
-## Important scope
+## Unavailable versus empty
 
-The current BlockData service captures block containers. This module therefore works immediately for bundles stored in supported blocks such as chests, barrels, hoppers, and shulker boxes.
+These states are intentionally distinct:
 
-The parser can also handle bundle NBT obtained from a player inventory, but BlockData does not currently provide the player-inventory capture step. That requires a separate player inventory adapter.
+- A present `storage_item_component_content: []` list is a serialized empty storage item and validates normally.
+- A recognized bundle with no contents field returns `contents_unavailable` and is not valid for editing.
+- A contents field with the wrong NBT type returns `invalid_contents`.
+
+The helpers work with item NBT obtained from either block containers or the player-inventory adapter. The exact 1.26.33 block adapter supports live bundle reads and writes with native dynamic-container lifetime transfer. Player bundle contents are readable but live player storage-item writes are deliberately rejected until that owning-inventory lifetime transfer is exposed. Always validate the captured item before constructing an editable view.

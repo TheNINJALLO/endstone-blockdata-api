@@ -17,7 +17,7 @@ class BlockDataInspectorPlugin(Plugin):
     """Exercise the native BlockData service from in-game commands."""
 
     api_version = "0.11"
-    version = "0.4.8"
+    version = "0.4.9"
     description = "Interactive in-game container, NBT, and block-state test suite"
     depend = ["blockdata_api"]
 
@@ -111,11 +111,17 @@ class BlockDataInspectorPlugin(Plugin):
             "minecraft:dropper",
             "minecraft:furnace",
             "minecraft:hopper",
+            "minecraft:shelf",
             "minecraft:smoker",
             "minecraft:trapped_chest",
         }
     )
     _MAX_CANONICAL_NBT_PREVIEW_CHARS = 768
+    _STORAGE_ITEM_CONTENTS_KEY = "storage_item_component_content"
+    _MAX_STORAGE_SUMMARY_DEPTH = 4
+    _MAX_STORAGE_SUMMARY_ENTRIES = 8
+    _MAX_STORAGE_SUMMARY_LINES = 32
+    _MAX_STORAGE_ITEM_LABEL_CHARS = 160
 
     def on_enable(self) -> None:
         self.selected_targets: dict[str, tuple[str, int, int, int]] = {}
@@ -1065,8 +1071,10 @@ class BlockDataInspectorPlugin(Plugin):
     @classmethod
     def _looks_like_container_block(cls, snapshot: dict[str, Any]) -> bool:
         block_type = str(snapshot.get("type") or "").casefold()
-        return block_type in cls._KNOWN_CONTAINER_BLOCKS or block_type.endswith(
-            "_shulker_box"
+        return (
+            block_type in cls._KNOWN_CONTAINER_BLOCKS
+            or block_type.endswith("_shulker_box")
+            or block_type.endswith("_shelf")
         )
 
     @staticmethod
@@ -1142,19 +1150,290 @@ class BlockDataInspectorPlugin(Plugin):
     ) -> list[dict[str, Any]]:
         return [slot for slot in inventory if not cls._is_empty_item(slot.get("item"))]
 
-    @staticmethod
-    def _item_preview(slot: dict[str, Any]) -> str:
-        item = dict(slot.get("item") or {})
+    @classmethod
+    def _bounded_item_text(cls, value: Any) -> str:
+        rendered = str(value).replace("\r", " ").replace("\n", " ")
+        if len(rendered) <= cls._MAX_STORAGE_ITEM_LABEL_CHARS:
+            return rendered
+        return rendered[: cls._MAX_STORAGE_ITEM_LABEL_CHARS - 16] + "... [truncated]"
+
+    @classmethod
+    def _item_description(cls, item: Any) -> str:
+        if not isinstance(item, dict):
+            return "<invalid item payload>"
         item_id = item.get("Name", item.get("name", item.get("id", "unknown")))
+        if not isinstance(item_id, str) or not item_id:
+            item_id = "unknown"
         count = item.get("Count", item.get("count", 1))
+        if isinstance(count, bool) or not isinstance(count, int):
+            count = "?"
         custom_name = item.get("CustomName")
         tag = item.get("tag")
         if not custom_name and isinstance(tag, dict):
             display = tag.get("display")
             if isinstance(display, dict):
                 custom_name = display.get("Name")
-        label = f"slot {slot.get('slot', '?')}: {item_id} x{count}"
-        return f"{label} ({custom_name})" if custom_name else label
+        if not isinstance(custom_name, str):
+            custom_name = None
+        label = f"{item_id} x{count}"
+        if custom_name:
+            label += f" ({custom_name})"
+        return cls._bounded_item_text(label)
+
+    @classmethod
+    def _item_preview(cls, slot: dict[str, Any]) -> str:
+        slot_number = slot.get("slot")
+        if isinstance(slot_number, bool) or not isinstance(slot_number, int):
+            slot_number = "?"
+        return (
+            f"slot {slot_number}: {cls._item_description(slot.get('item'))}"
+        )
+
+    @classmethod
+    def _storage_item_identifier(cls, item: Any) -> str | None:
+        if not isinstance(item, dict):
+            return None
+        for key in ("Name", "name", "id"):
+            value = item.get(key)
+            if isinstance(value, str) and value:
+                return value
+        return None
+
+    @classmethod
+    def _storage_item_tag(cls, item: Any) -> dict[str, Any] | None:
+        if not isinstance(item, dict):
+            return None
+        value = item.get("tag", item.get("user_data"))
+        return value if isinstance(value, dict) else None
+
+    @classmethod
+    def _is_storage_item(cls, item: Any) -> bool:
+        identifier = cls._storage_item_identifier(item)
+        if identifier:
+            normalized = identifier.casefold()
+            if normalized.startswith("minecraft:"):
+                name = normalized.removeprefix("minecraft:")
+                if name == "bundle" or name.endswith("_bundle"):
+                    return True
+        tag = cls._storage_item_tag(item)
+        return tag is not None and cls._STORAGE_ITEM_CONTENTS_KEY in tag
+
+    @classmethod
+    def _serialized_storage_contents(
+        cls, item: Any
+    ) -> tuple[str, list[Any] | None]:
+        if not isinstance(item, dict):
+            return "invalid", None
+        if "tag" in item:
+            tag = item["tag"]
+        elif "user_data" in item:
+            tag = item["user_data"]
+        else:
+            return "unavailable", None
+        if not isinstance(tag, dict):
+            return "invalid_tag", None
+        if cls._STORAGE_ITEM_CONTENTS_KEY not in tag:
+            return "unavailable", None
+        contents = tag[cls._STORAGE_ITEM_CONTENTS_KEY]
+        if not isinstance(contents, list):
+            return "invalid", None
+        if not contents:
+            return "empty", contents
+        return "available", contents
+
+    @classmethod
+    def _storage_item_summary_lines(
+        cls, inventory: list[dict[str, Any]]
+    ) -> list[str]:
+        """Render bounded, non-mutating recursive storage-item diagnostics."""
+
+        lines: list[str] = []
+        active: set[int] = set()
+        line_limit_hit = False
+
+        def emit(message: str) -> bool:
+            nonlocal line_limit_hit
+            if len(lines) >= cls._MAX_STORAGE_SUMMARY_LINES:
+                line_limit_hit = True
+                return False
+            lines.append(cls._bounded_item_text(message))
+            return True
+
+        def walk(item: Any, *, depth: int, indent: str, context: str) -> None:
+            if not cls._is_storage_item(item):
+                return
+            identifier = cls._storage_item_identifier(item) or "unknown storage item"
+            state, contents = cls._serialized_storage_contents(item)
+            heading = f"{indent}{context} {identifier}:"
+            if state == "unavailable":
+                emit(
+                    heading
+                    + " contents unavailable (live capture did not serialize them)"
+                )
+                return
+            if state == "invalid_tag":
+                emit(heading + " contents unavailable (item tag is not a compound)")
+                return
+            if state == "invalid":
+                emit(heading + " contents unavailable (serialized value is not a list)")
+                return
+            if state == "empty":
+                emit(heading + " contents empty")
+                return
+            if contents is None:
+                return
+
+            identity = id(item)
+            if identity in active:
+                emit(heading + " recursive reference omitted")
+                return
+            if not emit(
+                heading
+                + f" {len(contents)} serialized entr"
+                + ("y" if len(contents) == 1 else "ies")
+            ):
+                return
+            if depth >= cls._MAX_STORAGE_SUMMARY_DEPTH:
+                emit(
+                    f"{indent}  ... nested contents omitted at depth "
+                    f"{cls._MAX_STORAGE_SUMMARY_DEPTH}"
+                )
+                return
+
+            active.add(identity)
+            try:
+                visible = contents[: cls._MAX_STORAGE_SUMMARY_ENTRIES]
+                for index, entry in enumerate(visible):
+                    if len(lines) >= cls._MAX_STORAGE_SUMMARY_LINES:
+                        line_limit_hit = True
+                        break
+                    if isinstance(entry, dict):
+                        slot = entry.get("Slot", entry.get("slot", index))
+                        if isinstance(slot, bool) or not isinstance(slot, int):
+                            slot = "?"
+                        emit(
+                            f"{indent}  [{slot}] {cls._item_description(entry)}"
+                        )
+                        if cls._is_storage_item(entry):
+                            walk(
+                                entry,
+                                depth=depth + 1,
+                                indent=indent + "    ",
+                                context="Nested",
+                            )
+                    else:
+                        emit(f"{indent}  [{index}] <invalid item payload>")
+                hidden = len(contents) - len(visible)
+                if hidden > 0:
+                    emit(
+                        f"{indent}  ... and {hidden} more serialized "
+                        + ("entry" if hidden == 1 else "entries")
+                    )
+            finally:
+                active.remove(identity)
+
+        for parent in inventory:
+            item = parent.get("item") if isinstance(parent, dict) else None
+            if cls._is_storage_item(item):
+                parent_slot = parent.get("slot")
+                if isinstance(parent_slot, bool) or not isinstance(parent_slot, int):
+                    parent_slot = "?"
+                walk(
+                    item,
+                    depth=0,
+                    indent="  ",
+                    context=f"Container slot {parent_slot}",
+                )
+            if line_limit_hit:
+                break
+
+        if line_limit_hit:
+            marker = (
+                f"  ... storage contents summary truncated at "
+                f"{cls._MAX_STORAGE_SUMMARY_LINES} lines"
+            )
+            if len(lines) >= cls._MAX_STORAGE_SUMMARY_LINES:
+                lines[-1] = marker
+            else:
+                lines.append(marker)
+        return lines
+
+    @classmethod
+    def _shelf_diagnostic_lines(cls, snapshot: dict[str, Any]) -> list[str]:
+        raw_entity = snapshot.get("block_entity")
+        entity = dict(raw_entity) if isinstance(raw_entity, dict) else {}
+        nbt = dict(entity.get("nbt") or {}) if isinstance(entity.get("nbt"), dict) else {}
+        block_type = str(snapshot.get("type") or "").casefold()
+        block_name = block_type.rsplit(":", 1)[-1]
+        actor_name = str(entity.get("type") or "")
+        actor_normalized = actor_name.casefold()
+        actor_code = nbt.get("_endstone_actor_type")
+
+        chiseled = (
+            block_name == "chiseled_bookshelf"
+            or "chiseled_bookshelf" in actor_normalized
+            or actor_normalized.endswith("block_actor_51")
+            or actor_code == 51
+        )
+        shelf = (
+            not chiseled
+            and (
+                block_name == "shelf"
+                or block_name.endswith("_shelf")
+                or actor_normalized in {"shelf", "minecraft:shelf"}
+                or actor_normalized.endswith("block_actor_59")
+                or actor_code == 59
+            )
+        )
+        if not chiseled and not shelf:
+            return []
+
+        expected_actor = (
+            "BlockActorType 51 / ChiseledBookshelf"
+            if chiseled
+            else "BlockActorType 59 / Shelf"
+        )
+        status = cls._block_entity_status(snapshot)
+        actor = actor_name or "unavailable"
+        inventory = cls._container_inventory(snapshot)
+        occupied_slots = sorted(
+            int(entry["slot"])
+            for entry in (inventory or [])
+            if isinstance(entry, dict)
+            and isinstance(entry.get("slot"), int)
+            and not isinstance(entry.get("slot"), bool)
+            and not cls._is_empty_item(entry.get("item"))
+        )
+        expected_capacity = 6 if chiseled else 3
+        live_capacity: int | None = None
+        value = entity.get("container_size")
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            live_capacity = value
+        capacity = "unavailable" if live_capacity is None else str(live_capacity)
+        if live_capacity is not None and live_capacity != expected_capacity:
+            capacity += " (MISMATCH; expected adapter to fail closed)"
+        occupied = ", ".join(str(slot) for slot in occupied_slots) or "none"
+
+        if chiseled:
+            restrictions = (
+                "book, writable_book, written_book, or enchanted_book only; "
+                "one item per slot"
+            )
+            behavior = "Comparator behavior tracks the last interacted book slot."
+        else:
+            restrictions = (
+                "general item stacks; item and container maximum-stack limits apply"
+            )
+            behavior = "Displayed contents and powered hotbar swaps are actor-managed."
+
+        return [
+            "Shelf / Chiseled Bookshelf Diagnostics:",
+            f"  Actor: {actor}; expected {expected_actor}; status={status}",
+            f"  Capacity: live {capacity}; expected {expected_capacity}; "
+            f"valid slots 0-{expected_capacity - 1}; occupied slots: {occupied}",
+            f"  Restrictions: {restrictions}.",
+            f"  Behavior: {behavior}",
+        ]
 
     @classmethod
     def _canonical_nbt_preview(cls, nbt: Any) -> tuple[str, int, bool]:
@@ -1315,6 +1594,9 @@ class BlockDataInspectorPlugin(Plugin):
         else:
             sender.send_message("§7Block State Properties: §oNone")
 
+        for diagnostic in self._shelf_diagnostic_lines(snapshot):
+            sender.send_message(diagnostic)
+
         raw_entity = snapshot.get("block_entity")
         if not raw_entity:
             if self._looks_like_container_block(snapshot):
@@ -1355,6 +1637,12 @@ class BlockDataInspectorPlugin(Plugin):
                 )
         else:
             sender.send_message("§7Occupied Contents: §oEmpty")
+
+        storage_summary = self._storage_item_summary_lines(occupied)
+        if storage_summary:
+            sender.send_message("Bundle / Storage Item Contents:")
+            for line in storage_summary:
+                sender.send_message(line)
 
         if explicit_target:
             self._remember_target(sender, snapshot)

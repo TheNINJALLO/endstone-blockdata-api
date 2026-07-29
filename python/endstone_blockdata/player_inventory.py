@@ -5,9 +5,9 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass, field
 from enum import Enum
-from importlib import import_module
 from typing import Any, Iterable, Mapping
 
+from .live import _load_live_bridge
 from .storage_item import StorageItemRules, StorageItemView, is_storage_item_nbt
 
 ItemNbt = dict[str, Any]
@@ -225,28 +225,12 @@ class PlayerInventoryView:
         }[section]
 
 
-def _load_live_bridge() -> Any:
-    errors: list[str] = []
-    for module_name in (
-        "endstone_blockdata._endstone_blockdata_live",
-        "endstone_blockdata_inspector._endstone_blockdata_live",
-        "_endstone_blockdata_live",
-    ):
-        try:
-            return import_module(module_name)
-        except ImportError as exc:
-            errors.append(f"{module_name}: {exc}")
-    raise RuntimeError(
-        "the native BlockData live bridge is not installed; tried " + "; ".join(errors)
-    )
-
-
 class LivePlayerInventoryAdapter:
     """Python wrapper around the exact native ``endstone:player_inventory:v1`` service."""
 
     def __init__(self, server: Any, bridge: Any | None = None) -> None:
         self.server = server
-        self.bridge = bridge or _load_live_bridge()
+        self.bridge = bridge if bridge is not None else _load_live_bridge()
 
     @property
     def available(self) -> bool:
