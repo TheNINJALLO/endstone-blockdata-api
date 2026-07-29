@@ -4,7 +4,7 @@
 
 Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.33 with Endstone 0.11.6. Open the repository's **Actions** tab, select the completed build, and download the package matching your operating system.
 
-A tagged release such as `v0.4.6` publishes the same files under the repository's **Releases** page.
+A tagged release such as `v0.4.7` publishes the same files under the repository's **Releases** page.
 
 Use the ZIP matching the server's operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not use it with any BDS or Endstone version other than BDS 1.26.33 / Endstone 0.11.6.
 

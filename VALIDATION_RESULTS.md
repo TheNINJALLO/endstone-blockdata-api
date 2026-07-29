@@ -7,7 +7,7 @@ Validated on 2026-07-27:
 - Python unit, release-tool, metadata, native source-guard, strict logger, command-overload, form-navigation, and bridge-loader tests (46/46; 26 command-route subtests)
 - Platform-wheel contracts for entry points, native-plugin dependencies, commands,
   permissions, CPython 3.14 tags, package-local bridges, binary magic, and RECORD integrity
-- Project/version/dependency metadata consistency for `0.4.6`
+- Project/version/dependency metadata consistency for `0.4.7`
 - GitHub Actions YAML parsing
 - Release packaging round-trip with a synthetic Windows plugin stage
 - Checksum, ZIP path, manifest, native bridge, unresolved Bedrock symbol,

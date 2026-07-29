@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.4.7
+
 - Added exact live player inventory capture and writes for main inventory, armor, offhand, and Ender Chest slots.
 - Added canonical bundle/storage-item NBT editing inside player inventory slots.
 - Added full preflight item validation, whole-inventory revision conflicts, Python bridge methods, C++ service access, and portable tests.
