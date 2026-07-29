@@ -17,7 +17,8 @@ Open the workflow run in GitHub and download the desired item from the **Artifac
 
 ## Automatic GitHub Release
 
-Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`:
+Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`
+and points to a commit already merged into protected `main`:
 
 ```bash
 git tag v0.4.7

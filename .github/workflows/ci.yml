@@ -1,4 +1,4 @@
-name: Build and Release v0.4.7
+name: Build and Release BlockData
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
         run: python scripts/verify_project_metadata.py
 
   portable:
-    name: Portable tests v0.4.7 (${{ matrix.os }})
+    name: Portable tests (${{ matrix.os }})
     needs: [metadata]
     strategy:
       fail-fast: false
@@ -53,7 +53,7 @@ jobs:
         run: python -m unittest discover -s tests/python -v
 
   exact:
-    name: Exact v0.4.7 - BDS ${{ matrix.bds }} (${{ matrix.platform }})
+    name: Exact BDS ${{ matrix.bds }} (${{ matrix.platform }})
     needs: [metadata]
     strategy:
       fail-fast: false
@@ -239,6 +239,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
@@ -255,6 +257,12 @@ jobs:
           if actual != expected:
               raise SystemExit(f'Release tag must be {expected}, got {actual}')
           PYTAG
+          git fetch origin --no-tags +refs/heads/main:refs/remotes/origin/main
+          release_commit="$(git rev-parse "${RELEASE_TAG}^{commit}")"
+          if ! git merge-base --is-ancestor "$release_commit" origin/main; then
+            echo "Release tag $RELEASE_TAG must point to a commit on protected main." >&2
+            exit 1
+          fi
       - name: Download exact native packages
         uses: actions/download-artifact@v8
         with:

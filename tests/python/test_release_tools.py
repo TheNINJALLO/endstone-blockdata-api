@@ -22,6 +22,22 @@ class TestReleaseTools(unittest.TestCase):
             text=True,
         )
 
+    def test_workflow_uses_stable_checks_and_requires_tagged_main_commit(self):
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        for required in (
+            "name: Build and Release BlockData",
+            "name: Verify release metadata",
+            "name: Portable tests (${{ matrix.os }})",
+            "name: Exact BDS ${{ matrix.bds }} (${{ matrix.platform }})",
+            "name: Build and verify the BlockData command test wheel",
+            "fetch-depth: 0",
+            "git fetch origin --no-tags +refs/heads/main:refs/remotes/origin/main",
+            "git merge-base --is-ancestor",
+        ):
+            self.assertIn(required, workflow)
+        self.assertNotIn("Portable tests v0.4.7", workflow)
+        self.assertNotIn("Exact v0.4.7 - BDS", workflow)
+
     def test_combined_release_asset_set_is_exact_and_nonempty(self):
         scratch_root = ROOT / "build" / "release-tool-tests"
         scratch_root.mkdir(parents=True, exist_ok=True)

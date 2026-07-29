@@ -6,6 +6,7 @@
 - Added canonical bundle/storage-item NBT editing inside player inventory slots.
 - Added full preflight item validation, whole-inventory revision conflicts, Python bridge methods, C++ service access, and portable tests.
 - Added header-only C++ and Python views for vanilla bundles and custom `minecraft:storage_item` contents.
+- Stabilized protected-branch check names and required release tags to identify a commit already merged into protected `main`.
 
 ## 0.4.6
 
