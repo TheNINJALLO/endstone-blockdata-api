@@ -28,9 +28,17 @@ EXPECTED_ENTRY = "blockdata-inspector"
 EXPECTED_TARGET = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
 EXPECTED_COMMANDS = {"bd"}
 EXPECTED_DEPENDENCIES = ["blockdata_api"]
-EXPECTED_PACKAGES = {"endstone_blockdata_inspector/"}
+EXPECTED_PACKAGES = {"endstone_blockdata_inspector/", "endstone_blockdata/"}
+EXPECTED_API_MODULES = {
+    "endstone_blockdata/__init__.py",
+    "endstone_blockdata/live.py",
+    "endstone_blockdata/model.py",
+    "endstone_blockdata/player_inventory.py",
+    "endstone_blockdata/service.py",
+    "endstone_blockdata/storage_item.py",
+}
 EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.6"]
-EXPECTED_VERSION = "0.4.8"
+EXPECTED_VERSION = "0.4.9"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -39,6 +47,11 @@ SUPPORTED_TAGS = {
 
 
 def verify_installed_runtime(wheel: Path) -> None:
+    runtime_site_packages = Path(sysconfig.get_path("platlib")).resolve()
+    if not (runtime_site_packages / "endstone").is_dir():
+        raise AssertionError(
+            f"Endstone is not installed in the wheel-test runtime: {runtime_site_packages}"
+        )
     with tempfile.TemporaryDirectory(prefix="endstone-blockdata-wheel-smoke-") as temporary:
         prefix = Path(temporary) / "plugins" / ".local"
         subprocess.run(
@@ -60,9 +73,13 @@ import copy
 import importlib
 from pathlib import Path
 import sys
+sys.path.insert(0, {json.dumps(str(runtime_site_packages))})
 sys.path.insert(0, {json.dumps(str(site_packages))})
 from endstone.plugin.plugin_loader import _build_commands, _build_permissions
 package = importlib.import_module("endstone_blockdata_inspector")
+api = importlib.import_module("endstone_blockdata")
+assert hasattr(api, "ShelfView") and hasattr(api, "LiveBlockDataAdapter")
+assert api.__version__ == {EXPECTED_VERSION!r}
 plugin_class = package.BlockDataInspectorPlugin
 assert plugin_class.api_version == "0.11"
 assert set(plugin_class.commands) == {{"bd"}}
@@ -72,6 +89,65 @@ _build_permissions(copy.deepcopy(plugin_class.permissions))
 plugin_class()
 bridge = importlib.import_module("endstone_blockdata_inspector._endstone_blockdata_live")
 assert {{"available", "capabilities", "capture", "capture_region", "apply"}} <= set(dir(bridge))
+assert bridge.__version__ == api.__version__
+adapter = api.LiveBlockDataAdapter(None)
+assert adapter.bridge is bridge
+typed = {{
+    "byte": bridge._NbtByte(7),
+    "short": bridge._NbtShort(300),
+    "int": 70000,
+    "long": bridge._NbtLong(8),
+    "float": bridge._NbtFloat(1.25),
+    "double": 2.5,
+    "Items": [{{
+        "Slot": bridge._NbtByte(0),
+        "Count": bridge._NbtByte(2),
+        "Damage": bridge._NbtShort(0),
+        "Aux": bridge._NbtShort(0),
+        "LegacyId": bridge._NbtShort(1),
+        "Name": "minecraft:bundle",
+        "tag": {{
+            "storage_item_component_content": [{{
+                "Slot": bridge._NbtByte(0),
+                "Count": bridge._NbtByte(3),
+                "Name": "minecraft:diamond",
+            }}],
+        }},
+    }}],
+}}
+roundtrip = bridge._roundtrip_nbt(copy.deepcopy(typed))
+assert isinstance(roundtrip["byte"], int) and type(roundtrip["byte"]) is bridge._NbtByte
+assert type(roundtrip["short"]) is bridge._NbtShort
+assert type(roundtrip["int"]) is int
+assert type(roundtrip["long"]) is bridge._NbtLong
+assert type(roundtrip["float"]) is bridge._NbtFloat
+assert type(roundtrip["double"]) is float
+saved_item = roundtrip["Items"][0]
+assert type(saved_item["Slot"]) is bridge._NbtByte
+assert type(saved_item["Count"]) is bridge._NbtByte
+assert type(saved_item["Damage"]) is bridge._NbtShort
+assert type(saved_item["Aux"]) is bridge._NbtShort
+assert type(saved_item["LegacyId"]) is bridge._NbtShort
+nested_item = saved_item["tag"]["storage_item_component_content"][0]
+assert type(nested_item["Slot"]) is bridge._NbtByte
+assert type(nested_item["Count"]) is bridge._NbtByte
+assert not hasattr(bridge._NbtByte(1), "__dict__")
+
+def expect_error(error_type, callback):
+    try:
+        callback()
+    except error_type:
+        return
+    raise AssertionError(f"expected {{error_type.__name__}}")
+
+expect_error(ValueError, lambda: bridge._roundtrip_nbt(bridge._NbtByte(128)))
+expect_error(ValueError, lambda: bridge._roundtrip_nbt(bridge._NbtShort(32768)))
+expect_error(ValueError, lambda: bridge._roundtrip_nbt([1, "not-an-int"]))
+
+class SpoofedByte(int):
+    __endstone_nbt_scalar__ = "byte"
+
+expect_error(TypeError, lambda: bridge._roundtrip_nbt(SpoofedByte(7)))
 bridge_path = Path(bridge.__file__).resolve()
 package_path = (Path({json.dumps(str(site_packages))}) / "endstone_blockdata_inspector").resolve()
 assert bridge_path.is_relative_to(package_path), (bridge_path, package_path)
@@ -172,6 +248,11 @@ def verify(wheel: Path, *, structure_only: bool = False) -> None:
         for package in EXPECTED_PACKAGES:
             if not any(name.startswith(package) for name in names):
                 raise AssertionError(f"wheel is missing package {package}")
+        missing_api_modules = EXPECTED_API_MODULES.difference(names)
+        if missing_api_modules:
+            raise AssertionError(
+                f"wheel is missing vendored API modules: {sorted(missing_api_modules)}"
+            )
 
     if structure_only:
         sys.path.insert(0, str(wheel.resolve()))

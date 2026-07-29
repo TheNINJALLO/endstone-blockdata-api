@@ -1,11 +1,13 @@
 #include "endstone_blockdata/live_service.h"
 #include "endstone_blockdata/live_player_inventory_service.h"
 #include "endstone_blockdata/nbt.h"
+#include "version.h"
 #include <endstone/endstone.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <map>
@@ -25,6 +27,37 @@ namespace {
 constexpr std::size_t MaxPythonNbtDepth = 64;
 constexpr std::int64_t MaxLiveRegionBlocks = 32768;
 constexpr const char *NbtArrayMarker = "__endstone_nbt_array__";
+constexpr const char *NbtScalarMarker = "__endstone_nbt_scalar__";
+
+PyObject *nbt_byte_type = nullptr;
+PyObject *nbt_short_type = nullptr;
+PyObject *nbt_long_type = nullptr;
+PyObject *nbt_float_type = nullptr;
+
+py::object taggedNbtScalar(PyObject *scalar_type, py::object value) {
+    if (!scalar_type)
+        throw std::runtime_error("typed NBT scalar classes are not initialized");
+    return py::reinterpret_borrow<py::object>(scalar_type)(std::move(value));
+}
+
+std::string taggedNbtScalarKind(py::handle value) {
+    const auto *type = Py_TYPE(value.ptr());
+    if (type == reinterpret_cast<PyTypeObject *>(nbt_byte_type))
+        return "byte";
+    if (type == reinterpret_cast<PyTypeObject *>(nbt_short_type))
+        return "short";
+    if (type == reinterpret_cast<PyTypeObject *>(nbt_long_type))
+        return "long";
+    if (type == reinterpret_cast<PyTypeObject *>(nbt_float_type))
+        return "float";
+
+    const auto python_type = py::type::of(value);
+    if (py::hasattr(python_type, NbtScalarMarker)) {
+        throw py::type_error(
+            "typed NBT scalar values must use this bridge's exact scalar classes");
+    }
+    return {};
+}
 
 template <typename T>
 py::dict nbtArrayToPython(const char *kind, const std::vector<T> &array) {
@@ -43,7 +76,16 @@ py::object nbtToPython(const NbtValue &value) {
         if constexpr (std::is_same_v<T, std::monostate>)
             throw std::runtime_error("NBT End/null cannot be exposed as a payload value");
         else if constexpr (std::is_same_v<T, bool>) return py::bool_(v);
-        else if constexpr (std::is_arithmetic_v<T>) return py::cast(v);
+        else if constexpr (std::is_same_v<T, std::int8_t>)
+            return taggedNbtScalar(nbt_byte_type, py::int_(v));
+        else if constexpr (std::is_same_v<T, std::int16_t>)
+            return taggedNbtScalar(nbt_short_type, py::int_(v));
+        else if constexpr (std::is_same_v<T, std::int32_t>) return py::int_(v);
+        else if constexpr (std::is_same_v<T, std::int64_t>)
+            return taggedNbtScalar(nbt_long_type, py::int_(v));
+        else if constexpr (std::is_same_v<T, float>)
+            return taggedNbtScalar(nbt_float_type, py::float_(v));
+        else if constexpr (std::is_same_v<T, double>) return py::float_(v);
         else if constexpr (std::is_same_v<T, std::string>) return py::str(v);
         else if constexpr (std::is_same_v<T, ByteArray>) return nbtArrayToPython("byte", v);
         else if constexpr (std::is_same_v<T, IntArray>) return nbtArrayToPython("int", v);
@@ -122,13 +164,42 @@ NbtValue nbtFromPython(py::handle value, std::size_t depth = 0) {
     if (py::isinstance<py::bool_>(value)) return py::cast<bool>(value);
     if (py::isinstance<py::int_>(value)) {
         const auto number = checkedNbtInteger(value, "NBT integer");
+        const auto kind = taggedNbtScalarKind(value);
+        if (kind == "byte") {
+            if (number < std::numeric_limits<std::int8_t>::min() ||
+                number > std::numeric_limits<std::int8_t>::max())
+                throw py::value_error("NBT byte is outside the signed 8-bit range");
+            return static_cast<std::int8_t>(number);
+        }
+        if (kind == "short") {
+            if (number < std::numeric_limits<std::int16_t>::min() ||
+                number > std::numeric_limits<std::int16_t>::max())
+                throw py::value_error("NBT short is outside the signed 16-bit range");
+            return static_cast<std::int16_t>(number);
+        }
+        if (kind == "long") return number;
+        if (!kind.empty())
+            throw py::type_error("integer NBT scalar marker must be byte, short, or long");
         if (number >= std::numeric_limits<std::int32_t>::min() &&
             number <= std::numeric_limits<std::int32_t>::max()) {
             return static_cast<std::int32_t>(number);
         }
         return number;
     }
-    if (py::isinstance<py::float_>(value)) return py::cast<double>(value);
+    if (py::isinstance<py::float_>(value)) {
+        const auto number = py::cast<double>(value);
+        const auto kind = taggedNbtScalarKind(value);
+        if (kind == "float") {
+            if (std::isfinite(number) &&
+                (number < -std::numeric_limits<float>::max() ||
+                 number > std::numeric_limits<float>::max()))
+                throw py::value_error("NBT float is outside the 32-bit range");
+            return static_cast<float>(number);
+        }
+        if (!kind.empty())
+            throw py::type_error("floating NBT scalar marker must be float");
+        return number;
+    }
     if (py::isinstance<py::str>(value)) return py::cast<std::string>(value);
     if (py::isinstance<py::bytes>(value) || py::isinstance<py::bytearray>(value)) {
         std::string bytes;
@@ -452,6 +523,34 @@ std::shared_ptr<LivePlayerInventoryService> loadPlayerInventoryService(
 
 PYBIND11_MODULE(_endstone_blockdata_live, module) {
     module.doc() = "Live Endstone BlockData service bridge for Python anti-grief plugins";
+    module.attr("__version__") = ENDSTONE_BLOCKDATA_VERSION;
+
+    const auto builtins = py::module_::import("builtins");
+    const auto define_scalar_type = [&module, &builtins](
+                                        const char *name,
+                                        const char *kind,
+                                        py::handle base) -> PyObject * {
+        py::dict attributes;
+        attributes[py::str(NbtScalarMarker)] = py::str(kind);
+        attributes[py::str("__module__")] = module.attr("__name__");
+        attributes[py::str("__slots__")] = py::make_tuple();
+        auto scalar_type = builtins.attr("type")(
+            py::str(name), py::make_tuple(base), std::move(attributes));
+        module.attr(name) = scalar_type;
+        return scalar_type.ptr();
+    };
+    nbt_byte_type = define_scalar_type(
+        "_NbtByte", "byte", builtins.attr("int"));
+    nbt_short_type = define_scalar_type(
+        "_NbtShort", "short", builtins.attr("int"));
+    nbt_long_type = define_scalar_type(
+        "_NbtLong", "long", builtins.attr("int"));
+    nbt_float_type = define_scalar_type(
+        "_NbtFloat", "float", builtins.attr("float"));
+
+    module.def("_roundtrip_nbt", [](py::handle value) {
+        return nbtToPython(nbtFromPython(value));
+    });
 
     module.def("available", [](endstone::Server &server) { return static_cast<bool>(loadService(server)); },
                py::arg("server"));
@@ -471,6 +570,12 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         out["inventory"] = c.inventory;
         out["container_save_nbt"] = c.container_save_nbt;
         out["raw_block_entity_nbt"] = c.raw_block_entity_nbt;
+        const bool exact_container_items =
+            service->adapterName() == "bds-26.30-exact-nbt";
+        out["storage_item_reads"] = exact_container_items;
+        out["storage_item_writes"] = exact_container_items;
+        out["shelf_reads"] = exact_container_items;
+        out["shelf_writes"] = exact_container_items;
         return out;
     }, py::arg("server"));
 
@@ -535,6 +640,8 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
             output["ender_chest"] = true;
             output["item_user_nbt"] = true;
             output["storage_items"] = true;
+            output["storage_item_reads"] = true;
+            output["storage_item_writes"] = false;
             return output;
         },
         py::arg("server"));

@@ -62,7 +62,7 @@ int main()
     snapshot.ender_chest_size = 27;
 
     auto bundle = item("minecraft:bundle");
-    StorageItemView bundle_view(bundle);
+    StorageItemView bundle_view(bundle, {}, true);
     bundle_view.setSlot(0, item("minecraft:diamond", 3));
     bundle = bundle_view.item();
 

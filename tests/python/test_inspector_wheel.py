@@ -502,7 +502,7 @@ class InspectorWheelTests(unittest.TestCase):
     def test_packaging_uses_current_endstone_entry_point(self) -> None:
         metadata = tomllib.loads((PLUGIN_PROJECT / "pyproject.toml").read_text("utf-8"))
         project = metadata["project"]
-        self.assertEqual(project["version"], "0.4.8")
+        self.assertEqual(project["version"], "0.4.9")
         self.assertEqual(BlockDataInspectorPlugin.version, project["version"])
         self.assertEqual(project["requires-python"], "==3.14.*")
         self.assertEqual(project["dependencies"], ["endstone==0.11.6"])
@@ -516,12 +516,13 @@ class InspectorWheelTests(unittest.TestCase):
         )
         self.assertNotIn("endstone.plugins", project["entry-points"])
         self.assertEqual(
-            metadata["tool"]["setuptools"]["packages"],
-            ["endstone_blockdata_inspector"],
+            set(metadata["tool"]["setuptools"]["packages"]),
+            {"endstone_blockdata_inspector", "endstone_blockdata"},
         )
 
     def test_bridge_loader_prefers_bundled_platform_module(self) -> None:
         bundled = ModuleType(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+        bundled.__version__ = BlockDataInspectorPlugin.version
         with patch.object(
             _bridge_loader.importlib, "import_module", return_value=bundled
         ) as import_module:
@@ -529,6 +530,22 @@ class InspectorWheelTests(unittest.TestCase):
 
         self.assertIs(loaded, bundled)
         import_module.assert_called_once_with(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+
+    def test_bridge_loader_rejects_missing_or_mismatched_native_version(self) -> None:
+        for bridge_version in (None, "0.4.8"):
+            with self.subTest(bridge_version=bridge_version):
+                bundled = ModuleType(_bridge_loader.BUNDLED_BRIDGE_MODULE)
+                if bridge_version is not None:
+                    bundled.__version__ = bridge_version
+                with patch.object(
+                    _bridge_loader.importlib,
+                    "import_module",
+                    return_value=bundled,
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "matching platform wheel"):
+                        _bridge_loader.import_live_bridge(
+                            BlockDataInspectorPlugin.version
+                        )
 
     def test_bridge_loader_rejects_stale_top_level_module(self) -> None:
         bundled_missing = ModuleNotFoundError(
@@ -1259,6 +1276,223 @@ class InspectorWheelTests(unittest.TestCase):
             len(canonical), plugin._MAX_CANONICAL_NBT_PREVIEW_CHARS + 80
         )
         self.assertIn("minecraft:stone x32", "\n".join(sender.messages))
+
+    def test_inspect_distinguishes_unavailable_empty_and_nested_storage_contents(
+        self,
+    ) -> None:
+        plugin, bridge, sender = self.make_plugin()
+        contents_key = plugin._STORAGE_ITEM_CONTENTS_KEY
+        nested_bundle = {
+            "Name": "minecraft:red_bundle",
+            "Count": 1,
+            "tag": {
+                contents_key: [
+                    {
+                        "Slot": 3,
+                        "Name": "minecraft:emerald",
+                        "Count": 4,
+                    }
+                ]
+            },
+        }
+        outer_bundle = {
+            "Name": "minecraft:bundle",
+            "Count": 1,
+            "tag": {
+                contents_key: [
+                    {
+                        "Slot": 0,
+                        "Name": "minecraft:diamond",
+                        "Count": 2,
+                    },
+                    {"Slot": 1, **nested_bundle},
+                ]
+            },
+        }
+        snapshot = container_snapshot(
+            "minecraft:chest",
+            "Chest",
+            20,
+            inventory=[
+                {
+                    "slot": 0,
+                    "item": {"Name": "minecraft:bundle", "Count": 1},
+                    "revision": 1,
+                },
+                {
+                    "slot": 1,
+                    "item": {
+                        "Name": "minecraft:blue_bundle",
+                        "Count": 1,
+                        "tag": {contents_key: []},
+                    },
+                    "revision": 1,
+                },
+                {"slot": 2, "item": outer_bundle, "revision": 1},
+                {
+                    "slot": 3,
+                    "item": {
+                        "Name": "minecraft:yellow_bundle",
+                        "Count": 1,
+                        "tag": [],
+                    },
+                    "revision": 1,
+                },
+            ],
+        )
+        bridge.snapshots[("overworld", 20, 64, 8)] = snapshot
+
+        self.assertTrue(
+            plugin.on_command(
+                sender,
+                SimpleNamespace(name="bd"),
+                ["inspect", "20", "64", "8"],
+            )
+        )
+        output = "\n".join(sender.messages)
+        self.assertIn("Bundle / Storage Item Contents:", output)
+        self.assertIn(
+            "Container slot 0 minecraft:bundle: contents unavailable", output
+        )
+        self.assertIn(
+            "Container slot 1 minecraft:blue_bundle: contents empty", output
+        )
+        self.assertIn(
+            "Container slot 2 minecraft:bundle: 2 serialized entries", output
+        )
+        self.assertIn(
+            "Container slot 3 minecraft:yellow_bundle: contents unavailable "
+            "(item tag is not a compound)",
+            output,
+        )
+        self.assertIn("[0] minecraft:diamond x2", output)
+        self.assertIn("Nested minecraft:red_bundle: 1 serialized entry", output)
+        self.assertIn("[3] minecraft:emerald x4", output)
+
+    def test_storage_contents_summary_has_depth_entry_line_and_text_bounds(
+        self,
+    ) -> None:
+        plugin, _, _ = self.make_plugin()
+        contents_key = plugin._STORAGE_ITEM_CONTENTS_KEY
+
+        def nested_bundle(depth: int) -> dict:
+            contents: list[dict] = []
+            if depth:
+                contents.append({"Slot": 0, **nested_bundle(depth - 1)})
+            return {
+                "Name": "minecraft:bundle",
+                "Count": 1,
+                "tag": {contents_key: contents},
+            }
+
+        root = nested_bundle(plugin._MAX_STORAGE_SUMMARY_DEPTH + 2)
+        root["tag"][contents_key].extend(
+            {
+                "Slot": slot,
+                "Name": "minecraft:written_book",
+                "Count": 1,
+                "tag": {"display": {"Name": "x" * 500}},
+            }
+            for slot in range(1, 12)
+        )
+        lines = plugin._storage_item_summary_lines(
+            [{"slot": 4, "item": root, "revision": 1}]
+        )
+
+        self.assertLessEqual(len(lines), plugin._MAX_STORAGE_SUMMARY_LINES)
+        self.assertTrue(
+            all(
+                len(line) <= plugin._MAX_STORAGE_ITEM_LABEL_CHARS
+                for line in lines
+            )
+        )
+        self.assertTrue(any("omitted at depth 4" in line for line in lines))
+        self.assertTrue(any("and 4 more serialized entries" in line for line in lines))
+
+    def test_inspect_reports_shelf_and_chiseled_bookshelf_diagnostics(self) -> None:
+        plugin, bridge, sender = self.make_plugin()
+        shelf = container_snapshot(
+            "minecraft:oak_shelf",
+            "minecraft:block_actor_59",
+            21,
+            capacity=3,
+            inventory=[item_slot(2, "minecraft:diamond_pickaxe")],
+        )
+        shelf["block_entity"]["nbt"]["_endstone_actor_type"] = 59
+        chiseled = container_snapshot(
+            "minecraft:chiseled_bookshelf",
+            "minecraft:block_actor_51",
+            22,
+            capacity=6,
+            inventory=[item_slot(5, "minecraft:written_book")],
+        )
+        chiseled["block_entity"]["nbt"]["_endstone_actor_type"] = 51
+        missing = {
+            "location": {
+                "dimension": "overworld",
+                "x": 23,
+                "y": 64,
+                "z": 8,
+            },
+            "type": "minecraft:spruce_shelf",
+            "runtime_id": 59,
+            "states": {},
+            "revision": 1,
+            "block_entity_status": "container_unavailable",
+            "block_entity": None,
+        }
+        bridge.snapshots[("overworld", 21, 64, 8)] = shelf
+        bridge.snapshots[("overworld", 22, 64, 8)] = chiseled
+        bridge.snapshots[("overworld", 23, 64, 8)] = missing
+
+        command = SimpleNamespace(name="bd")
+        self.assertTrue(plugin.on_command(sender, command, ["inspect", "21", "64", "8"]))
+        output = "\n".join(sender.messages)
+        self.assertIn("Shelf / Chiseled Bookshelf Diagnostics", output)
+        self.assertIn(
+            "Actor: minecraft:block_actor_59; expected BlockActorType 59 / Shelf",
+            output,
+        )
+        self.assertIn(
+            "Capacity: live 3; expected 3; valid slots 0-2; occupied slots: 2",
+            output,
+        )
+        self.assertIn("general item stacks", output)
+        self.assertIn("powered hotbar swaps", output)
+
+        sender.messages.clear()
+        self.assertTrue(plugin.on_command(sender, command, ["inspect", "22", "64", "8"]))
+        output = "\n".join(sender.messages)
+        self.assertIn(
+            "expected BlockActorType 51 / ChiseledBookshelf", output
+        )
+        self.assertIn("valid slots 0-5; occupied slots: 5", output)
+        self.assertIn(
+            "book, writable_book, written_book, or enchanted_book only", output
+        )
+        self.assertIn("Comparator behavior", output)
+
+        sender.messages.clear()
+        self.assertTrue(plugin.on_command(sender, command, ["inspect", "23", "64", "8"]))
+        output = "\n".join(sender.messages)
+        self.assertIn("Actor: unavailable; expected BlockActorType 59 / Shelf", output)
+        self.assertIn("Capacity: live unavailable; expected 3", output)
+        self.assertIn("status=container_unavailable", output)
+        self.assertIn("block actor/inventory was not captured", output)
+
+    def test_shelf_capacity_mismatch_is_prominent_and_shelf_is_a_candidate(
+        self,
+    ) -> None:
+        plugin, _, _ = self.make_plugin()
+        snapshot = container_snapshot(
+            "minecraft:bamboo_shelf",
+            "minecraft:shelf",
+            24,
+            capacity=4,
+        )
+        diagnostics = "\n".join(plugin._shelf_diagnostic_lines(snapshot))
+        self.assertIn("live 4 (MISMATCH; expected adapter to fail closed)", diagnostics)
+        self.assertTrue(plugin._looks_like_container_block(snapshot))
 
     def test_mutations_require_selection_and_item_at_forms_target_coordinates(
         self,

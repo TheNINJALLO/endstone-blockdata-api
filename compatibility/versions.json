@@ -1,7 +1,7 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.4.8",
+  "api": "0.4.9",
   "adapter_family": "minecraft-bedrock-26.30",
   "adapters": [
     {
@@ -17,6 +17,10 @@
         "nested_item_user_nbt",
         "container_save_nbt",
         "inventory_writes",
+        "bundle_content_reads",
+        "bundle_content_writes",
+        "shelf_reads",
+        "shelf_writes",
         "dirty_marking",
         "client_updates",
         "endstone_service",

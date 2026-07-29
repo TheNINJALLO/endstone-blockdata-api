@@ -16,6 +16,7 @@ from zipfile import ZipFile
 ROOT = Path(__file__).resolve().parents[1]
 WHEEL_PROJECT = Path("examples/python/block_data_inspector_plugin")
 WHEEL_PACKAGE = Path("src/endstone_blockdata_inspector")
+API_PACKAGE = Path("python/endstone_blockdata")
 PACKAGE_NAME = "endstone_blockdata_inspector"
 BRIDGE_MODULE = "_endstone_blockdata_live"
 REQUIRED_PYTHON = (3, 14)
@@ -80,6 +81,10 @@ def main() -> int:
         staged_package = staged_project / WHEEL_PACKAGE
         staged_package.mkdir(parents=True, exist_ok=True)
         shutil.copy2(bridge, staged_package / bridge.name)
+        shutil.copytree(
+            staged_root / API_PACKAGE,
+            staged_project / "src" / "endstone_blockdata",
+        )
 
         build_output = Path(temporary) / "wheel"
         subprocess.run(
@@ -112,6 +117,10 @@ def main() -> int:
             if names.count(expected_bridge) != 1:
                 raise SystemExit(
                     f"Command wheel must contain exactly one package-local bridge {expected_bridge}"
+                )
+            if "endstone_blockdata/__init__.py" not in names:
+                raise SystemExit(
+                    "Command wheel must vendor the public endstone_blockdata Python API"
                 )
             wheel_metadata_files = [name for name in names if name.endswith(".dist-info/WHEEL")]
             if len(wheel_metadata_files) != 1:

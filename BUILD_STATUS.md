@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.4.8**
+Version: **0.4.9**
 
 ## Implemented
 
@@ -19,6 +19,8 @@ Version: **0.4.8**
 - Strong native item-registry and placement/destroy restriction bridge with scoped live Level access
 - ABI-versioned `endstone:blockdata:v2` service and matching package-local bridge
 - Sparse occupied-slot snapshots with explicit container capacity and capture status
+- Non-destructive live bundle-content flattening and transactional bundle writes
+- Shelf and Chiseled Bookshelf live views, edits, diagnostics, and shop example
 
 ## Validation boundary
 

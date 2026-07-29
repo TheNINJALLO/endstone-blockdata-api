@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(endstone_blockdata VERSION 0.4.8 LANGUAGES CXX)
+project(endstone_blockdata VERSION 0.4.9 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -342,7 +342,11 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         endif()
     endif()
 
-    install(DIRECTORY python/endstone_blockdata DESTINATION python COMPONENT blockdata_package)
+    install(DIRECTORY python/endstone_blockdata DESTINATION python COMPONENT blockdata_package
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN "*.pyo" EXCLUDE
+    )
     install(DIRECTORY include/endstone_blockdata DESTINATION include COMPONENT blockdata_package)
     install(FILES
         README.md
@@ -354,6 +358,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         docs/BDS_26_30_ADAPTER.md
         docs/storage_items.md
         docs/player_inventory.md
+        docs/shelves.md
         DESTINATION .
         COMPONENT blockdata_package
     )

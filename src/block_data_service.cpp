@@ -1,6 +1,7 @@
 #include "endstone_blockdata/block_data_service.h"
 #include "endstone_blockdata/container.h"
 #include <algorithm>
+#include <limits>
 #include <stdexcept>
 
 namespace endstone_blockdata {
@@ -9,6 +10,60 @@ constexpr std::int64_t MaxCaptureRegionBlocks = 32768;
 void mix(std::uint64_t &h, std::uint64_t v) { h ^= v + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2); }
 std::uint64_t hashState(const BlockStateValue &v) {
     return std::visit([](const auto &x)->std::uint64_t { return std::hash<std::decay_t<decltype(x)>>{}(x); }, v);
+}
+
+const NbtCompound *asCompound(const NbtValue &value) {
+    const auto *ptr = std::get_if<NbtValue::CompoundPtr>(&value.value);
+    return ptr && *ptr ? ptr->get() : nullptr;
+}
+
+const NbtValue *findField(const NbtCompound &compound,
+                          std::initializer_list<std::string_view> keys) {
+    for (const auto key : keys) {
+        const auto it = compound.find(std::string(key));
+        if (it != compound.end()) return &it->second;
+    }
+    return nullptr;
+}
+
+std::optional<std::int64_t> integerField(const NbtCompound &compound,
+                                         std::initializer_list<std::string_view> keys) {
+    const auto *value = findField(compound, keys);
+    if (!value) return std::nullopt;
+    return std::visit([](const auto &entry) -> std::optional<std::int64_t> {
+        using T = std::decay_t<decltype(entry)>;
+        if constexpr (std::is_same_v<T, std::int8_t> || std::is_same_v<T, std::int16_t> ||
+                      std::is_same_v<T, std::int32_t> || std::is_same_v<T, std::int64_t>) {
+            return static_cast<std::int64_t>(entry);
+        }
+        return std::nullopt;
+    }, value->value);
+}
+
+std::optional<std::int64_t> integerValue(const NbtValue &value) {
+    return std::visit([](const auto &entry) -> std::optional<std::int64_t> {
+        using T = std::decay_t<decltype(entry)>;
+        if constexpr (std::is_same_v<T, std::int8_t> ||
+                      std::is_same_v<T, std::int16_t> ||
+                      std::is_same_v<T, std::int32_t> ||
+                      std::is_same_v<T, std::int64_t>) {
+            return static_cast<std::int64_t>(entry);
+        }
+        return std::nullopt;
+    }, value.value);
+}
+
+std::optional<std::string> stringField(const NbtCompound &compound,
+                                       std::initializer_list<std::string_view> keys) {
+    const auto *value = findField(compound, keys);
+    if (!value) return std::nullopt;
+    if (const auto *text = std::get_if<std::string>(&value->value)) return *text;
+    return std::nullopt;
+}
+
+bool isChiseledBookId(std::string_view id) {
+    return id == "minecraft:book" || id == "minecraft:writable_book" ||
+           id == "minecraft:written_book" || id == "minecraft:enchanted_book";
 }
 }
 std::uint64_t calculateRevision(const BlockSnapshot &s) {
@@ -111,5 +166,123 @@ BlockPatch ContainerView::patchSlot(std::int32_t slot, NbtValue item) const {
 }
 BlockPatch ContainerView::clearSlot(std::int32_t slot) const {
     BlockPatch p; p.location=snapshot_.location; p.expected_revision=snapshot_.revision; p.inventory_removals.insert(slot); return p;
+}
+
+ShelfView::ShelfView(BlockSnapshot snapshot) : snapshot_(std::move(snapshot)) {
+    if (snapshot_.block_entity_status != BlockEntityCaptureStatus::Captured ||
+        !snapshot_.block_entity || !snapshot_.block_entity->is_container) {
+        throw std::invalid_argument("shelf capture is incomplete or unavailable");
+    }
+    const auto &entity = *snapshot_.block_entity;
+    if (entity.type == "minecraft:shelf") kind_ = ShelfKind::Shelf;
+    else if (entity.type == "minecraft:chiseled_bookshelf") kind_ = ShelfKind::ChiseledBookshelf;
+    else throw std::invalid_argument("block actor is not a supported shelf");
+
+    if (entity.container_size != capacity())
+        throw std::invalid_argument("shelf container capacity does not match the exact actor contract");
+
+    std::vector<bool> occupied(static_cast<std::size_t>(capacity()), false);
+    for (const auto &item : entity.inventory) {
+        validateSlot(item.slot);
+        const auto index = static_cast<std::size_t>(item.slot);
+        if (occupied[index])
+            throw std::invalid_argument("shelf capture contains a duplicate slot");
+        occupied[index] = true;
+    }
+}
+
+std::int32_t ShelfView::capacity() const noexcept {
+    return kind_ == ShelfKind::Shelf ? 3 : 6;
+}
+
+void ShelfView::validateSlot(std::int32_t slot) const {
+    if (slot < 0 || slot >= capacity()) throw std::out_of_range("shelf slot is out of range");
+}
+
+void ShelfView::validateItem(const NbtValue &item) const {
+    std::string error;
+    if (!validateNbtPayload(item, &error))
+        throw std::invalid_argument("invalid shelf item NBT: " + error);
+    const auto *compound = asCompound(item);
+    if (!compound) throw std::invalid_argument("shelf item must be an NBT compound");
+    const auto id = stringField(*compound, {"Name", "name", "id"});
+    if (!id || id->empty()) throw std::invalid_argument("shelf item has no item identifier");
+    std::int64_t count = 1;
+    if (const auto *count_value = findField(*compound, {"Count", "count"})) {
+        const auto parsed = integerValue(*count_value);
+        if (!parsed)
+            throw std::invalid_argument("shelf item count must be an integer");
+        count = *parsed;
+    }
+    if (count < 1 || count > std::numeric_limits<std::uint8_t>::max())
+        throw std::invalid_argument("shelf item count is out of range");
+    if (kind_ == ShelfKind::ChiseledBookshelf &&
+        (count != 1 || !isChiseledBookId(*id))) {
+        throw std::invalid_argument(
+            "chiseled bookshelf slots accept exactly one supported book");
+    }
+}
+
+std::vector<std::optional<InventorySlotSnapshot>> ShelfView::slots() const {
+    std::vector<std::optional<InventorySlotSnapshot>> output(
+        static_cast<std::size_t>(capacity()));
+    for (const auto &item : snapshot_.block_entity->inventory)
+        output[static_cast<std::size_t>(item.slot)] = item;
+    return output;
+}
+
+std::optional<InventorySlotSnapshot> ShelfView::getSlot(std::int32_t slot) const {
+    validateSlot(slot);
+    for (const auto &item : snapshot_.block_entity->inventory)
+        if (item.slot == slot) return item;
+    return std::nullopt;
+}
+
+BlockPatch ShelfView::patchSlot(std::int32_t slot, NbtValue item) const {
+    std::map<std::int32_t, NbtValue> updates;
+    updates.emplace(slot, std::move(item));
+    return patchSlots(std::move(updates));
+}
+
+BlockPatch ShelfView::clearSlot(std::int32_t slot) const {
+    return patchSlots({}, {slot});
+}
+
+BlockPatch ShelfView::patchSlots(std::map<std::int32_t, NbtValue> updates,
+                                 std::set<std::int32_t> removals) const {
+    for (const auto &[slot, item] : updates) {
+        validateSlot(slot);
+        validateItem(item);
+        if (removals.contains(slot))
+            throw std::invalid_argument(
+                "a shelf slot cannot be updated and removed in one patch");
+    }
+    for (const auto slot : removals) validateSlot(slot);
+
+    BlockPatch patch;
+    patch.location = snapshot_.location;
+    patch.expected_revision = snapshot_.revision;
+    patch.inventory_removals = std::move(removals);
+    for (auto &[slot, item] : updates) {
+        const auto current = getSlot(slot);
+        patch.inventory_updates[slot] = {
+            slot, std::move(item), current ? current->revision : 0};
+    }
+    return patch;
+}
+
+BlockPatch ShelfView::replaceSlots(
+    std::vector<std::optional<NbtValue>> contents) const {
+    if (contents.size() != static_cast<std::size_t>(capacity()))
+        throw std::invalid_argument(
+            "replacement shelf contents must match the exact capacity");
+    std::map<std::int32_t, NbtValue> updates;
+    std::set<std::int32_t> removals;
+    for (std::int32_t slot = 0; slot < capacity(); ++slot) {
+        auto &item = contents[static_cast<std::size_t>(slot)];
+        if (item) updates.emplace(slot, std::move(*item));
+        else removals.insert(slot);
+    }
+    return patchSlots(std::move(updates), std::move(removals));
 }
 }

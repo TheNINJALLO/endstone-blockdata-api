@@ -35,6 +35,7 @@ enum class StorageItemStatus {
     NestedStorageDisabled,
     Overweight,
     NestingTooDeep,
+    ContentsUnavailable,
 };
 
 [[nodiscard]] constexpr std::string_view storageItemStatusName(StorageItemStatus status) noexcept
@@ -43,6 +44,7 @@ enum class StorageItemStatus {
     case StorageItemStatus::Valid: return "valid";
     case StorageItemStatus::WeightUnknown: return "weight_unknown";
     case StorageItemStatus::NotStorageItem: return "not_storage_item";
+    case StorageItemStatus::ContentsUnavailable: return "contents_unavailable";
     case StorageItemStatus::InvalidItem: return "invalid_item";
     case StorageItemStatus::InvalidContents: return "invalid_contents";
     case StorageItemStatus::DuplicateSlot: return "duplicate_slot";
@@ -134,7 +136,7 @@ inline std::optional<std::int64_t> integerValue(const NbtValue &value) noexcept
     return std::visit(
         [](const auto &entry) -> std::optional<std::int64_t> {
             using T = std::decay_t<decltype(entry)>;
-            if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, std::int8_t> ||
+            if constexpr (std::is_same_v<T, std::int8_t> ||
                           std::is_same_v<T, std::int16_t> || std::is_same_v<T, std::int32_t> ||
                           std::is_same_v<T, std::int64_t>) {
                 return static_cast<std::int64_t>(entry);
@@ -203,6 +205,20 @@ inline bool hasStorageContentsField(const NbtValue &item) noexcept
     const auto *tag_value = field(*root, {"tag", "user_data"});
     const auto *tag = tag_value ? compoundOf(*tag_value) : nullptr;
     return tag && field(*tag, {StorageItemContentsKey}) != nullptr;
+}
+
+inline bool hasStorageTagField(const NbtValue &item) noexcept
+{
+    const auto *root = compoundOf(item);
+    return root && field(*root, {"tag", "user_data"}) != nullptr;
+}
+
+inline bool hasValidStorageTag(const NbtValue &item) noexcept
+{
+    const auto *root = compoundOf(item);
+    if (!root) return false;
+    const auto *tag_value = field(*root, {"tag", "user_data"});
+    return tag_value && compoundOf(*tag_value) != nullptr;
 }
 
 inline bool isShulkerBox(std::string_view identifier) noexcept
@@ -295,10 +311,11 @@ inline StorageItemValidation validateStorageItemImpl(
     }
 
     const auto identifier = readItemIdentifier(item);
-    if (!identifier) {
+    const auto item_count = readItemCount(item);
+    if (!identifier || !item_count) {
         return invalid(
             StorageItemStatus::InvalidItem,
-            "storage item must be an item compound with an identifier");
+            "storage item must be an item compound with a valid identifier and count");
     }
 
     const bool vanilla_bundle = isVanillaBundleIdentifier(*identifier);
@@ -309,12 +326,19 @@ inline StorageItemValidation validateStorageItemImpl(
                 StorageItemStatus::InvalidContents,
                 "storage_item_component_content must be an NBT list");
         }
+        if (hasStorageTagField(item) && !hasValidStorageTag(item)) {
+            return invalid(
+                StorageItemStatus::InvalidContents,
+                "storage item tag must be an NBT compound");
+        }
         if (!vanilla_bundle) {
             return invalid(
                 StorageItemStatus::NotStorageItem,
                 "item has no storage_item_component_content list");
         }
-        return {StorageItemStatus::Valid, "empty bundle", 0, true};
+        return invalid(
+            StorageItemStatus::ContentsUnavailable,
+            "storage item contents are unavailable");
     }
 
     if (contents->size() > static_cast<std::size_t>(rules.slot_capacity)) {
@@ -502,6 +526,9 @@ inline std::int32_t entrySlotForSort(const NbtValue &entry) noexcept
 
 class StorageItemView {
 public:
+    // create_if_missing is an explicit authoring operation for a new,
+    // known-empty serialized storage item. Captured items fail closed when
+    // their contents payload is unavailable.
     explicit StorageItemView(
         NbtValue item,
         StorageItemRules rules = {},
@@ -515,7 +542,7 @@ public:
         if (!isStorageItemNbt(item_) && !create_if_missing) {
             throw std::invalid_argument("item is not a bundle or serialized storage item");
         }
-        (void)mutableContents();
+        (void)mutableContents(create_if_missing);
     }
 
     [[nodiscard]] const NbtValue &item() const noexcept { return item_; }
@@ -616,7 +643,7 @@ public:
 
     StorageItemView &replaceContents(std::vector<StorageItemEntry> entries)
     {
-        StorageItemView candidate(item_, rules_, true);
+        StorageItemView candidate(item_, rules_);
         candidate.mutableContents().clear();
         std::set<std::int32_t> occupied;
         for (auto &entry : entries) {
@@ -633,13 +660,17 @@ private:
     NbtValue item_;
     StorageItemRules rules_;
 
-    NbtList &mutableContents()
+    NbtList &mutableContents(bool create_if_missing = false)
     {
         auto *root = storage_item_detail::compoundOf(item_);
         if (!root) throw std::invalid_argument("storage item must be an NBT compound");
 
         auto tag_it = root->find("tag");
+        if (tag_it == root->end()) tag_it = root->find("user_data");
         if (tag_it == root->end()) {
+            if (!create_if_missing) {
+                throw std::invalid_argument("storage item contents are unavailable");
+            }
             tag_it = root->emplace("tag", NbtValue::compound({})).first;
         }
         auto *tag = storage_item_detail::compoundOf(tag_it->second);
@@ -647,6 +678,9 @@ private:
 
         auto contents_it = tag->find(std::string(StorageItemContentsKey));
         if (contents_it == tag->end()) {
+            if (!create_if_missing) {
+                throw std::invalid_argument("storage item contents are unavailable");
+            }
             contents_it = tag->emplace(
                 std::string(StorageItemContentsKey),
                 NbtValue::list({})).first;

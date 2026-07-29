@@ -1,5 +1,6 @@
 #include "endstone_blockdata/bds_26_30_player_inventory_adapter.h"
 #include "endstone_blockdata/bds_26_30_adapter.h"
+#include "native_item_bridge.h"
 
 #include <endstone/endstone.hpp>
 #include <endstone/inventory/inventory.h>
@@ -15,6 +16,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -40,6 +42,12 @@ const NbtCompound *compoundOf(const NbtValue &value)
     return ptr && *ptr ? ptr->get() : nullptr;
 }
 
+const NbtList *listOf(const NbtValue &value)
+{
+    const auto *ptr = std::get_if<NbtValue::ListPtr>(&value.value);
+    return ptr && *ptr ? ptr->get() : nullptr;
+}
+
 const NbtValue *field(
     const NbtCompound &compound,
     std::initializer_list<std::string_view> keys)
@@ -59,6 +67,37 @@ std::optional<std::string> stringField(
         if (const auto *text = std::get_if<std::string>(&value->value)) return *text;
     }
     return std::nullopt;
+}
+
+bool isVanillaBundleIdentifier(std::string_view identifier)
+{
+    constexpr std::string_view prefix = "minecraft:";
+    if (!identifier.starts_with(prefix)) return false;
+    const auto name = identifier.substr(prefix.size());
+    return name == "bundle" || name.ends_with("_bundle");
+}
+
+bool hasSerializedStorageContents(const NbtCompound &item)
+{
+    const auto *tag_value = field(item, {"tag", "user_data"});
+    if (!tag_value) return false;
+    const auto *tag = compoundOf(*tag_value);
+    if (!tag) return false;
+    const auto *contents = field(*tag, {"storage_item_component_content"});
+    return contents && listOf(*contents);
+}
+
+bool containsStorageItemWrite(
+    const std::map<std::int32_t, PlayerInventoryItemSnapshot> &updates)
+{
+    for (const auto &[_, snapshot] : updates) {
+        const auto *item = compoundOf(snapshot.item);
+        if (!item) continue;
+        if (hasSerializedStorageContents(*item)) return true;
+        const auto name = stringField(*item, {"Name", "name", "id"});
+        if (name && isVanillaBundleIdentifier(*name)) return true;
+    }
+    return false;
 }
 
 std::int32_t intValue(const NbtValue &value, std::int32_t fallback = 0)
@@ -241,14 +280,20 @@ std::optional<endstone::CompoundTag> toEndstoneCompound(const NbtValue &value)
 
 NbtValue itemSnapshot(std::int32_t slot, const endstone::ItemStack &item)
 {
+    auto serialized = item;
+    if (!flattenEndstoneStorageItem(serialized)) {
+        throw std::runtime_error(
+            "BDS 1.26.33 storage-item clone flatten failed");
+    }
+
     NbtCompound output;
     output.emplace("Slot", slot);
-    output.emplace("Name", static_cast<std::string>(item.getType().getId()));
-    output.emplace("Count", static_cast<std::int32_t>(item.getAmount()));
-    output.emplace("Damage", static_cast<std::int32_t>(item.getData()));
-    output.emplace("Aux", static_cast<std::int32_t>(item.getData()));
+    output.emplace("Name", static_cast<std::string>(serialized.getType().getId()));
+    output.emplace("Count", static_cast<std::int32_t>(serialized.getAmount()));
+    output.emplace("Damage", static_cast<std::int32_t>(serialized.getData()));
+    output.emplace("Aux", static_cast<std::int32_t>(serialized.getData()));
 
-    const auto user_data = item.getNbt();
+    const auto user_data = serialized.getNbt();
     if (!user_data.empty()) {
         output.emplace(
             "tag", fromEndstoneTag(endstone::nbt::Tag(user_data)));
@@ -271,6 +316,10 @@ bool itemFromNbt(
 
     const auto name = stringField(*item, {"Name", "name", "id"});
     if (!name || name->empty()) return false;
+    if (isVanillaBundleIdentifier(*name) &&
+        !hasSerializedStorageContents(*item)) {
+        return false;
+    }
 
     std::int32_t count = 1;
     if (const auto *count_value = field(*item, {"Count", "count"})) {
@@ -294,7 +343,8 @@ bool itemFromNbt(
 
     try {
         std::optional<endstone::ItemStack> stack;
-        if (existing &&
+        if (existing && !isVanillaBundleIdentifier(*name) &&
+            !hasSerializedStorageContents(*item) &&
             static_cast<std::string>(existing->getType().getId()) == *name) {
             // Copying the existing Endstone item preserves Bedrock fields that
             // are not exposed by the public API, such as adventure-mode
@@ -459,7 +509,8 @@ public:
     [[nodiscard]] bool verify() const noexcept
     {
         try {
-            return sizeof(void *) == 8 && isExactRuntimeBuild(server_);
+            return sizeof(void *) == 8 && isExactRuntimeBuild(server_) &&
+                   verifyNativeStorageItemBridge();
         }
         catch (...) {
             return false;
@@ -547,6 +598,15 @@ public:
         if (!player.isValid()) {
             return {ApplyStatus::AdapterError,
                     "player is unavailable or no longer connected",
+                    current->revision};
+        }
+
+        if (containsStorageItemWrite(patch.main_updates) ||
+            containsStorageItemWrite(patch.armor_updates) ||
+            containsStorageItemWrite(patch.offhand_updates) ||
+            containsStorageItemWrite(patch.ender_chest_updates)) {
+            return {ApplyStatus::Unsupported,
+                    "live player bundle/storage-item writes are disabled because Endstone's public inventory setters cannot transfer Bedrock dynamic-container lifetimes; captured contents remain readable",
                     current->revision};
         }
 

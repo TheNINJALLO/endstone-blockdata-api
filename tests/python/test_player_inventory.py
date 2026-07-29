@@ -17,6 +17,9 @@ class FakeBridge:
         self.snapshot = snapshot
         self.last_patch = None
 
+    def __bool__(self):
+        return False
+
     def player_inventory_available(self, _server):
         return True
 
@@ -96,6 +99,14 @@ class PlayerInventoryTests(unittest.TestCase):
         contents = patch.main_updates[2]["tag"]["storage_item_component_content"]
         self.assertEqual(len(contents), 2)
 
+    def test_identifies_bundle_but_refuses_unavailable_contents(self):
+        self.raw["main"][0]["item"] = item("minecraft:bundle")
+        view = PlayerInventoryView(PlayerInventorySnapshot.from_mapping(self.raw))
+
+        self.assertEqual(len(view.find_storage_items()), 1)
+        with self.assertRaisesRegex(ValueError, "contents are unavailable"):
+            view.storage_item(PlayerInventorySection.MAIN, 2)
+
     def test_armor_offhand_and_ender_chest_patches(self):
         armor = self.view.patch_item(PlayerInventorySection.ARMOR, 1,
                                      item("minecraft:diamond_chestplate"))
@@ -117,6 +128,7 @@ class PlayerInventoryTests(unittest.TestCase):
     def test_live_bridge_wrapper(self):
         bridge = FakeBridge(self.raw)
         adapter = LivePlayerInventoryAdapter(object(), bridge)
+        self.assertIs(adapter.bridge, bridge)
         self.assertTrue(adapter.available)
         self.assertEqual(adapter.capabilities()["adapter"], "fake")
         captured = adapter.capture(object())

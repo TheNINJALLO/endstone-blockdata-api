@@ -27,7 +27,7 @@ endif()
 # time. Bedrock's ABI and endstone::core implementation types are private, so
 # every such reference must be implemented inside this exact-build plugin.
 set(bedrock_symbol_pattern
-    "^_Z(NK?|TV|TI|TS)([0-9]+(BaseGameVersion|Block|BlockActor|BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|N?8endstone4core)"
+    "^_Z(NK?|TV|TI|TS)([0-9]+(BaseGameVersion|Block|BlockActor|BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|Dimension|DoubleTag|DynamicContainerManager|DynamicContainerTracker|EndTag|FloatTag|HashedString|IContainerRegistryAccess|IContainerRegistryTracker|Int64Tag|IntArrayTag|IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|N?8endstone4core)"
 )
 
 string(REPLACE "\r\n" "\n" nm_output "${nm_output}")
