@@ -6,9 +6,6 @@
 #include <endstone/inventory/item_stack.h>
 #include <endstone/inventory/player_inventory.h>
 #include <endstone/nbt/tag.h>
-#include "endstone/core/player.h"
-
-#include "bedrock/world/actor/player/player.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -476,8 +473,7 @@ public:
             return std::nullopt;
         }
 
-        auto *exact = dynamic_cast<endstone::core::EndstonePlayer *>(&player);
-        if (!exact || !exact->isValid()) return std::nullopt;
+        if (!player.isValid()) return std::nullopt;
 
         try {
             auto &inventory = player.getInventory();
@@ -548,8 +544,7 @@ public:
                     current->revision};
         }
 
-        auto *exact = dynamic_cast<endstone::core::EndstonePlayer *>(&player);
-        if (!exact || !exact->isValid()) {
+        if (!player.isValid()) {
             return {ApplyStatus::AdapterError,
                     "player is unavailable or no longer connected",
                     current->revision};
@@ -633,10 +628,10 @@ public:
             applyInventoryChanges(
                 ender_chest, ender_updates, patch.ender_chest_removals);
 
-            // This remains a virtual BDS call. It refreshes the client without
-            // linking Endstone's Player::setSelectedSlot implementation, which
-            // is what pulled MinecraftPackets::createPacket into Windows builds.
-            exact->getHandle().sendInventory(true);
+            // Endstone's public setters are the supported notification
+            // boundary for container, armor, and offhand changes. Do not reach
+            // through the private concrete player type for a second refresh:
+            // its RTTI and implementation details are not exported plugin ABI.
         }
         catch (const std::exception &error) {
             return {ApplyStatus::AdapterError,

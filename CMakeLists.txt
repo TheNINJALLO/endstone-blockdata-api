@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(endstone_blockdata VERSION 0.4.7 LANGUAGES CXX)
+project(endstone_blockdata VERSION 0.4.8 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -414,4 +414,11 @@ if(ENDSTONE_BLOCKDATA_BUILD_TESTS)
             -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
     )
     set_tests_properties(blockdata_symbol_gate_rejects_undefined_bedrock PROPERTIES WILL_FAIL TRUE)
+    add_test(
+        NAME blockdata_symbol_gate_rejects_endstone_player_rtti
+        COMMAND "${CMAKE_COMMAND}"
+            "-DNM_OUTPUT_FILE:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/tests/cmake/nm_undefined_endstone_player.txt"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/verify_no_undefined_bedrock_symbols.cmake"
+    )
+    set_tests_properties(blockdata_symbol_gate_rejects_endstone_player_rtti PROPERTIES WILL_FAIL TRUE)
 endif()

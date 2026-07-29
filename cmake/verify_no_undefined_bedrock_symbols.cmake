@@ -23,11 +23,11 @@ else()
     endif()
 endif()
 
-# Endstone's C++ plugin API is resolved by libendstone_runtime at dlopen time.
-# Bedrock's private ABI is intentionally hidden by that runtime, so every such
-# reference must be implemented inside this exact-build plugin.
+# Endstone's public C++ plugin API is resolved by libendstone_runtime at dlopen
+# time. Bedrock's ABI and endstone::core implementation types are private, so
+# every such reference must be implemented inside this exact-build plugin.
 set(bedrock_symbol_pattern
-    "^_Z(NK?|TV|TI|TS)([0-9]+(BaseGameVersion|Block|BlockActor|BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|8endstone4core17EndstoneDimension)"
+    "^_Z(NK?|TV|TI|TS)([0-9]+(BaseGameVersion|Block|BlockActor|BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|N?8endstone4core)"
 )
 
 string(REPLACE "\r\n" "\n" nm_output "${nm_output}")
@@ -49,7 +49,7 @@ if(undefined_bedrock_symbols)
     list(SORT undefined_bedrock_symbols)
     string(JOIN "\n  " formatted_symbols ${undefined_bedrock_symbols})
     message(FATAL_ERROR
-        "Plugin contains Bedrock ABI references that Endstone cannot export:\n"
+        "Plugin contains private Bedrock or Endstone-core references that the runtime cannot export:\n"
         "  ${formatted_symbols}\n"
         "Link the exact Endstone Bedrock implementation; do not add untyped no-op stubs."
     )

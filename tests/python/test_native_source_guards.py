@@ -4,6 +4,8 @@ import re
 import unittest
 from pathlib import Path
 
+from scripts.verify_release_assets import is_forbidden_undefined_symbol
+
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -35,6 +37,44 @@ class TestNativeSourceGuards(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("_ZN8endstone6Server8getLevelEv U", clean_symbols)
+
+        symbol_gate = (
+            ROOT / "cmake/verify_no_undefined_bedrock_symbols.cmake"
+        ).read_text(encoding="utf-8")
+        self.assertIn("N?8endstone4core", symbol_gate)
+        player_rtti = (
+            ROOT / "tests/cmake/nm_undefined_endstone_player.txt"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(
+            player_rtti.strip(), "_ZTIN8endstone4core14EndstonePlayerE U"
+        )
+        self.assertTrue(
+            is_forbidden_undefined_symbol(
+                "_ZTIN8endstone4core14EndstonePlayerE"
+            )
+        )
+        self.assertTrue(
+            is_forbidden_undefined_symbol(
+                "_ZNK8endstone4core17EndstoneDimension9getHandleEv"
+            )
+        )
+        self.assertFalse(
+            is_forbidden_undefined_symbol("_ZN8endstone6Server8getLevelEv")
+        )
+
+    def test_player_inventory_adapter_does_not_import_private_player_rtti(self):
+        adapter = (
+            ROOT / "src/bds_26_30_player_inventory_adapter.cpp"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn(
+            "dynamic_cast<endstone::core::EndstonePlayer", adapter
+        )
+        self.assertNotIn("typeid(endstone::core::EndstonePlayer", adapter)
+        self.assertNotIn('"endstone/core/player.h"', adapter)
+        self.assertNotIn('"bedrock/world/actor/player/player.h"', adapter)
+        self.assertNotIn("EndstonePlayer", adapter)
+        self.assertNotIn("sendInventory", adapter)
+        self.assertEqual(adapter.count("if (!player.isValid())"), 2)
 
     def test_native_runtime_gate_uses_normalized_expected_builds(self):
         adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
