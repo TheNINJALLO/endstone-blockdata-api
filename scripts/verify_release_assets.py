@@ -67,6 +67,21 @@ def verify_checksum_file(checksums: Path, expected: dict[str, str]) -> None:
         )
 
 
+FORBIDDEN_UNDEFINED_SYMBOL = re.compile(
+    r"^_Z(?:NK?|TV|TI|TS)(?:[0-9]+(?:BaseGameVersion|Block|BlockActor|"
+    r"BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|"
+    r"Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|"
+    r"IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|"
+    r"ItemStack|ItemStackBase|Inventory|Player|PlayerInventory|"
+    r"EnderChestContainer|IVanillaMainBlockActorComponent|LevelChunk|"
+    r"ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|N?8endstone4core)"
+)
+
+
+def is_forbidden_undefined_symbol(symbol: str) -> bool:
+    return FORBIDDEN_UNDEFINED_SYMBOL.match(symbol) is not None
+
+
 def verify_linux_dynamic_symbols(plugin: Path) -> None:
     nm = shutil.which("nm")
     if not nm:
@@ -77,24 +92,19 @@ def verify_linux_dynamic_symbols(plugin: Path) -> None:
         capture_output=True,
         text=True,
     )
-    bedrock_symbol = re.compile(
-        r"^_Z(?:NK?|TV|TI|TS)(?:[0-9]+(?:BaseGameVersion|Block|BlockActor|"
-        r"BlockSource|BlockType|ByteArrayTag|ByteTag|CompoundTag|Container|"
-        r"Dimension|DoubleTag|EndTag|FloatTag|HashedString|Int64Tag|IntArrayTag|"
-        r"IntTag|Item|ItemDescriptor|ItemInstance|ItemRegistry|ItemRegistryManager|"
-        r"ItemStack|ItemStackBase|IVanillaMainBlockActorComponent|LevelChunk|"
-        r"ListTag|ShortTag|StringTag|Tag|WeakPtr|WeakRef)|"
-        r"8endstone4core17EndstoneDimension)"
-    )
     unresolved_bedrock = []
     for line in result.stdout.splitlines():
         fields = line.split()
-        if len(fields) >= 2 and fields[-2] == "U" and bedrock_symbol.match(fields[-1]):
+        if (
+            len(fields) >= 2
+            and fields[-2] == "U"
+            and is_forbidden_undefined_symbol(fields[-1])
+        ):
             unresolved_bedrock.append(fields[-1])
     if unresolved_bedrock:
         rendered = "\n  ".join(sorted(set(unresolved_bedrock)))
         raise SystemExit(
-            "Linux plugin contains strong unresolved Bedrock ABI symbols that can make dlopen fail:\n"
+            "Linux plugin contains strong unresolved Bedrock or Endstone-core symbols that can make dlopen fail:\n"
             f"  {rendered}"
         )
 

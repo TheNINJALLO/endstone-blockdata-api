@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 0.4.8
+
+- Fixed the Linux BlockData plugin load failure caused by importing private `EndstonePlayer` RTTI from Endstone's runtime.
+- Added build-time and release-time rejection of unresolved concrete `EndstonePlayer` symbols, including a regression fixture for the reported typeinfo symbol.
+- Preserved exact BDS 1.26.33 player inventory capture and writes through the public player validity and inventory notification APIs.
+
 ## 0.4.7
 
 - Added exact live player inventory capture and writes for main inventory, armor, offhand, and Ender Chest slots.
