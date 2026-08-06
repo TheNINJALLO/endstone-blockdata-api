@@ -1,5 +1,10 @@
 ## Unreleased
 
+## 0.5.1
+
+- Fixed the Linux exact adapter startup fallback by replacing the stale 1.26.33 `CreateTracker` RIP displacement in its instruction fingerprint with the verified BDS 1.26.40.8 bytes.
+- Added named native-bridge verification results to startup warnings so runtime-version mismatches and individual private-symbol fingerprint failures are distinguishable.
+
 ## 0.5.0
 
 - Updated the exact native adapter and release matrix to BDS 1.26.40 with Endstone v0.11.7.

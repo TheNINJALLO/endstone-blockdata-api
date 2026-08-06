@@ -17,7 +17,7 @@ class BlockDataInspectorPlugin(Plugin):
     """Exercise the native BlockData service from in-game commands."""
 
     api_version = "0.11"
-    version = "0.5.0"
+    version = "0.5.1"
     description = "Interactive in-game container, NBT, and block-state test suite"
     depend = ["blockdata_api"]
 

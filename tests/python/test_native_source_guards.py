@@ -98,6 +98,8 @@ class TestNativeSourceGuards(unittest.TestCase):
         )
         self.assertIn('canonicalBdsBuild(build) == "26.40"', version_gate)
         self.assertIn("runtime BDS={} Endstone={}; expected BDS={} Endstone={}", plugin)
+        self.assertIn("verification={}; runtime BDS={}", plugin)
+        self.assertIn("nativeStorageItemBridgeStatusName", plugin)
 
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
@@ -150,6 +152,10 @@ class TestNativeSourceGuards(unittest.TestCase):
         ):
             self.assertIn(expected, bridge)
         self.assertIn("1.26.40.8 executables only", bridge)
+        self.assertIn("0x05, 0x5B, 0x8E, 0x54, 0x03", bridge)
+        self.assertNotIn("0x05, 0x0B, 0xBE, 0x26, 0x03", bridge)
+        self.assertIn("CreateTrackerMismatch", bridge)
+        self.assertIn('return "create-tracker-mismatch"', bridge)
         self.assertIn("NativeStorageItemTransaction::materialize", bridge)
         self.assertNotIn("tryMoveStorageItem", bridge)
         self.assertNotIn("force-unresolved", cmake.lower())
