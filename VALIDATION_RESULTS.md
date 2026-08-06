@@ -7,7 +7,7 @@ Validated locally on 2026-08-06:
 - Linux and Windows storage-item, tracker, and container-lifetime RVA mapping with instruction-fingerprint verification
 - Platform-wheel contracts for entry points, native-plugin dependencies, commands,
   permissions, CPython 3.14 tags, package-local bridges, binary magic, and RECORD integrity
-- Project/version/dependency metadata consistency for `0.5.0`
+- Project/version/dependency metadata consistency for `0.5.1`
 - GitHub Actions YAML parsing
 - Release packaging round-trip with a synthetic Windows plugin stage
 - Checksum, ZIP path, manifest, native bridge, unresolved Bedrock/private Endstone-core symbol,

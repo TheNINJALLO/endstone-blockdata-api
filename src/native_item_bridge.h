@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 class Level;
 class ItemStackBase;
@@ -33,6 +34,22 @@ private:
 // Exact BDS 1.26.40 storage-item bridge. Bedrock keeps bundle contents in a
 // dynamic container rather than ItemStackBase::mUserData. Clone-flatten makes
 // those contents serializable without consuming the live container.
+enum class NativeStorageItemBridgeStatus {
+    Ready,
+    UnsupportedPointerWidth,
+    ExecutableBaseUnavailable,
+    FlattenStorageItemMismatch,
+    CreateTrackerMismatch,
+    TrackStorageItemMismatch,
+    ManagerGiveLifetimeMismatch,
+    ReceiveContainerLifetimesMismatch,
+    VerificationError,
+};
+
+[[nodiscard]] NativeStorageItemBridgeStatus
+nativeStorageItemBridgeStatus() noexcept;
+[[nodiscard]] std::string_view nativeStorageItemBridgeStatusName(
+    NativeStorageItemBridgeStatus status) noexcept;
 [[nodiscard]] bool verifyNativeStorageItemBridge() noexcept;
 void flattenNativeStorageItem(::ItemStackBase &item);
 

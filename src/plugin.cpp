@@ -7,21 +7,31 @@
 #include "endstone_blockdata/endstone_adapter.h"
 #include "endstone_blockdata/live_service.h"
 #include "endstone_blockdata/live_player_inventory_service.h"
+#include "native_item_bridge.h"
 #include "version.h"
 #include <memory>
 #include <string>
+#include <string_view>
 
 class BlockDataPlugin : public endstone::Plugin {
 public:
     void onEnable() override {
         std::shared_ptr<endstone_blockdata::IBlockAdapter> adapter;
 #if ENDSTONE_BLOCKDATA_NATIVE_2640
+        std::string_view exact_verification = "runtime-mismatch";
+        if (endstone_blockdata::isExpectedBds2640Build(
+                getServer().getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
+            endstone_blockdata::isExpectedEndstoneVersion(
+                getServer().getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION)) {
+            exact_verification = endstone_blockdata::nativeStorageItemBridgeStatusName(
+                endstone_blockdata::nativeStorageItemBridgeStatus());
+        }
         adapter = endstone_blockdata::makeBds2640Adapter(getServer());
         if (!adapter) {
             getLogger().warning(
-                "Exact native adapter unavailable; runtime BDS={} Endstone={}; expected BDS={} Endstone={}; "
+                "Exact native adapter unavailable; verification={}; runtime BDS={} Endstone={}; expected BDS={} Endstone={}; "
                 "falling back to the public Endstone adapter",
-                getServer().getMinecraftVersion(), getServer().getVersion(),
+                exact_verification, getServer().getMinecraftVersion(), getServer().getVersion(),
                 ENDSTONE_BLOCKDATA_BDS_BUILD, ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
         }
 #endif
@@ -52,7 +62,8 @@ public:
                 player_inventory_service_->adapterName());
         } else {
             getLogger().warning(
-                "Exact player inventory adapter unavailable; live player item NBT is disabled");
+                "Exact player inventory adapter unavailable; verification={}; live player item NBT is disabled",
+                exact_verification);
         }
 #endif
 

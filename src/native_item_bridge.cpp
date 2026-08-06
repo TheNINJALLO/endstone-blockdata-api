@@ -95,7 +95,7 @@ constexpr std::array<std::uint8_t, 29> CreateTrackerPrefix{
     0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54,
     0x53, 0x48, 0x83, 0xEC, 0x10, 0x49, 0x89, 0xD4,
     0x49, 0x89, 0xF5, 0x48, 0x89, 0xFB, 0x48, 0x8B,
-    0x05, 0x0B, 0xBE, 0x26, 0x03,
+    0x05, 0x5B, 0x8E, 0x54, 0x03,
 };
 constexpr std::array<std::uint8_t, 30> TrackStorageItemPrefix{
     0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
@@ -558,26 +558,71 @@ NativeItemRegistryScope::~NativeItemRegistryScope() noexcept
     active_item_registry_level = previous_;
 }
 
-bool verifyNativeStorageItemBridge() noexcept
+NativeStorageItemBridgeStatus nativeStorageItemBridgeStatus() noexcept
 {
     try {
-        if (sizeof(void *) != 8 || !executableBytes()) return false;
-        return verifyStorageFunction(FlattenStorageItemRva, 2) &&
-               verifyFunctionPrefix(CreateTrackerRva, CreateTrackerPrefix) &&
-               verifyFunctionPrefix(
-                   TrackStorageItemRva, TrackStorageItemPrefix) &&
-               verifyFunctionPrefix(
-                   ManagerGiveLifetimeRva, ManagerGiveLifetimePrefix)
+        if (sizeof(void *) != 8) {
+            return NativeStorageItemBridgeStatus::UnsupportedPointerWidth;
+        }
+        if (!executableBytes()) {
+            return NativeStorageItemBridgeStatus::ExecutableBaseUnavailable;
+        }
+        if (!verifyStorageFunction(FlattenStorageItemRva, 2)) {
+            return NativeStorageItemBridgeStatus::FlattenStorageItemMismatch;
+        }
+        if (!verifyFunctionPrefix(CreateTrackerRva, CreateTrackerPrefix)) {
+            return NativeStorageItemBridgeStatus::CreateTrackerMismatch;
+        }
+        if (!verifyFunctionPrefix(TrackStorageItemRva, TrackStorageItemPrefix)) {
+            return NativeStorageItemBridgeStatus::TrackStorageItemMismatch;
+        }
+        if (!verifyFunctionPrefix(
+                ManagerGiveLifetimeRva, ManagerGiveLifetimePrefix)) {
+            return NativeStorageItemBridgeStatus::ManagerGiveLifetimeMismatch;
+        }
 #if defined(__linux__)
-               && verifyFunctionPrefix(
-                   ReceiveContainerLifetimesRva,
-                   ReceiveContainerLifetimesPrefix)
+        if (!verifyFunctionPrefix(
+                ReceiveContainerLifetimesRva,
+                ReceiveContainerLifetimesPrefix)) {
+            return NativeStorageItemBridgeStatus::ReceiveContainerLifetimesMismatch;
+        }
 #endif
-            ;
+        return NativeStorageItemBridgeStatus::Ready;
     }
     catch (...) {
-        return false;
+        return NativeStorageItemBridgeStatus::VerificationError;
     }
+}
+
+std::string_view nativeStorageItemBridgeStatusName(
+    NativeStorageItemBridgeStatus status) noexcept
+{
+    switch (status) {
+    case NativeStorageItemBridgeStatus::Ready: return "ready";
+    case NativeStorageItemBridgeStatus::UnsupportedPointerWidth:
+        return "unsupported-pointer-width";
+    case NativeStorageItemBridgeStatus::ExecutableBaseUnavailable:
+        return "executable-base-unavailable";
+    case NativeStorageItemBridgeStatus::FlattenStorageItemMismatch:
+        return "flatten-storage-item-mismatch";
+    case NativeStorageItemBridgeStatus::CreateTrackerMismatch:
+        return "create-tracker-mismatch";
+    case NativeStorageItemBridgeStatus::TrackStorageItemMismatch:
+        return "track-storage-item-mismatch";
+    case NativeStorageItemBridgeStatus::ManagerGiveLifetimeMismatch:
+        return "manager-give-lifetime-mismatch";
+    case NativeStorageItemBridgeStatus::ReceiveContainerLifetimesMismatch:
+        return "receive-container-lifetimes-mismatch";
+    case NativeStorageItemBridgeStatus::VerificationError:
+        return "verification-error";
+    }
+    return "unknown";
+}
+
+bool verifyNativeStorageItemBridge() noexcept
+{
+    return nativeStorageItemBridgeStatus() ==
+           NativeStorageItemBridgeStatus::Ready;
 }
 
 void flattenNativeStorageItem(ItemStackBase &item)
