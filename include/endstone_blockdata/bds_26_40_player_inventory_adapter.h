@@ -11,6 +11,6 @@ class Server;
 namespace endstone_blockdata {
 
 [[nodiscard]] std::shared_ptr<IPlayerInventoryAdapter>
-makeBds2630PlayerInventoryAdapter(endstone::Server &server);
+makeBds2640PlayerInventoryAdapter(endstone::Server &server);
 
 } // namespace endstone_blockdata

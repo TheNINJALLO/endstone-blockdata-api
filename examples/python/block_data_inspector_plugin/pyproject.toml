@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "endstone-blockdata-inspector"
-version = "0.4.9"
+version = "0.5.0"
 description = "In-game container, NBT, and block state inspection test plugin for Endstone"
 readme = "README.md"
 requires-python = "==3.14.*"
 dependencies = [
-    "endstone==0.11.6",
+    "endstone==0.11.7",
 ]
 
 [project.entry-points."endstone"]

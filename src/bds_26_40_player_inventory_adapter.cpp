@@ -1,5 +1,5 @@
-#include "endstone_blockdata/bds_26_30_player_inventory_adapter.h"
-#include "endstone_blockdata/bds_26_30_adapter.h"
+#include "endstone_blockdata/bds_26_40_player_inventory_adapter.h"
+#include "endstone_blockdata/bds_26_40_adapter.h"
 #include "native_item_bridge.h"
 
 #include <endstone/endstone.hpp>
@@ -30,7 +30,7 @@ constexpr std::int32_t MaxPlayerContainerSlots = 4096;
 
 bool isExactRuntimeBuild(const endstone::Server &server)
 {
-    return isExpectedBds2630Build(
+    return isExpectedBds2640Build(
                server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
            isExpectedEndstoneVersion(
                server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
@@ -283,7 +283,7 @@ NbtValue itemSnapshot(std::int32_t slot, const endstone::ItemStack &item)
     auto serialized = item;
     if (!flattenEndstoneStorageItem(serialized)) {
         throw std::runtime_error(
-            "BDS 1.26.33 storage-item clone flatten failed");
+            "BDS 1.26.40 storage-item clone flatten failed");
     }
 
     NbtCompound output;
@@ -494,16 +494,16 @@ void applyInventoryChanges(
     for (const auto slot : removals) inventory.clear(slot);
 }
 
-class Bds2630PlayerInventoryAdapter final : public IPlayerInventoryAdapter {
+class Bds2640PlayerInventoryAdapter final : public IPlayerInventoryAdapter {
 public:
-    explicit Bds2630PlayerInventoryAdapter(endstone::Server &server)
+    explicit Bds2640PlayerInventoryAdapter(endstone::Server &server)
         : server_(server)
     {
     }
 
     [[nodiscard]] std::string_view name() const noexcept override
     {
-        return "bds-26.30-exact-player-inventory";
+        return "bds-26.40-exact-player-inventory";
     }
 
     [[nodiscard]] bool verify() const noexcept
@@ -705,7 +705,7 @@ public:
 
         auto updated = capture(player);
         return {ApplyStatus::Applied,
-                "applied canonical player inventory NBT through exact BDS 26.30 adapter",
+                "applied canonical player inventory NBT through exact BDS 26.40 adapter",
                 updated ? updated->revision : 0};
     }
 
@@ -715,10 +715,10 @@ private:
 
 } // namespace
 
-std::shared_ptr<IPlayerInventoryAdapter> makeBds2630PlayerInventoryAdapter(
+std::shared_ptr<IPlayerInventoryAdapter> makeBds2640PlayerInventoryAdapter(
     endstone::Server &server)
 {
-    auto adapter = std::make_shared<Bds2630PlayerInventoryAdapter>(server);
+    auto adapter = std::make_shared<Bds2640PlayerInventoryAdapter>(server);
     return adapter->verify() ? adapter : nullptr;
 }
 

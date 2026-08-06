@@ -6,7 +6,7 @@ The release includes the `endstone_blockdata_inspector` test-plugin wheel.
 
 1. Stop the server and remove every older BlockData inspector wheel from `plugins/`.
 2. Remove any manually copied top-level `_endstone_blockdata_live` file from `plugins/.local`.
-3. Extract the BDS 1.26.33 ZIP matching the server platform and copy both files from its `plugins/` directory into the server's `plugins/` directory.
+3. Extract the BDS 1.26.40 ZIP matching the server platform and copy both files from its `plugins/` directory into the server's `plugins/` directory.
 4. Restart Endstone and confirm both the native API and inspector load.
 
 The wheel registers Endstone entry point `blockdata-inspector`, command `/bd`

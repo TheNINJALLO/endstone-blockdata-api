@@ -173,7 +173,7 @@ def main() -> int:
         f"-DPython_EXECUTABLE={sys.executable}",
         "-DENDSTONE_BLOCKDATA_BUILD_TESTS=OFF",
         "-DENDSTONE_BLOCKDATA_BUILD_PLUGIN=ON",
-        "-DENDSTONE_BLOCKDATA_BUILD_NATIVE_2630=ON",
+        "-DENDSTONE_BLOCKDATA_BUILD_NATIVE_2640=ON",
         f"-DENDSTONE_BDS_BUILD={args.bds}",
     ]
     configure.append("-DENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON=ON")

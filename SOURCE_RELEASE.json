@@ -1,13 +1,25 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.4.9",
-  "adapter_family": "Minecraft Bedrock 26.30",
+  "version": "0.5.0",
+  "adapter_family": "Minecraft Bedrock 26.40",
   "supported_bds": [
-    "1.26.33"
+    "1.26.40"
   ],
   "endstone_tags": [
-    "v0.11.6"
+    "v0.11.7"
   ],
+  "verified_bds_archives": {
+    "linux-x64": {
+      "version": "1.26.40.8",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.40.8.zip",
+      "sha256": "4CB52943B06E86FA9CBE7A311BD85C26D44FE4F383C9AB3293E078DC463F922E"
+    },
+    "windows-x64": {
+      "version": "1.26.40.8",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.40.8.zip",
+      "sha256": "7B649671E1D88F8BD1499C580910F099E27533EFC213F9FAF5A5C68DD41A77C9"
+    }
+  },
   "portable_tests": "included in GitHub Actions",
   "native_validation": "exact adapter build matrix; stage-server runtime validation required",
   "github_actions": {
@@ -18,7 +30,7 @@
       "windows-x64"
     ],
     "bds": [
-      "1.26.33"
+      "1.26.40"
     ],
     "linux_runner": "ubuntu-22.04 + clang-18 + libc++18 + Ninja",
     "windows_toolchain": "Visual Studio environment + clang-cl + lld-link + Ninja + Conan 2",

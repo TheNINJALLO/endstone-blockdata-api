@@ -1,5 +1,12 @@
 ## Unreleased
 
+## 0.5.0
+
+- Updated the exact native adapter and release matrix to BDS 1.26.40 with Endstone v0.11.7.
+- Remapped and fingerprint-verified the private Linux and Windows storage-item, tracker, and container-lifetime entry points against the official BDS 1.26.40.8 executables.
+- Recorded the official server archive URLs and SHA-256 checksums used for the ABI update.
+- Renamed the 26.30 adapter surface and build switches to the 26.40 family so stale adapter identifiers cannot be shipped accidentally.
+
 ## 0.4.9
 
 - Exposed live vanilla bundle contents non-destructively by flattening cloned native stacks, including nested item NBT and player-inventory reads.

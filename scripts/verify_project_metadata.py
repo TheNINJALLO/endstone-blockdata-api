@@ -93,7 +93,7 @@ def main() -> int:
                 r'^dependencies\s*=\s*\[\s*"([^"]+)"\s*,?\s*\]',
                 "test wheel dependency",
             ),
-            "endstone==0.11.6",
+            "endstone==0.11.7",
         ),
         "test plugin version": (
             capture(config["wheel_plugin"], r'^\s+version\s*=\s*"([^"]+)"', "plugin version"),
@@ -146,18 +146,35 @@ def main() -> int:
     supported_bds = source.get("supported_bds", [])
     endstone_tags = source.get("endstone_tags", [])
     if slug == "endstone-blockdata-api":
-        if supported_bds != ["1.26.33"]:
+        if supported_bds != ["1.26.40"]:
             failures.append(
-                f"BlockData exact BDS support must be ['1.26.33'], got {supported_bds!r}"
+                f"BlockData exact BDS support must be ['1.26.40'], got {supported_bds!r}"
             )
-        if endstone_tags != ["v0.11.6"]:
+        if endstone_tags != ["v0.11.7"]:
             failures.append(
-                f"BlockData exact Endstone support must be ['v0.11.6'], got {endstone_tags!r}"
+                f"BlockData exact Endstone support must be ['v0.11.7'], got {endstone_tags!r}"
             )
         workflow_bds = source.get("github_actions", {}).get("bds")
         if workflow_bds != supported_bds:
             failures.append(
                 f"GitHub Actions BDS matrix metadata must equal supported_bds, got {workflow_bds!r}"
+            )
+        expected_archives = {
+            "linux-x64": {
+                "version": "1.26.40.8",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.40.8.zip",
+                "sha256": "4CB52943B06E86FA9CBE7A311BD85C26D44FE4F383C9AB3293E078DC463F922E",
+            },
+            "windows-x64": {
+                "version": "1.26.40.8",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.40.8.zip",
+                "sha256": "7B649671E1D88F8BD1499C580910F099E27533EFC213F9FAF5A5C68DD41A77C9",
+            },
+        }
+        verified_archives = source.get("verified_bds_archives")
+        if verified_archives != expected_archives:
+            failures.append(
+                "verified BDS archive metadata does not match the exact 1.26.40.8 ABI inputs"
             )
     if len(supported_bds) != len(endstone_tags):
         failures.append("supported_bds and endstone_tags must have a one-to-one mapping")

@@ -1,8 +1,8 @@
 #include <endstone/endstone.hpp>
 #include <endstone/plugin/service_manager.h>
 #include <endstone/plugin/service_priority.h>
-#include "endstone_blockdata/bds_26_30_adapter.h"
-#include "endstone_blockdata/bds_26_30_player_inventory_adapter.h"
+#include "endstone_blockdata/bds_26_40_adapter.h"
+#include "endstone_blockdata/bds_26_40_player_inventory_adapter.h"
 #include "endstone_blockdata/block_data_service.h"
 #include "endstone_blockdata/endstone_adapter.h"
 #include "endstone_blockdata/live_service.h"
@@ -15,8 +15,8 @@ class BlockDataPlugin : public endstone::Plugin {
 public:
     void onEnable() override {
         std::shared_ptr<endstone_blockdata::IBlockAdapter> adapter;
-#if ENDSTONE_BLOCKDATA_NATIVE_2630
-        adapter = endstone_blockdata::makeBds2630Adapter(getServer());
+#if ENDSTONE_BLOCKDATA_NATIVE_2640
+        adapter = endstone_blockdata::makeBds2640Adapter(getServer());
         if (!adapter) {
             getLogger().warning(
                 "Exact native adapter unavailable; runtime BDS={} Endstone={}; expected BDS={} Endstone={}; "
@@ -32,9 +32,9 @@ public:
             std::string(endstone_blockdata::BlockDataServiceName), provider_, *this,
             endstone::ServicePriority::Normal);
 
-#if ENDSTONE_BLOCKDATA_NATIVE_2630
+#if ENDSTONE_BLOCKDATA_NATIVE_2640
         auto player_inventory_adapter =
-            endstone_blockdata::makeBds2630PlayerInventoryAdapter(getServer());
+            endstone_blockdata::makeBds2640PlayerInventoryAdapter(getServer());
         if (player_inventory_adapter) {
             player_inventory_service_ =
                 std::make_shared<endstone_blockdata::PlayerInventoryService>(
@@ -63,7 +63,7 @@ public:
                          endstone_blockdata::BlockDataServiceName, caps.block_states, caps.block_writes,
                          caps.block_entity_nbt, caps.block_entity_nbt_write, caps.item_user_nbt,
                          caps.inventory, caps.canonical_actor_nbt, caps.raw_block_entity_nbt);
-        if (service_->adapterName() == "bds-26.30-exact-nbt") {
+        if (service_->adapterName() == "bds-26.40-exact-nbt") {
             getLogger().info(
                 "live_features storage_item_reads=true storage_item_writes=true shelf_reads=true shelf_writes=true");
         }

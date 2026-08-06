@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(endstone_blockdata VERSION 0.4.9 LANGUAGES CXX)
+project(endstone_blockdata VERSION 0.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,8 +22,8 @@ option(ENDSTONE_BLOCKDATA_BUILD_TESTS "Build portable tests" ON)
 option(ENDSTONE_BLOCKDATA_BUILD_PLUGIN "Build the Endstone plugin wrapper" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_PYTHON "Build portable pybind11 bindings" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON "Build live Endstone Python bridge" ON)
-option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630 "Build exact BDS 26.30-family adapter" ON)
-set(ENDSTONE_BDS_BUILD "1.26.33" CACHE STRING "Exact supported BDS build")
+option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2640 "Build exact BDS 26.40-family adapter" ON)
+set(ENDSTONE_BDS_BUILD "1.26.40" CACHE STRING "Exact supported BDS build")
 string(REPLACE "." "_" ENDSTONE_BDS_BUILD_FILE "${ENDSTONE_BDS_BUILD}")
 if(DEFINED ENDSTONE_CONAN_BDS_BUILD AND
    NOT ENDSTONE_CONAN_BDS_BUILD STREQUAL ENDSTONE_BDS_BUILD)
@@ -51,10 +51,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         message(FATAL_ERROR
             "ENDSTONE_CONAN_BDS_BUILD is missing; configure the exact plugin with this project's Conan toolchain")
     endif()
-    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.33")
-        set(ENDSTONE_EXACT_TAG "v0.11.6")
+    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.40")
+        set(ENDSTONE_EXACT_TAG "v0.11.7")
     else()
-        message(FATAL_ERROR "The exact adapter supports only BDS 1.26.33 with Endstone v0.11.6")
+        message(FATAL_ERROR "The exact adapter supports only BDS 1.26.40 with Endstone v0.11.7")
     endif()
     string(REGEX REPLACE "^v" "" ENDSTONE_EXACT_VERSION "${ENDSTONE_EXACT_TAG}")
 
@@ -106,7 +106,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_FORMAT}" ENDSTONE_RESULT_ERROR_FORMAT_INDEX)
         string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_ERROR_MESSAGE_INDEX)
         if(ENDSTONE_RESULT_ERROR_FORMAT_INDEX EQUAL -1 AND ENDSTONE_RESULT_ERROR_MESSAGE_INDEX EQUAL -1)
-            message(FATAL_ERROR "Endstone v0.11.6 result.h no longer contains the expected std::error_code format expression")
+            message(FATAL_ERROR "Endstone v0.11.7 result.h no longer contains the expected std::error_code format expression")
         endif()
         string(REPLACE "${ENDSTONE_RESULT_ERROR_FORMAT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_H_CONTENT "${ENDSTONE_RESULT_H_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
@@ -174,12 +174,12 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
                 ENDSTONE_PLAYER_SAFE_RETURN_INDEX)
             if(ENDSTONE_PLAYER_SAFE_RETURN_INDEX EQUAL -1)
                 message(FATAL_ERROR
-                    "Endstone v0.11.6 player.cpp no longer matches the validated Windows link patch")
+                    "Endstone v0.11.7 player.cpp no longer matches the validated Windows link patch")
             endif()
         endif()
     else()
         message(FATAL_ERROR
-            "Endstone v0.11.6 player.cpp was not found for the Windows link patch")
+            "Endstone v0.11.7 player.cpp was not found for the Windows link patch")
     endif()
     # END BlockData Windows player.cpp link fix
 
@@ -200,11 +200,11 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         src/endstone_public_adapter.cpp
         src/native_runtime_bridge.cpp
     )
-    if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630)
+    if(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2640)
         list(APPEND BLOCKDATA_PLUGIN_SOURCES
-            src/bds_26_30_adapter.cpp
+            src/bds_26_40_adapter.cpp
             src/native_item_bridge.cpp
-            src/bds_26_30_player_inventory_adapter.cpp
+            src/bds_26_40_player_inventory_adapter.cpp
         )
     endif()
 
@@ -227,7 +227,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         ${endstone_BINARY_DIR}/include/generated
     )
     target_compile_definitions(blockdata_api PRIVATE
-        ENDSTONE_BLOCKDATA_NATIVE_2630=$<BOOL:${ENDSTONE_BLOCKDATA_BUILD_NATIVE_2630}>
+        ENDSTONE_BLOCKDATA_NATIVE_2640=$<BOOL:${ENDSTONE_BLOCKDATA_BUILD_NATIVE_2640}>
         ENDSTONE_BLOCKDATA_BDS_BUILD="${ENDSTONE_BDS_BUILD}"
         ENDSTONE_BLOCKDATA_ENDSTONE_VERSION="${ENDSTONE_EXACT_VERSION}"
         ENTT_SPARSE_PAGE=2048
@@ -355,7 +355,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         VALIDATION_RESULTS.md
         docs/INSTALL.md
         docs/CI_TROUBLESHOOTING.md
-        docs/BDS_26_30_ADAPTER.md
+        docs/BDS_26_40_ADAPTER.md
         docs/storage_items.md
         docs/player_inventory.md
         docs/shelves.md
