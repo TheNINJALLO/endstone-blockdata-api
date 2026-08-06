@@ -30,7 +30,7 @@ private:
     ::Level *previous_{};
 };
 
-// Exact BDS 1.26.33 storage-item bridge. Bedrock keeps bundle contents in a
+// Exact BDS 1.26.40 storage-item bridge. Bedrock keeps bundle contents in a
 // dynamic container rather than ItemStackBase::mUserData. Clone-flatten makes
 // those contents serializable without consuming the live container.
 [[nodiscard]] bool verifyNativeStorageItemBridge() noexcept;
@@ -69,7 +69,7 @@ private:
 [[nodiscard]] bool hasSerializedNativeStorageContents(
     const ::ItemStackBase &item) noexcept;
 
-// Endstone 0.11.6's public ItemStack is backed by its exact native
+// Endstone 0.11.7's public ItemStack is backed by its exact native
 // EndstoneItemStack implementation. These helpers bridge that pinned layout
 // without importing private endstone::core RTTI or implementation symbols.
 [[nodiscard]] bool flattenEndstoneStorageItem(endstone::ItemStack &item);

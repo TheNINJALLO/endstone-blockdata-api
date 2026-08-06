@@ -152,4 +152,4 @@ These states are intentionally distinct:
 - A recognized bundle with no contents field returns `contents_unavailable` and is not valid for editing.
 - A contents field with the wrong NBT type returns `invalid_contents`.
 
-The helpers work with item NBT obtained from either block containers or the player-inventory adapter. The exact 1.26.33 block adapter supports live bundle reads and writes with native dynamic-container lifetime transfer. Player bundle contents are readable but live player storage-item writes are deliberately rejected until that owning-inventory lifetime transfer is exposed. Always validate the captured item before constructing an editable view.
+The helpers work with item NBT obtained from either block containers or the player-inventory adapter. The exact 1.26.40 block adapter supports live bundle reads and writes with native dynamic-container lifetime transfer. Player bundle contents are readable but live player storage-item writes are deliberately rejected until that owning-inventory lifetime transfer is exposed. Always validate the captured item before constructing an editable view.

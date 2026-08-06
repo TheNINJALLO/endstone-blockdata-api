@@ -72,7 +72,7 @@ class TestNativeSourceGuards(unittest.TestCase):
 
     def test_player_inventory_adapter_does_not_import_private_player_rtti(self):
         adapter = (
-            ROOT / "src/bds_26_30_player_inventory_adapter.cpp"
+            ROOT / "src/bds_26_40_player_inventory_adapter.cpp"
         ).read_text(encoding="utf-8")
         self.assertNotIn(
             "dynamic_cast<endstone::core::EndstonePlayer", adapter
@@ -87,21 +87,21 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertIn("live player bundle/storage-item writes are disabled", adapter)
 
     def test_native_runtime_gate_uses_normalized_expected_builds(self):
-        adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_40_adapter.cpp").read_text(encoding="utf-8")
         plugin = (ROOT / "src/plugin.cpp").read_text(encoding="utf-8")
         version_gate = (ROOT / "src/version_gate.cpp").read_text(encoding="utf-8")
 
-        self.assertIn("isExpectedBds2630Build(server.getMinecraftVersion()", adapter)
+        self.assertIn("isExpectedBds2640Build(server.getMinecraftVersion()", adapter)
         self.assertNotIn(
             "server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD",
             adapter,
         )
-        self.assertIn('canonicalBdsBuild(build) == "26.33"', version_gate)
+        self.assertIn('canonicalBdsBuild(build) == "26.40"', version_gate)
         self.assertIn("runtime BDS={} Endstone={}; expected BDS={} Endstone={}", plugin)
 
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
-        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.6")', cmake)
+        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.7")', cmake)
         self.assertIn('std::string(\\"Error: \\") + error', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_FORMAT "std::format(\\"{}\\", error_info.error)")', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_MESSAGE "error_info.error.message()")', cmake)
@@ -123,7 +123,7 @@ class TestNativeSourceGuards(unittest.TestCase):
     def test_native_item_bridge_is_functional_and_scoped(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
         bridge = (ROOT / "src/native_item_bridge.cpp").read_text(encoding="utf-8")
-        adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_40_adapter.cpp").read_text(encoding="utf-8")
 
         self.assertIn("src/native_item_bridge.cpp", cmake)
         self.assertIn("thread_local Level *active_item_registry_level", bridge)
@@ -135,6 +135,21 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertIn("TrackStorageItemRva", bridge)
         self.assertIn("ReceiveContainerLifetimesRva", bridge)
         self.assertIn("ManagerGiveLifetimeRva", bridge)
+        for expected in (
+            "FlattenStorageItemRva = 0x027C1710",
+            "FlattenStorageItemCoreRva = 0x027C17E0",
+            "CreateTrackerRva = 0x02375020",
+            "TrackStorageItemRva = 0x02372910",
+            "ManagerGiveLifetimeRva = 0x02DF8890",
+            "FlattenStorageItemRva = 0x0B79B2F0",
+            "FlattenStorageItemCoreRva = 0x0B79B390",
+            "CreateTrackerRva = 0x0B307D90",
+            "TrackStorageItemRva = 0x0B306510",
+            "ReceiveContainerLifetimesRva = 0x0ADCFB40",
+            "ManagerGiveLifetimeRva = 0x0B2E1F50",
+        ):
+            self.assertIn(expected, bridge)
+        self.assertIn("1.26.40.8 executables only", bridge)
         self.assertIn("NativeStorageItemTransaction::materialize", bridge)
         self.assertNotIn("tryMoveStorageItem", bridge)
         self.assertNotIn("force-unresolved", cmake.lower())
@@ -174,7 +189,7 @@ class TestNativeSourceGuards(unittest.TestCase):
         )
 
     def test_block_actor_capture_is_typed_and_inventory_is_sparse(self):
-        adapter = (ROOT / "src/bds_26_30_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_40_adapter.cpp").read_text(encoding="utf-8")
         bridge = (ROOT / "src/live_python_bindings.cpp").read_text(encoding="utf-8")
 
         self.assertIn(

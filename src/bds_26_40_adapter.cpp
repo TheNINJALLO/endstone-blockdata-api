@@ -1,4 +1,4 @@
-#include "endstone_blockdata/bds_26_30_adapter.h"
+#include "endstone_blockdata/bds_26_40_adapter.h"
 #include "endstone_blockdata/endstone_adapter.h"
 #include "native_item_bridge.h"
 
@@ -28,7 +28,7 @@
 namespace endstone_blockdata {
 namespace {
 bool isExactRuntimeBuild(const endstone::Server &server) {
-    return isExpectedBds2630Build(server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
+    return isExpectedBds2640Build(server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
            isExpectedEndstoneVersion(server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
 }
 
@@ -327,7 +327,7 @@ struct ActorLookup {
 };
 
 bool isSupportedVanillaActorType(BlockActorType type) {
-    // Endstone v0.11.6 declares the vanilla actor component as the second
+    // Endstone v0.11.7 declares the vanilla actor component as the second
     // base of VanillaBlockActor. Data-driven and sentinel actor values do not
     // carry that exact ABI contract and must never be reinterpreted as one.
     switch (type) {
@@ -608,12 +608,12 @@ bool isIdentityField(std::string_view key) {
     return key == "id" || key == "x" || key == "y" || key == "z" || key.starts_with("_endstone_");
 }
 
-class Bds2630BlockAdapter final : public IBedrockBlockAdapter {
+class Bds2640BlockAdapter final : public IBedrockBlockAdapter {
 public:
-    explicit Bds2630BlockAdapter(endstone::Server &server)
+    explicit Bds2640BlockAdapter(endstone::Server &server)
         : server_(server), public_(makeEndstonePublicAdapter(server)) {}
 
-    std::string_view name() const noexcept override { return "bds-26.30-exact-nbt"; }
+    std::string_view name() const noexcept override { return "bds-26.40-exact-nbt"; }
     AdapterCapabilities capabilities() const noexcept override {
         AdapterCapabilities out;
         out.block_states = true;
@@ -995,7 +995,7 @@ public:
             }
             return {ApplyStatus::Applied,
                     updated
-                        ? "applied canonical block-actor NBT through exact BDS 26.30 adapter"
+                        ? "applied canonical block-actor NBT through exact BDS 26.40 adapter"
                         : "block-actor NBT was applied, but readback capture was unavailable",
                     updated ? updated->revision : 0};
         }
@@ -1101,7 +1101,7 @@ public:
         }
         return {ApplyStatus::Applied,
                 updated
-                    ? "applied canonical block-actor NBT through exact BDS 26.30 adapter"
+                    ? "applied canonical block-actor NBT through exact BDS 26.40 adapter"
                     : "container inventory was applied, but readback capture was unavailable",
                 updated ? updated->revision : 0};
     }
@@ -1129,8 +1129,8 @@ private:
 };
 }
 
-std::shared_ptr<IBedrockBlockAdapter> makeBds2630Adapter(endstone::Server &server) {
-    auto adapter = std::make_shared<Bds2630BlockAdapter>(server);
+std::shared_ptr<IBedrockBlockAdapter> makeBds2640Adapter(endstone::Server &server) {
+    auto adapter = std::make_shared<Bds2640BlockAdapter>(server);
     return adapter->verifySymbols() ? adapter : nullptr;
 }
 }

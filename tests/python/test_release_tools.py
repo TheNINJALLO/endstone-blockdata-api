@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.4.9"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.5.0"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -35,15 +35,15 @@ class TestReleaseTools(unittest.TestCase):
             "git merge-base --is-ancestor",
         ):
             self.assertIn(required, workflow)
-        self.assertNotIn("Portable tests v0.4.9", workflow)
-        self.assertNotIn("Exact v0.4.9 - BDS", workflow)
+        self.assertNotIn("Portable tests v0.5.0", workflow)
+        self.assertNotIn("Exact v0.5.0 - BDS", workflow)
 
     def test_combined_release_asset_set_is_exact_and_nonempty(self):
         scratch_root = ROOT / "build" / "release-tool-tests"
         scratch_root.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=scratch_root) as temporary:
             release = Path(temporary)
-            stem = f"{CONFIG['slug']}-v{CONFIG['version']}-bds-1.26.33"
+            stem = f"{CONFIG['slug']}-v{CONFIG['version']}-bds-1.26.40"
             names = {
                 f"{stem}-linux-x64.so",
                 f"{stem}-linux-x64.zip",
@@ -58,7 +58,7 @@ class TestReleaseTools(unittest.TestCase):
                 (release / name).write_bytes(b"asset")
             common = (
                 "--slug", CONFIG["slug"], "--version", CONFIG["version"],
-                "--bds", "1.26.33", "--release-dir", str(release),
+                "--bds", "1.26.40", "--release-dir", str(release),
             )
             self.run_tool("verify_combined_release_assets.py", *common)
             (release / "unexpected.txt").write_bytes(b"unexpected")
@@ -72,7 +72,7 @@ class TestReleaseTools(unittest.TestCase):
     def add_command_wheel(stage: Path) -> Path:
         wheel = (
             stage / "plugins" /
-            "endstone_blockdata_inspector-0.4.9-cp314-cp314-win_amd64.whl"
+            "endstone_blockdata_inspector-0.5.0-cp314-cp314-win_amd64.whl"
         )
         wheel.parent.mkdir(parents=True, exist_ok=True)
         bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))
@@ -92,7 +92,7 @@ class TestReleaseTools(unittest.TestCase):
             stage = workspace / "stage"
             release = workspace / "release"
             plugin = stage / "plugins" / (
-                CONFIG["plugin_prefix"] + "1_26_33.dll"
+                CONFIG["plugin_prefix"] + "1_26_40.dll"
             )
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
@@ -107,7 +107,7 @@ class TestReleaseTools(unittest.TestCase):
 
             common = (
                 "--version", CONFIG["version"],
-                "--bds", "1.26.33",
+                "--bds", "1.26.40",
                 "--platform", "windows-x64",
             )
             self.run_tool(
@@ -143,7 +143,7 @@ class TestReleaseTools(unittest.TestCase):
             workspace = Path(temporary)
             stage = workspace / "stage"
             release = workspace / "release"
-            plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
+            plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_40.dll")
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
             bridge = stage / "python" / "_endstone_blockdata_live.cp314-win_amd64.pyd"
@@ -151,7 +151,7 @@ class TestReleaseTools(unittest.TestCase):
             bridge.write_bytes(b"not-a-pe-binary")
             self.add_command_wheel(stage)
             common = (
-                "--version", CONFIG["version"], "--bds", "1.26.33",
+                "--version", CONFIG["version"], "--bds", "1.26.40",
                 "--platform", "windows-x64",
             )
             self.run_tool(
@@ -180,7 +180,7 @@ class TestReleaseTools(unittest.TestCase):
                 workspace = Path(temporary)
                 stage = workspace / "stage"
                 release = workspace / "release"
-                plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
+                plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_40.dll")
                 plugin.parent.mkdir(parents=True)
                 plugin.write_bytes(b"MZ" + bytes(range(64)))
                 self.add_command_wheel(stage)
@@ -189,7 +189,7 @@ class TestReleaseTools(unittest.TestCase):
                     bridge.parent.mkdir(parents=True, exist_ok=True)
                     bridge.write_bytes(b"MZ" + bytes(range(32)))
                 common = (
-                    "--version", CONFIG["version"], "--bds", "1.26.33",
+                    "--version", CONFIG["version"], "--bds", "1.26.40",
                     "--platform", "windows-x64",
                 )
                 self.run_tool(
@@ -210,7 +210,7 @@ class TestReleaseTools(unittest.TestCase):
             workspace = Path(temporary)
             stage = workspace / "stage"
             release = workspace / "release"
-            plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_33.dll")
+            plugin = stage / "plugins" / (CONFIG["plugin_prefix"] + "1_26_40.dll")
             plugin.parent.mkdir(parents=True)
             plugin.write_bytes(b"MZ" + bytes(range(64)))
             bridge = stage / "python" / f"{CONFIG['bridge_prefix']}.cp313-win_amd64.pyd"
@@ -218,7 +218,7 @@ class TestReleaseTools(unittest.TestCase):
             bridge.write_bytes(b"MZ" + bytes(range(32)))
             self.add_command_wheel(stage)
             common = (
-                "--version", CONFIG["version"], "--bds", "1.26.33",
+                "--version", CONFIG["version"], "--bds", "1.26.40",
                 "--platform", "windows-x64",
             )
             self.run_tool(
@@ -242,7 +242,7 @@ class TestReleaseTools(unittest.TestCase):
                 "package_release.py",
                 "--project", CONFIG["project"],
                 "--version", "../escape",
-                "--bds", "1.26.33",
+                "--bds", "1.26.40",
                 "--platform", "windows-x64",
                 "--stage", str(stage),
                 "--release-dir", str(Path(temporary) / "release"),

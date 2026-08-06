@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.4.9
+  RELEASE_VERSION: 0.5.0
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -61,10 +61,10 @@ jobs:
         include:
           - os: ubuntu-22.04
             platform: linux-x64
-            bds: "1.26.33"
+            bds: "1.26.40"
           - os: windows-2022
             platform: windows-x64
-            bds: "1.26.33"
+            bds: "1.26.40"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -81,7 +81,7 @@ jobs:
           "build==1.4.0"
           "setuptools==80.9.0"
           "wheel==0.46.3"
-          "endstone==0.11.6"
+          "endstone==0.11.7"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -204,7 +204,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install Endstone runtime dependency
-        run: python -m pip install "endstone==0.11.6"
+        run: python -m pip install "endstone==0.11.7"
       - name: Install local Python package
         run: python -m pip install -e .
       - name: Download both exact-built command wheels
@@ -274,7 +274,7 @@ jobs:
           python scripts/verify_combined_release_assets.py
           --slug "${{ env.PROJECT_SLUG }}"
           --version "${{ env.RELEASE_VERSION }}"
-          --bds "1.26.33"
+          --bds "1.26.40"
           --release-dir release-assets
       - name: Generate combined checksums
         working-directory: release-assets

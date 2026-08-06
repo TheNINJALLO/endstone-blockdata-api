@@ -571,7 +571,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         out["container_save_nbt"] = c.container_save_nbt;
         out["raw_block_entity_nbt"] = c.raw_block_entity_nbt;
         const bool exact_container_items =
-            service->adapterName() == "bds-26.30-exact-nbt";
+            service->adapterName() == "bds-26.40-exact-nbt";
         out["storage_item_reads"] = exact_container_items;
         out["storage_item_writes"] = exact_container_items;
         out["shelf_reads"] = exact_container_items;
