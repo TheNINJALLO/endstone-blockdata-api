@@ -327,7 +327,7 @@ struct ActorLookup {
 };
 
 bool isSupportedVanillaActorType(BlockActorType type) {
-    // Endstone v0.11.7 declares the vanilla actor component as the second
+        // Endstone v0.11.8 declares the vanilla actor component as the second
     // base of VanillaBlockActor. Data-driven and sentinel actor values do not
     // carry that exact ABI contract and must never be reinterpreted as one.
     switch (type) {

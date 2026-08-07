@@ -1,5 +1,10 @@
 ## Unreleased
 
+## 0.5.2
+
+- Rebuilt the unchanged BDS 1.26.40 adapter against Endstone v0.11.8.
+- Preserved the verified BDS 1.26.40.8 native entry points, fingerprints, and archive checksums.
+
 ## 0.5.1
 
 - Fixed the Linux exact adapter startup fallback by replacing the stale 1.26.33 `CreateTracker` RIP displacement in its instruction fingerprint with the verified BDS 1.26.40.8 bytes.

@@ -28,7 +28,7 @@ class ExactEndstoneDependencies(ConanFile):
         self.requires("tomlplusplus/3.3.0")
         self.requires("zstr/1.0.7")
 
-        # Endstone v0.11.7 exact dependency graph.
+        # Endstone v0.11.8 exact dependency graph.
         self.requires("boost/1.91.0")
         self.requires("entt/3.16.0")
         self.requires("expected-lite/0.9.0")

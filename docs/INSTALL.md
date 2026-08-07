@@ -2,11 +2,11 @@
 
 ## Downloading an automatic build
 
-Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.40 with Endstone 0.11.7. Open the repository's **Actions** tab, select the completed build, and download the package matching your operating system.
+Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.40 with Endstone 0.11.8. Open the repository's **Actions** tab, select the completed build, and download the package matching your operating system.
 
-A tagged release such as `v0.5.1` publishes the same files under the repository's **Releases** page.
+A tagged release such as `v0.5.2` publishes the same files under the repository's **Releases** page.
 
-Use the ZIP matching the server's operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not use it with any BDS or Endstone version other than BDS 1.26.40 / Endstone 0.11.7.
+Use the ZIP matching the server's operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not use it with any BDS or Endstone version other than BDS 1.26.40 / Endstone 0.11.8.
 
 The `/bd` plugin requires Endstone's **CPython 3.14** runtime. The complete ZIP contains a platform-specific `cp314` wheel with `_endstone_blockdata_live` bundled inside it. Stop the server, remove every older BlockData inspector wheel from `plugins/` and any manually copied top-level `_endstone_blockdata_live` file from `.local`, then copy both files from the ZIP's `plugins/` directory into the server's `plugins/` directory. No `PYTHONPATH` or manual `site-packages` copy is required.
 

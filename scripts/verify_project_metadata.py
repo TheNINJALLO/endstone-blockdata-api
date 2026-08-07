@@ -93,7 +93,7 @@ def main() -> int:
                 r'^dependencies\s*=\s*\[\s*"([^"]+)"\s*,?\s*\]',
                 "test wheel dependency",
             ),
-            "endstone==0.11.7",
+            "endstone==0.11.8",
         ),
         "test plugin version": (
             capture(config["wheel_plugin"], r'^\s+version\s*=\s*"([^"]+)"', "plugin version"),
@@ -150,9 +150,9 @@ def main() -> int:
             failures.append(
                 f"BlockData exact BDS support must be ['1.26.40'], got {supported_bds!r}"
             )
-        if endstone_tags != ["v0.11.7"]:
+        if endstone_tags != ["v0.11.8"]:
             failures.append(
-                f"BlockData exact Endstone support must be ['v0.11.7'], got {endstone_tags!r}"
+                f"BlockData exact Endstone support must be ['v0.11.8'], got {endstone_tags!r}"
             )
         workflow_bds = source.get("github_actions", {}).get("bds")
         if workflow_bds != supported_bds:

@@ -14,8 +14,8 @@ bridge ABI. Top-level bridge modules from older releases are deliberately
 ignored so they cannot hide a missing or corrupt bridge in the installed wheel.
 
 ```text
-endstone_blockdata_inspector-0.5.1-cp314-cp314-linux_x86_64.whl
-endstone_blockdata_inspector-0.5.1-cp314-cp314-win_amd64.whl
+endstone_blockdata_inspector-0.5.2-cp314-cp314-linux_x86_64.whl
+endstone_blockdata_inspector-0.5.2-cp314-cp314-win_amd64.whl
 ```
 
 Endstone discovers the `blockdata-inspector` entry point at startup. All

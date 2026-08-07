@@ -103,7 +103,7 @@ class TestNativeSourceGuards(unittest.TestCase):
 
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
-        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.7")', cmake)
+        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.8")', cmake)
         self.assertIn('std::string(\\"Error: \\") + error', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_FORMAT "std::format(\\"{}\\", error_info.error)")', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_MESSAGE "error_info.error.message()")', cmake)

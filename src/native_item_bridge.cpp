@@ -531,7 +531,7 @@ bool replaceManagers(
 
 ::ItemInstance *endstoneNativeItem(endstone::ItemStack &item) noexcept
 {
-    // Endstone 0.11.7 ItemStack contains exactly one unique_ptr<Impl>. Its
+    // Endstone 0.11.8 ItemStack contains exactly one unique_ptr<Impl>. Its
     // concrete EndstoneItemStack begins with the Impl vptr and then stores an
     // ItemInstance. This is an intentionally pinned x64 layout bridge; using
     // private Endstone RTTI here previously made the plugin fail to load.
