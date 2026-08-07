@@ -7,7 +7,7 @@ The repository workflow is `.github/workflows/ci.yml`.
 Each push, pull request, or manual workflow run performs:
 
 1. Portable C++ and Python tests on Ubuntu and Windows.
-2. Exact native builds for BDS 1.26.40 / Endstone v0.11.7 on Linux x64 and Windows x64.
+2. Exact native builds for BDS 1.26.40 / Endstone v0.11.8 on Linux x64 and Windows x64.
 3. Installation into an isolated staging directory.
 4. Creation of a raw plugin, self-contained platform wheel, complete ZIP package, package manifest, and SHA-256 file.
 5. ELF/PE, archive, checksum, manifest, unresolved Bedrock/private-Endstone-core symbol, and RPATH verification before upload.
@@ -21,11 +21,11 @@ Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`
 and points to a commit already merged into protected `main`:
 
 ```bash
-git tag v0.5.1
-git push origin v0.5.1
+git tag v0.5.2
+git push origin v0.5.2
 ```
 
-The workflow downloads both verified exact-build artifacts, creates `SHA256SUMS.txt`, and publishes a normal stable GitHub Release. Because `v0.5.1` has no prerelease suffix, the workflow marks it as **Latest**, not as a prerelease.
+The workflow downloads both verified exact-build artifacts, creates `SHA256SUMS.txt`, and publishes a normal stable GitHub Release. Because `v0.5.2` has no prerelease suffix, the workflow marks it as **Latest**, not as a prerelease.
 
 Re-running the tagged workflow updates existing assets with `--clobber` rather than creating a duplicate release.
 

@@ -2,7 +2,7 @@
 
 | BDS build | Endstone tag | Runtime result |
 |---|---|---|
-| 1.26.40 | v0.11.7 | accepted |
+| 1.26.40 | v0.11.8 | accepted |
 | 1.26.40 with any other Endstone version | mismatch | refused; public adapter only |
 | anything else | none | refused |
 
@@ -48,4 +48,4 @@ Windows requires clang-cl, CMake 3.29+ and Ninja:
 ./scripts/build_exact.ps1 -BdsBuild 1.26.40
 ```
 
-Only BDS `1.26.40` with Endstone `v0.11.7` is supported. Back up the world before enabling native writes.
+Only BDS `1.26.40` with Endstone `v0.11.8` is supported. Back up the world before enabling native writes.

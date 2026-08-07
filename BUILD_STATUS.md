@@ -1,12 +1,12 @@
 # Build status
 
-Version: **0.5.1**
+Version: **0.5.2**
 
 ## Implemented
 
 - Portable C++ BlockData core and tests
 - Python package and tests
-- Exact BDS 1.26.40 / Endstone v0.11.7 adapter source
+- Exact BDS 1.26.40 / Endstone v0.11.8 adapter source
 - Canonical container block-actor NBT and nested item data
 - Native service and live Python bridge
 - Deterministic native install and packaging scripts

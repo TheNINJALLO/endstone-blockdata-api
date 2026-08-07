@@ -86,7 +86,7 @@ private:
 [[nodiscard]] bool hasSerializedNativeStorageContents(
     const ::ItemStackBase &item) noexcept;
 
-// Endstone 0.11.7's public ItemStack is backed by its exact native
+// Endstone 0.11.8's public ItemStack is backed by its exact native
 // EndstoneItemStack implementation. These helpers bridge that pinned layout
 // without importing private endstone::core RTTI or implementation symbols.
 [[nodiscard]] bool flattenEndstoneStorageItem(endstone::ItemStack &item);
