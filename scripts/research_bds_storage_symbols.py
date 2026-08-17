@@ -251,6 +251,8 @@ def main() -> None:
             context_values: set[int] = set()
             direct_calls: list[int] = []
             for instruction in instructions:
+                if instruction.id == 0:
+                    continue
                 if instruction.mnemonic == "mov" and len(instruction.operands) == 2:
                     destination, source = instruction.operands
                     if (
@@ -300,6 +302,8 @@ def main() -> None:
             forwarded_member = False
             targets: list[int] = []
             for instruction in instructions:
+                if instruction.id == 0:
+                    continue
                 if instruction.mnemonic == "lea" and len(instruction.operands) == 2:
                     destination, source = instruction.operands
                     if (
@@ -355,6 +359,8 @@ def main() -> None:
             owner_vector = False
             has_call = False
             for instruction in instructions:
+                if instruction.id == 0:
+                    continue
                 for operand in instruction.operands:
                     if operand.type != capstone.x86.X86_OP_MEM:
                         continue

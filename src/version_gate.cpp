@@ -1,10 +1,10 @@
-#include "endstone_blockdata/bds_26_40_adapter.h"
+#include "endstone_blockdata/bds_26_44_adapter.h"
 
 namespace endstone_blockdata {
 namespace {
 std::string_view canonicalBdsBuild(std::string_view build) noexcept {
-    // Endstone reports the BDS minor/patch pair (for example, "26.40"),
-    // while release packaging uses the full Minecraft version ("1.26.40").
+    // Endstone reports the BDS minor/patch pair (for example, "26.44"),
+    // while release packaging uses the full Minecraft version ("1.26.44").
     if (build.starts_with("1.")) build.remove_prefix(2);
     return build;
 }
@@ -73,14 +73,14 @@ bool isSafeEndstoneSuffix(std::string_view suffix) noexcept {
 }
 } // namespace
 
-bool isSupportedBds2640Build(std::string_view build) noexcept {
-    return canonicalBdsBuild(build) == "26.40";
+bool isSupportedBds2644Build(std::string_view build) noexcept {
+    return canonicalBdsBuild(build) == "26.44";
 }
 
-bool isExpectedBds2640Build(std::string_view runtime_build,
+bool isExpectedBds2644Build(std::string_view runtime_build,
                             std::string_view packaged_build) noexcept {
-    if (!isSupportedBds2640Build(runtime_build) ||
-        !isSupportedBds2640Build(packaged_build)) {
+    if (!isSupportedBds2644Build(runtime_build) ||
+        !isSupportedBds2644Build(packaged_build)) {
         return false;
     }
     return canonicalBdsBuild(runtime_build) == canonicalBdsBuild(packaged_build);
