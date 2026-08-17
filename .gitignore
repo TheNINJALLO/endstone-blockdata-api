@@ -1,5 +1,8 @@
 build/
+build-*/
 .cache/
+.conan2-ci/
+CMakeUserPresets.json
 __pycache__/
 *.pyc
 *.pyd

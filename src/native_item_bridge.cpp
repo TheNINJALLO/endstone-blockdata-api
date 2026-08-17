@@ -39,12 +39,12 @@ namespace {
 thread_local Level *active_item_registry_level = nullptr;
 
 // These RVAs and instruction fingerprints are for the official BDS
-// 1.26.40.8 executables only. They deliberately stay here instead of in
+// 1.26.44.3 executables only. They deliberately stay here instead of in
 // Endstone's symbol table so the plugin never imports an unresolved private
 // Bedrock symbol.
 #if defined(_WIN32)
-constexpr std::uintptr_t FlattenStorageItemRva = 0x027C1710;
-constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x027C17E0;
+constexpr std::uintptr_t FlattenStorageItemRva = 0x027C6860;
+constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x027C6930;
 constexpr std::size_t StorageContextOffset = 0x76;
 constexpr std::size_t StorageCoreCallOffset = 0x83;
 constexpr std::array<std::uint8_t, 23> StorageFunctionPrefix{
@@ -52,9 +52,9 @@ constexpr std::array<std::uint8_t, 23> StorageFunctionPrefix{
     0x8D, 0x6C, 0x24, 0x40, 0x48, 0xC7, 0x45, 0xF8,
     0xFE, 0xFF, 0xFF, 0xFF, 0x48, 0x89, 0xCE,
 };
-constexpr std::uintptr_t CreateTrackerRva = 0x02375020;
-constexpr std::uintptr_t TrackStorageItemRva = 0x02372910;
-constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x02DF8890;
+constexpr std::uintptr_t CreateTrackerRva = 0x02379C80;
+constexpr std::uintptr_t TrackStorageItemRva = 0x02377570;
+constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x02DFF530;
 constexpr std::ptrdiff_t ContainerOwnerOffset = 0x178;
 constexpr std::ptrdiff_t TrackerListOffset = 0x28;
 constexpr std::array<std::uint8_t, 40> CreateTrackerPrefix{
@@ -78,24 +78,24 @@ constexpr std::array<std::uint8_t, 32> ManagerGiveLifetimePrefix{
     0x48, 0x85, 0xC0, 0x74, 0x5A, 0xF0, 0xFF, 0x40,
 };
 #elif defined(__linux__)
-constexpr std::uintptr_t FlattenStorageItemRva = 0x0B79B2F0;
-constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x0B79B390;
+constexpr std::uintptr_t FlattenStorageItemRva = 0x0B7B0880;
+constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x0B7B0920;
 constexpr std::size_t StorageContextOffset = 0x5C;
 constexpr std::size_t StorageCoreCallOffset = 0x65;
 constexpr std::array<std::uint8_t, 7> StorageFunctionPrefix{
     0x41, 0x56, 0x53, 0x50, 0x49, 0x89, 0xFE,
 };
-constexpr std::uintptr_t CreateTrackerRva = 0x0B307D90;
-constexpr std::uintptr_t TrackStorageItemRva = 0x0B306510;
-constexpr std::uintptr_t ReceiveContainerLifetimesRva = 0x0ADCFB40;
-constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x0B2E1F50;
+constexpr std::uintptr_t CreateTrackerRva = 0x0B31D320;
+constexpr std::uintptr_t TrackStorageItemRva = 0x0B31BAA0;
+constexpr std::uintptr_t ReceiveContainerLifetimesRva = 0x0ADE5100;
+constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x0B2F74E0;
 constexpr std::ptrdiff_t ContainerOwnerOffset = 0x120;
 constexpr std::ptrdiff_t TrackerListOffset = 0x30;
 constexpr std::array<std::uint8_t, 29> CreateTrackerPrefix{
     0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54,
     0x53, 0x48, 0x83, 0xEC, 0x10, 0x49, 0x89, 0xD4,
     0x49, 0x89, 0xF5, 0x48, 0x89, 0xFB, 0x48, 0x8B,
-    0x05, 0x5B, 0x8E, 0x54, 0x03,
+    0x05, 0xEB, 0x3A, 0x55, 0x03,
 };
 constexpr std::array<std::uint8_t, 30> TrackStorageItemPrefix{
     0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
@@ -531,7 +531,7 @@ bool replaceManagers(
 
 ::ItemInstance *endstoneNativeItem(endstone::ItemStack &item) noexcept
 {
-    // Endstone 0.11.8 ItemStack contains exactly one unique_ptr<Impl>. Its
+    // Endstone 0.11.9 ItemStack contains exactly one unique_ptr<Impl>. Its
     // concrete EndstoneItemStack begins with the Impl vptr and then stores an
     // ItemInstance. This is an intentionally pinned x64 layout bridge; using
     // private Endstone RTTI here previously made the plugin fail to load.
@@ -629,7 +629,7 @@ void flattenNativeStorageItem(ItemStackBase &item)
 {
     if (!verifyNativeStorageItemBridge()) {
         throw std::runtime_error(
-            "BDS 1.26.40 storage-item fingerprint verification failed");
+            "BDS 1.26.44 storage-item fingerprint verification failed");
     }
     invokeStorageFunction(FlattenStorageItemRva, item);
 }

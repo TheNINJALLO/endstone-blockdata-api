@@ -1,5 +1,12 @@
 ## Unreleased
 
+## 0.6.0
+
+- Updated the exact native adapter, release matrix, and packaged headers to BDS 1.26.44 with Endstone v0.11.9.
+- Remapped and fingerprint-verified the private Linux and Windows storage-item, tracker, and container-lifetime entry points against the official BDS 1.26.44.3 executables.
+- Recorded the official server archive URLs and SHA-256 checksums used for the ABI update.
+- Hardened the ABI research scanner against Capstone skip-data pseudo-instructions encountered in the 1.26.44 Windows binary.
+
 ## 0.5.2
 
 - Rebuilt the unchanged BDS 1.26.40 adapter against Endstone v0.11.8.

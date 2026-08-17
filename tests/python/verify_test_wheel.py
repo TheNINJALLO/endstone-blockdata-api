@@ -37,8 +37,8 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/service.py",
     "endstone_blockdata/storage_item.py",
 }
-EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.8"]
-EXPECTED_VERSION = "0.5.2"
+EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.9"]
+EXPECTED_VERSION = "0.6.0"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),

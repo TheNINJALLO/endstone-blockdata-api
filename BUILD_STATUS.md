@@ -1,16 +1,16 @@
 # Build status
 
-Version: **0.5.2**
+Version: **0.6.0**
 
 ## Implemented
 
 - Portable C++ BlockData core and tests
 - Python package and tests
-- Exact BDS 1.26.40 / Endstone v0.11.8 adapter source
+- Exact BDS 1.26.44 / Endstone v0.11.9 adapter source
 - Canonical container block-actor NBT and nested item data
 - Native service and live Python bridge
 - Deterministic native install and packaging scripts
-- GitHub Actions Windows x64 and Linux x64 exact builds for BDS 1.26.40
+- GitHub Actions Windows x64 and Linux x64 exact builds for BDS 1.26.44
 - Downloadable workflow artifacts on every push
 - Automatic tagged GitHub Releases
 - Raw plugin, ZIP package, manifest, and SHA-256 outputs
@@ -24,7 +24,10 @@ Version: **0.5.2**
 
 ## Validation boundary
 
-Package tooling and Python tests are validated locally. Portable C++ and exact native binaries are compiled by the included GitHub Actions runners and still require first-load testing against the matching BDS executable before production use.
+Package tooling, Python tests, the portable C++ targets, and the exact Windows
+native release have been built and validated locally. The exact Linux release
+is compiled by the included GitHub Actions runner. Both platforms still require
+first-load testing inside BDS 1.26.44 / Endstone 0.11.9 before production use.
 
 ## GitHub Actions toolchain hotfix
 
