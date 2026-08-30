@@ -1,5 +1,12 @@
 ## Unreleased
 
+## 0.6.1
+
+- Updated the exact native adapter, release matrix, and packaged headers to BDS 1.26.45 with Endstone v0.11.10.
+- Downloaded and checksum-verified the official BDS 1.26.45.1 Linux and Windows archives.
+- Remapped and fingerprint-verified the private storage-item, tracker, and container-lifetime entry points against both new executables.
+- Renamed the exact adapter surface and build switches from the 26.44 family to 26.45 so stale identifiers cannot be packaged.
+
 ## 0.6.0
 
 - Updated the exact native adapter, release matrix, and packaged headers to BDS 1.26.44 with Endstone v0.11.9.
