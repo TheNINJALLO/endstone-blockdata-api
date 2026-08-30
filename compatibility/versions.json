@@ -1,12 +1,12 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.6.0",
-  "adapter_family": "minecraft-bedrock-26.44",
+  "api": "0.6.1",
+  "adapter_family": "minecraft-bedrock-26.45",
   "adapters": [
     {
-      "bds": "1.26.44",
-      "endstone": "0.11.9",
+      "bds": "1.26.45",
+      "endstone": "0.11.10",
       "status": "source-adapter",
       "features": [
         "block_states",

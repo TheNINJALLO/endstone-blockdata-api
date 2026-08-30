@@ -1,5 +1,5 @@
 #include "endstone_blockdata/block_data_service.h"
-#include "endstone_blockdata/bds_26_44_adapter.h"
+#include "endstone_blockdata/bds_26_45_adapter.h"
 #include "endstone_blockdata/container.h"
 #include "endstone_blockdata/audit.h"
 #include "endstone_blockdata/container_audit_reactor.h"
@@ -16,36 +16,36 @@ int main(){
     assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::ComponentMismatch)=="component_mismatch");
     assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::ContainerUnavailable)=="container_unavailable");
     assert(blockEntityCaptureStatusName(BlockEntityCaptureStatus::Captured)=="captured");
-    assert(isSupportedBds2644Build("26.44"));
-    assert(isSupportedBds2644Build("1.26.44"));
-    assert(isExpectedBds2644Build("26.44", "1.26.44"));
-    assert(isExpectedBds2644Build("1.26.44", "26.44"));
-    assert(!isSupportedBds2644Build("1.26.32"));
-    assert(!isSupportedBds2644Build("26.32"));
-    assert(!isSupportedBds2644Build(""));
-    assert(!isSupportedBds2644Build("1.26.20"));
-    assert(!isSupportedBds2644Build("1.26.40"));
-    assert(!isSupportedBds2644Build("1.26.34"));
-    assert(!isSupportedBds2644Build("server-1.26.44-custom"));
-    assert(!isExpectedBds2644Build("26.32", "1.26.44"));
-    assert(!isExpectedBds2644Build("26.44", "1.26.32"));
-    assert(isExpectedEndstoneVersion("0.11.9", "0.11.9"));
-    assert(isExpectedEndstoneVersion("v0.11.9", "0.11.9"));
-    assert(isExpectedEndstoneVersion("0.11.9+linux.x86-64", "v0.11.9"));
-    assert(isExpectedEndstoneVersion("0.11.9.dev7", "0.11.9"));
-    assert(isExpectedEndstoneVersion("v0.11.9.dev7+linux", "v0.11.9"));
-    assert(isExpectedEndstoneVersion("0.11.9-dev", "0.11.9"));
-    assert(isExpectedEndstoneVersion("0.11.9-dev+linux", "0.11.9"));
-    assert(isExpectedEndstoneVersion("0.11.9-dev.snapshot+linux", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.8", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.7", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.90", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9.1", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9-device", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9+", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9.dev", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9+linux..x64", "0.11.9"));
-    assert(!isExpectedEndstoneVersion("0.11.9-dev.snapshot+linux..x64", "0.11.9"));
+    assert(isSupportedBds2645Build("26.45"));
+    assert(isSupportedBds2645Build("1.26.45"));
+    assert(isExpectedBds2645Build("26.45", "1.26.45"));
+    assert(isExpectedBds2645Build("1.26.45", "26.45"));
+    assert(!isSupportedBds2645Build("1.26.32"));
+    assert(!isSupportedBds2645Build("26.32"));
+    assert(!isSupportedBds2645Build(""));
+    assert(!isSupportedBds2645Build("1.26.20"));
+    assert(!isSupportedBds2645Build("1.26.40"));
+    assert(!isSupportedBds2645Build("1.26.44"));
+    assert(!isSupportedBds2645Build("server-1.26.45-custom"));
+    assert(!isExpectedBds2645Build("26.32", "1.26.45"));
+    assert(!isExpectedBds2645Build("26.45", "1.26.32"));
+    assert(isExpectedEndstoneVersion("0.11.10", "0.11.10"));
+    assert(isExpectedEndstoneVersion("v0.11.10", "0.11.10"));
+    assert(isExpectedEndstoneVersion("0.11.10+linux.x86-64", "v0.11.10"));
+    assert(isExpectedEndstoneVersion("0.11.10.dev7", "0.11.10"));
+    assert(isExpectedEndstoneVersion("v0.11.10.dev7+linux", "v0.11.10"));
+    assert(isExpectedEndstoneVersion("0.11.10-dev", "0.11.10"));
+    assert(isExpectedEndstoneVersion("0.11.10-dev+linux", "0.11.10"));
+    assert(isExpectedEndstoneVersion("0.11.10-dev.snapshot+linux", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.9", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.8", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.100", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10.1", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10-device", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10+", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10.dev", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10+linux..x64", "0.11.10"));
+    assert(!isExpectedEndstoneVersion("0.11.10-dev.snapshot+linux..x64", "0.11.10"));
     std::string nbt_error;
     auto valid_nbt=NbtValue::compound({
       {"bytes",ByteArray{-128,0,127}},

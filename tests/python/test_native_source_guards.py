@@ -72,7 +72,7 @@ class TestNativeSourceGuards(unittest.TestCase):
 
     def test_player_inventory_adapter_does_not_import_private_player_rtti(self):
         adapter = (
-            ROOT / "src/bds_26_44_player_inventory_adapter.cpp"
+            ROOT / "src/bds_26_45_player_inventory_adapter.cpp"
         ).read_text(encoding="utf-8")
         self.assertNotIn(
             "dynamic_cast<endstone::core::EndstonePlayer", adapter
@@ -87,23 +87,23 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertIn("live player bundle/storage-item writes are disabled", adapter)
 
     def test_native_runtime_gate_uses_normalized_expected_builds(self):
-        adapter = (ROOT / "src/bds_26_44_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_45_adapter.cpp").read_text(encoding="utf-8")
         plugin = (ROOT / "src/plugin.cpp").read_text(encoding="utf-8")
         version_gate = (ROOT / "src/version_gate.cpp").read_text(encoding="utf-8")
 
-        self.assertIn("isExpectedBds2644Build(server.getMinecraftVersion()", adapter)
+        self.assertIn("isExpectedBds2645Build(server.getMinecraftVersion()", adapter)
         self.assertNotIn(
             "server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD",
             adapter,
         )
-        self.assertIn('canonicalBdsBuild(build) == "26.44"', version_gate)
+        self.assertIn('canonicalBdsBuild(build) == "26.45"', version_gate)
         self.assertIn("runtime BDS={} Endstone={}; expected BDS={} Endstone={}", plugin)
         self.assertIn("verification={}; runtime BDS={}", plugin)
         self.assertIn("nativeStorageItemBridgeStatusName", plugin)
 
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
-        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.9")', cmake)
+        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.10")', cmake)
         self.assertIn('std::string(\\"Error: \\") + error', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_FORMAT "std::format(\\"{}\\", error_info.error)")', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_MESSAGE "error_info.error.message()")', cmake)
@@ -125,7 +125,7 @@ class TestNativeSourceGuards(unittest.TestCase):
     def test_native_item_bridge_is_functional_and_scoped(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
         bridge = (ROOT / "src/native_item_bridge.cpp").read_text(encoding="utf-8")
-        adapter = (ROOT / "src/bds_26_44_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_45_adapter.cpp").read_text(encoding="utf-8")
 
         self.assertIn("src/native_item_bridge.cpp", cmake)
         self.assertIn("thread_local Level *active_item_registry_level", bridge)
@@ -138,22 +138,22 @@ class TestNativeSourceGuards(unittest.TestCase):
         self.assertIn("ReceiveContainerLifetimesRva", bridge)
         self.assertIn("ManagerGiveLifetimeRva", bridge)
         for expected in (
-            "FlattenStorageItemRva = 0x027C6860",
-            "FlattenStorageItemCoreRva = 0x027C6930",
-            "CreateTrackerRva = 0x02379C80",
-            "TrackStorageItemRva = 0x02377570",
-            "ManagerGiveLifetimeRva = 0x02DFF530",
-            "FlattenStorageItemRva = 0x0B7B0880",
-            "FlattenStorageItemCoreRva = 0x0B7B0920",
-            "CreateTrackerRva = 0x0B31D320",
-            "TrackStorageItemRva = 0x0B31BAA0",
-            "ReceiveContainerLifetimesRva = 0x0ADE5100",
-            "ManagerGiveLifetimeRva = 0x0B2F74E0",
+            "FlattenStorageItemRva = 0x027C6450",
+            "FlattenStorageItemCoreRva = 0x027C6520",
+            "CreateTrackerRva = 0x02379870",
+            "TrackStorageItemRva = 0x02377160",
+            "ManagerGiveLifetimeRva = 0x02DFF120",
+            "FlattenStorageItemRva = 0x0B7B03D0",
+            "FlattenStorageItemCoreRva = 0x0B7B0470",
+            "CreateTrackerRva = 0x0B31CE70",
+            "TrackStorageItemRva = 0x0B31B5F0",
+            "ReceiveContainerLifetimesRva = 0x0ADE4C50",
+            "ManagerGiveLifetimeRva = 0x0B2F7030",
         ):
             self.assertIn(expected, bridge)
-        self.assertIn("1.26.44.3 executables only", bridge)
-        self.assertIn("0x05, 0xEB, 0x3A, 0x55, 0x03", bridge)
-        self.assertNotIn("0x05, 0x5B, 0x8E, 0x54, 0x03", bridge)
+        self.assertIn("1.26.45.1 executables only", bridge)
+        self.assertIn("0x05, 0x1B, 0x3A, 0x55, 0x03", bridge)
+        self.assertNotIn("0x05, 0xEB, 0x3A, 0x55, 0x03", bridge)
         self.assertIn("CreateTrackerMismatch", bridge)
         self.assertIn('return "create-tracker-mismatch"', bridge)
         self.assertIn("NativeStorageItemTransaction::materialize", bridge)
@@ -195,7 +195,7 @@ class TestNativeSourceGuards(unittest.TestCase):
         )
 
     def test_block_actor_capture_is_typed_and_inventory_is_sparse(self):
-        adapter = (ROOT / "src/bds_26_44_adapter.cpp").read_text(encoding="utf-8")
+        adapter = (ROOT / "src/bds_26_45_adapter.cpp").read_text(encoding="utf-8")
         bridge = (ROOT / "src/live_python_bindings.cpp").read_text(encoding="utf-8")
 
         self.assertIn(
