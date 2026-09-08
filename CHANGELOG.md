@@ -1,5 +1,9 @@
 ## Unreleased
 
+## 0.6.2
+
+- Fixed live block/container and player-inventory capture failures on non-UTF-8 NBT strings. The Python bridge now preserves their bytes with reversible UTF-8 `surrogateescape` handling for values, compound keys, NBT patch paths, and SNBT output.
+
 ## 0.6.1
 
 - Updated the exact native adapter, release matrix, and packaged headers to BDS 1.26.45 with Endstone v0.11.10.

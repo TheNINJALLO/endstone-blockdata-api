@@ -38,7 +38,7 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/storage_item.py",
 }
 EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.10"]
-EXPECTED_VERSION = "0.6.1"
+EXPECTED_VERSION = "0.6.2"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -71,6 +71,7 @@ def verify_installed_runtime(wheel: Path) -> None:
         smoke = f"""
 import copy
 import importlib
+import json
 from pathlib import Path
 import sys
 sys.path.insert(0, {json.dumps(str(runtime_site_packages))})
@@ -148,6 +149,40 @@ class SpoofedByte(int):
     __endstone_nbt_scalar__ = "byte"
 
 expect_error(TypeError, lambda: bridge._roundtrip_nbt(SpoofedByte(7)))
+
+# Match the truncated/invalid byte sequences reported by live Antigrief
+# captures, plus embedded NULs, valid Unicode, and arbitrary native bytes.
+native_strings = [
+    b"1234567" + bytes([0xd0]),
+    b"123456" + bytes([0xc2, 0x41]),
+    b"1234567" + bytes([0xf3]),
+    bytes(range(256)),
+    b"",
+    ("Name: " + chr(0xa7) + chr(0x1f48e)).encode("utf-8"),
+    bytes([0xed, 0xa0, 0x80]),
+]
+for raw in native_strings:
+    value = raw.decode("utf-8", "surrogateescape")
+    payload = {{
+        "Name": "minecraft:shulker_box",
+        "tag": {{"display": {{"Name": value, "Lore": [value]}}, value: value}},
+    }}
+    captured = bridge._roundtrip_nbt(copy.deepcopy(payload))
+    assert captured == payload
+    assert type(captured["tag"]["display"]["Name"]) is str
+    assert captured["tag"]["display"]["Name"].encode("utf-8", "surrogateescape") == raw
+    stored = json.dumps(captured, ensure_ascii=True).encode("utf-8")
+    restored = bridge._roundtrip_nbt(json.loads(stored))
+    assert restored == payload
+    assert restored["tag"][value].encode("utf-8", "surrogateescape") == raw
+
+# Keep String tags distinct from ByteArray tags, even for the same bytes.
+byte_array = bridge._roundtrip_nbt(bytes([0, 0x7f, 0x80, 0xff]))
+assert byte_array == {{"__endstone_nbt_array__": "byte", "values": [0, 127, -128, -1]}}
+assert bridge._roundtrip_nbt(bytearray([0, 0x7f, 0x80, 0xff])) == byte_array
+assert bridge._roundtrip_nbt(byte_array) == byte_array
+# Surrogates outside the byte-escape range are still invalid input.
+expect_error(UnicodeEncodeError, lambda: bridge._roundtrip_nbt(chr(0xd800)))
 bridge_path = Path(bridge.__file__).resolve()
 package_path = (Path({json.dumps(str(site_packages))}) / "endstone_blockdata_inspector").resolve()
 assert bridge_path.is_relative_to(package_path), (bridge_path, package_path)

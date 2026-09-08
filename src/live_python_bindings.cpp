@@ -34,6 +34,23 @@ PyObject *nbt_short_type = nullptr;
 PyObject *nbt_long_type = nullptr;
 PyObject *nbt_float_type = nullptr;
 
+// Native NBT strings may contain bytes that are not valid UTF-8. Keep them
+// reversible as Python strings: replacing or ignoring bytes would corrupt a
+// captured item when it is later restored. Use the same codec for compound
+// keys and SNBT, which can contain those bytes too.
+py::str nbtStringToPython(const std::string &value) {
+    auto *decoded = PyUnicode_DecodeUTF8(
+        value.data(), static_cast<Py_ssize_t>(value.size()), "surrogateescape");
+    if (!decoded) throw py::error_already_set();
+    return py::reinterpret_steal<py::str>(decoded);
+}
+
+std::string nbtStringFromPython(py::handle value) {
+    auto *encoded = PyUnicode_AsEncodedString(value.ptr(), "utf-8", "surrogateescape");
+    if (!encoded) throw py::error_already_set();
+    return py::cast<std::string>(py::reinterpret_steal<py::bytes>(encoded));
+}
+
 py::object taggedNbtScalar(PyObject *scalar_type, py::object value) {
     if (!scalar_type)
         throw std::runtime_error("typed NBT scalar classes are not initialized");
@@ -86,7 +103,7 @@ py::object nbtToPython(const NbtValue &value) {
         else if constexpr (std::is_same_v<T, float>)
             return taggedNbtScalar(nbt_float_type, py::float_(v));
         else if constexpr (std::is_same_v<T, double>) return py::float_(v);
-        else if constexpr (std::is_same_v<T, std::string>) return py::str(v);
+        else if constexpr (std::is_same_v<T, std::string>) return nbtStringToPython(v);
         else if constexpr (std::is_same_v<T, ByteArray>) return nbtArrayToPython("byte", v);
         else if constexpr (std::is_same_v<T, IntArray>) return nbtArrayToPython("int", v);
         else if constexpr (std::is_same_v<T, LongArray>) return nbtArrayToPython("long", v);
@@ -96,7 +113,7 @@ py::object nbtToPython(const NbtValue &value) {
             return std::move(out);
         } else if constexpr (std::is_same_v<T, NbtValue::CompoundPtr>) {
             py::dict out;
-            if (v) for (const auto &[key, entry] : *v) out[py::str(key)] = nbtToPython(entry);
+            if (v) for (const auto &[key, entry] : *v) out[nbtStringToPython(key)] = nbtToPython(entry);
             return std::move(out);
         }
     }, value.value);
@@ -200,7 +217,7 @@ NbtValue nbtFromPython(py::handle value, std::size_t depth = 0) {
             throw py::type_error("floating NBT scalar marker must be float");
         return number;
     }
-    if (py::isinstance<py::str>(value)) return py::cast<std::string>(value);
+    if (py::isinstance<py::str>(value)) return nbtStringFromPython(value);
     if (py::isinstance<py::bytes>(value) || py::isinstance<py::bytearray>(value)) {
         std::string bytes;
         if (py::isinstance<py::bytes>(value)) {
@@ -223,7 +240,7 @@ NbtValue nbtFromPython(py::handle value, std::size_t depth = 0) {
         for (const auto &[key, entry] : source) {
             if (!py::isinstance<py::str>(key))
                 throw py::type_error("NBT compound keys must be strings");
-            out.emplace(py::cast<std::string>(key), nbtFromPython(entry, depth + 1));
+            out.emplace(nbtStringFromPython(key), nbtFromPython(entry, depth + 1));
         }
         auto result = NbtValue::compound(std::move(out));
         requireValidNbtPayload(result);
@@ -258,7 +275,8 @@ py::object field(const py::dict &value, const char *name) {
     return py::reinterpret_borrow<py::object>(value[py::str(name)]);
 }
 
-void readStringSet(const py::dict &source, const char *name, std::set<std::string> &destination) {
+void readStringSet(const py::dict &source, const char *name, std::set<std::string> &destination,
+                   bool nbt_strings = false) {
     if (!source.contains(name)) return;
     const auto values = field(source, name);
     if (values.is_none()) return;
@@ -267,7 +285,7 @@ void readStringSet(const py::dict &source, const char *name, std::set<std::strin
     for (const auto &entry : py::reinterpret_borrow<py::iterable>(values)) {
         if (!py::isinstance<py::str>(entry))
             throw py::type_error(std::string(name) + " entries must be strings");
-        destination.insert(py::cast<std::string>(entry));
+        destination.insert(nbt_strings ? nbtStringFromPython(entry) : py::cast<std::string>(entry));
     }
 }
 
@@ -319,10 +337,10 @@ BlockPatch patchFromPython(const py::dict &source) {
             throw py::type_error("nbt_updates must be a dict");
         for (const auto &[key, value] : py::cast<py::dict>(field(source, "nbt_updates"))) {
             if (!py::isinstance<py::str>(key)) throw py::type_error("nbt_updates keys must be strings");
-            patch.nbt_updates.emplace(py::cast<std::string>(key), nbtFromPython(value));
+            patch.nbt_updates.emplace(nbtStringFromPython(key), nbtFromPython(value));
         }
     }
-    readStringSet(source, "nbt_removals", patch.nbt_removals);
+    readStringSet(source, "nbt_removals", patch.nbt_removals, true);
 
     if (source.contains("inventory_updates") && !field(source, "inventory_updates").is_none()) {
         if (!py::isinstance<py::dict>(field(source, "inventory_updates")))
@@ -415,7 +433,7 @@ py::dict snapshotToPython(const BlockSnapshot &snapshot) {
     py::dict actor;
     actor["type"] = snapshot.block_entity->type;
     actor["nbt"] = nbtToPython(snapshot.block_entity->nbt);
-    actor["snbt"] = snapshot.block_entity->raw_snbt;
+    actor["snbt"] = nbtStringToPython(snapshot.block_entity->raw_snbt);
     actor["canonical"] = snapshot.block_entity->canonical_nbt;
     actor["is_container"] = snapshot.block_entity->is_container;
     actor["container_size"] = snapshot.block_entity->container_size;
