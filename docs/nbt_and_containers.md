@@ -2,6 +2,23 @@
 
 The **Endstone BlockData API** provides direct access to canonical Minecraft Bedrock block entity NBT tags and container inventories.
 
+## Native strings in Python snapshots
+
+The live bridge exposes NBT String values and compound keys as Python `str`.
+Valid UTF-8 text is unchanged. Bytes that are not valid UTF-8 are preserved using
+[Python's `surrogateescape` codec handler](https://docs.python.org/3/library/codecs.html#error-handlers)
+as `U+DC80`–`U+DCFF` escapes. The bridge converts them back to the original bytes
+when applying block or player-inventory patches. SNBT output uses the same
+decoding, so one non-UTF-8 value does not abort the entire capture.
+
+Use `json.dumps(snapshot, ensure_ascii=True)` when storing a snapshot mapping
+as JSON; `json.loads` preserves these escapes for later restore. For display,
+use JSON escaping or `repr(value)` instead of sending escaped strings directly
+to APIs that require strict UTF-8. To retrieve a native String tag's original
+bytes, use `value.encode("utf-8", "surrogateescape")`.
+Passing Python `bytes` or `bytearray` into an NBT patch still creates a ByteArray
+tag, so retain captured strings as `str` to preserve their NBT type.
+
 ---
 
 ## 📦 `ContainerView`

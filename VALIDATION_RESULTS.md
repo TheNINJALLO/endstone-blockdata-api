@@ -1,5 +1,22 @@
 # Validation results
 
+## 0.6.2
+
+Validated locally on 2026-09-08:
+
+- CPython 3.14 Python tests (76/76) and synchronized release metadata
+- The UTF-8 fix compiled into the Windows live bridge, with relocated-wheel
+  tests covering truncated and invalid UTF-8, all 256 byte values, Unicode,
+  embedded NULs, compound keys, JSON persistence, and String/ByteArray types
+  (tested before the release version bump)
+- `git diff --check`
+
+The release workflow builds and validates the versioned Windows and Linux
+packages before publishing. Live BDS 1.26.45 / Endstone 0.11.10 server testing
+remains required.
+
+## 0.6.1
+
 Validated locally on 2026-08-28:
 
 - Python unit, release-tool, metadata, native source-guard, strict logger,

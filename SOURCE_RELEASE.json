@@ -1,6 +1,6 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "adapter_family": "Minecraft Bedrock 26.45",
   "supported_bds": [
     "1.26.45"
