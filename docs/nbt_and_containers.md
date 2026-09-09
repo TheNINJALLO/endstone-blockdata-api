@@ -8,11 +8,18 @@ The live bridge exposes NBT String values and compound keys as Python `str`.
 Valid UTF-8 text is unchanged. Bytes that are not valid UTF-8 are preserved using
 [Python's `surrogateescape` codec handler](https://docs.python.org/3/library/codecs.html#error-handlers)
 as `U+DC80`–`U+DCFF` escapes. The bridge converts them back to the original bytes
-when applying block or player-inventory patches. SNBT output uses the same
-decoding, so one non-UTF-8 value does not abort the entire capture.
+when applying block or player-inventory patches.
+
+Since 0.6.3, diagnostic `snbt` / `raw_snbt` output renders invalid bytes as literal
+`\xNN` escapes while preserving valid Unicode. This text can be written directly
+to SQLite TEXT columns or strict UTF-8 logs. SNBT is a diagnostic preview;
+use canonical NBT to restore the exact original item data.
 
 Use `json.dumps(snapshot, ensure_ascii=True)` when storing a snapshot mapping
-as JSON; `json.loads` preserves these escapes for later restore. For display,
+as JSON; `json.loads` preserves these escapes for later restore. Using
+`ensure_ascii=False` leaves surrogate characters in the JSON string and can
+raise `UnicodeEncodeError` when SQLite encodes it as TEXT, even with safe SNBT.
+For display,
 use JSON escaping or `repr(value)` instead of sending escaped strings directly
 to APIs that require strict UTF-8. To retrieve a native String tag's original
 bytes, use `value.encode("utf-8", "surrogateescape")`.

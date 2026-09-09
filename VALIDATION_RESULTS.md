@@ -1,5 +1,22 @@
 # Validation results
 
+## 0.6.3
+
+Validated locally on 2026-09-09:
+
+- CPython 3.14 Python tests (76/76) and synchronized release metadata
+- Compiled the versioned Windows live bridge and built/imported its relocated
+  v0.6.3 wheel
+- Native-wheel regression checks store canonical JSON and diagnostic SNBT in
+  SQLite TEXT, read them back, and restore the exact NBT bytes; coverage includes
+  the reported `0x8a` byte at position 6125, malformed UTF-8, all byte values,
+  valid Unicode, embedded NULs, nested NBT, and compound keys
+- `git diff --check`
+
+The required CI matrix builds and verifies both complete platform packages
+before merge and release. Live BDS server validation has not been performed.
+Consumers still need `ensure_ascii=True` when persisting canonical NBT as JSON.
+
 ## 0.6.2
 
 Validated locally on 2026-09-08:

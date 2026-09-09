@@ -37,7 +37,7 @@ PyObject *nbt_float_type = nullptr;
 // Native NBT strings may contain bytes that are not valid UTF-8. Keep them
 // reversible as Python strings: replacing or ignoring bytes would corrupt a
 // captured item when it is later restored. Use the same codec for compound
-// keys and SNBT, which can contain those bytes too.
+// keys. Diagnostic SNBT uses a separate, strict-UTF-8-safe representation.
 py::str nbtStringToPython(const std::string &value) {
     auto *decoded = PyUnicode_DecodeUTF8(
         value.data(), static_cast<Py_ssize_t>(value.size()), "surrogateescape");
@@ -49,6 +49,16 @@ std::string nbtStringFromPython(py::handle value) {
     auto *encoded = PyUnicode_AsEncodedString(value.ptr(), "utf-8", "surrogateescape");
     if (!encoded) throw py::error_already_set();
     return py::cast<std::string>(py::reinterpret_steal<py::bytes>(encoded));
+}
+
+py::str snbtToPython(const std::string &value) {
+    // SNBT is diagnostic text, not the canonical restore payload. Render invalid
+    // bytes as literal \\xNN escapes so logging and SQLite TEXT never receive
+    // surrogate characters. Canonical NBT retains the original bytes separately.
+    auto *decoded = PyUnicode_DecodeUTF8(
+        value.data(), static_cast<Py_ssize_t>(value.size()), "backslashreplace");
+    if (!decoded) throw py::error_already_set();
+    return py::reinterpret_steal<py::str>(decoded);
 }
 
 py::object taggedNbtScalar(PyObject *scalar_type, py::object value) {
@@ -433,7 +443,7 @@ py::dict snapshotToPython(const BlockSnapshot &snapshot) {
     py::dict actor;
     actor["type"] = snapshot.block_entity->type;
     actor["nbt"] = nbtToPython(snapshot.block_entity->nbt);
-    actor["snbt"] = nbtStringToPython(snapshot.block_entity->raw_snbt);
+    actor["snbt"] = snbtToPython(snapshot.block_entity->raw_snbt);
     actor["canonical"] = snapshot.block_entity->canonical_nbt;
     actor["is_container"] = snapshot.block_entity->is_container;
     actor["container_size"] = snapshot.block_entity->container_size;
@@ -568,6 +578,10 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
 
     module.def("_roundtrip_nbt", [](py::handle value) {
         return nbtToPython(nbtFromPython(value));
+    });
+
+    module.def("_decode_snbt", [](py::bytes value) {
+        return snbtToPython(py::cast<std::string>(value));
     });
 
     module.def("available", [](endstone::Server &server) { return static_cast<bool>(loadService(server)); },

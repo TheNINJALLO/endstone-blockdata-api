@@ -1,5 +1,5 @@
 """Block states, canonical live block-actor NBT and container auditing for Endstone."""
-__version__ = "0.6.2"
+__version__ = "0.6.3"
 
 from .model import (BlockLocation, BlockSnapshot, BlockEntitySnapshot, InventorySlotSnapshot,
                     BlockPatch, ConflictPolicy, ApplyResult, InventoryChangeKind,
