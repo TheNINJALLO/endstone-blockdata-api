@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 0.6.3
+
+- Made diagnostic SNBT output safe for UTF-8 logs and SQLite TEXT by rendering invalid native bytes as literal `\xNN` escapes. Canonical NBT values and keys still preserve the original bytes for exact restore.
+- Added native-wheel SQLite persistence tests for the reported invalid byte at position 6125, malformed UTF-8, all byte values, valid Unicode, and embedded NULs.
+- Clarified that consumers must serialize canonical snapshots with `ensure_ascii=True`; safe SNBT alone does not make unescaped canonical JSON safe for SQLite TEXT.
+
 ## 0.6.2
 
 - Fixed live block/container and player-inventory capture failures on non-UTF-8 NBT strings. The Python bridge now preserves their bytes with reversible UTF-8 `surrogateescape` handling for values, compound keys, NBT patch paths, and SNBT output.

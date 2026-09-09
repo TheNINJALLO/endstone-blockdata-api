@@ -38,7 +38,7 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/storage_item.py",
 }
 EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.10"]
-EXPECTED_VERSION = "0.6.2"
+EXPECTED_VERSION = "0.6.3"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -73,6 +73,7 @@ import copy
 import importlib
 import json
 from pathlib import Path
+import sqlite3
 import sys
 sys.path.insert(0, {json.dumps(str(runtime_site_packages))})
 sys.path.insert(0, {json.dumps(str(site_packages))})
@@ -153,6 +154,7 @@ expect_error(TypeError, lambda: bridge._roundtrip_nbt(SpoofedByte(7)))
 # Match the truncated/invalid byte sequences reported by live Antigrief
 # captures, plus embedded NULs, valid Unicode, and arbitrary native bytes.
 native_strings = [
+    b"x" * 6125 + bytes([0x8a]),
     b"1234567" + bytes([0xd0]),
     b"123456" + bytes([0xc2, 0x41]),
     b"1234567" + bytes([0xf3]),
@@ -175,6 +177,20 @@ for raw in native_strings:
     restored = bridge._roundtrip_nbt(json.loads(stored))
     assert restored == payload
     assert restored["tag"][value].encode("utf-8", "surrogateescape") == raw
+
+    # Store both columns from Antigrief's container_snapshots table. Canonical
+    # JSON must escape surrogates; diagnostic SNBT must be directly TEXT-safe.
+    snbt = bridge._decode_snbt(raw)
+    assert snbt == raw.decode("utf-8", "backslashreplace")
+    snbt.encode("utf-8")
+    with sqlite3.connect(":memory:") as database:
+        database.execute("CREATE TABLE container_snapshots (snapshot_json TEXT, raw_snbt TEXT)")
+        database.execute("INSERT INTO container_snapshots VALUES (?, ?)",
+                         (stored.decode("utf-8"), snbt))
+        stored_json, stored_snbt = database.execute(
+            "SELECT snapshot_json, raw_snbt FROM container_snapshots").fetchone()
+    assert stored_snbt == snbt
+    assert bridge._roundtrip_nbt(json.loads(stored_json)) == payload
 
 # Keep String tags distinct from ByteArray tags, even for the same bytes.
 byte_array = bridge._roundtrip_nbt(bytes([0, 0x7f, 0x80, 0xff]))
