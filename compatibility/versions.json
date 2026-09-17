@@ -1,7 +1,7 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.6.3",
+  "api": "0.6.4",
   "adapter_family": "minecraft-bedrock-26.45",
   "adapters": [
     {
@@ -32,5 +32,18 @@
     "byte-identical hidden general BlockActor::save/load ABI",
     "unverified arbitrary non-container actor NBT replacement"
   ],
-  "policy": "fail-closed; exact runtime BDS build and mapped Endstone version required"
+  "policy": "fail-closed; exact runtime BDS build and mapped Endstone version required",
+  "endstone_requirement": ">=0.11.11",
+  "pending_targets": [
+    {
+      "game_version": "1.26.51",
+      "bds_package": "1.26.51.1",
+      "endstone": "0.11.11",
+      "profile": "compatibility/bds-1.26.51.json",
+      "status": "pending-native-adapter-qualification"
+    }
+  ],
+  "historical_preparation_profiles": [
+    "compatibility/bds-1.26.50.5.json"
+  ]
 }

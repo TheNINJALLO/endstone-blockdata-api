@@ -1,3 +1,21 @@
+## Current compatibility prerelease: `v0.6.4-alpha.1`
+
+This source and portable Python API prerelease prepares Minecraft **1.26.51** /
+BDS **1.26.51.1** with Endstone **0.11.11 or later** as the source dependency floor.
+Native adapter support for that runtime is still pending. Future Endstone versions
+are allowed by package metadata and require separate native qualification.
+See [release scope](../RELEASE_NOTES.md).
+
+Current source tag:
+
+```sh
+git tag v0.6.4-alpha.1
+```
+
+Build only the source/portable assets
+with `python scripts/package_compatibility_release.py --output build/compatibility-release`.
+The native release procedure below documents the older exact-runtime pipeline.
+
 # GitHub Actions builds and releases
 
 The repository workflow is `.github/workflows/ci.yml`.

@@ -9,7 +9,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.3"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.4-alpha.1","python_version": "0.6.4a1"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -51,8 +51,8 @@ class TestReleaseTools(unittest.TestCase):
                 f"{stem}-windows-x64.dll",
                 f"{stem}-windows-x64.zip",
                 f"{stem}-windows-x64.sha256",
-                f"{CONFIG['wheel_prefix']}-{CONFIG['version']}-cp314-cp314-linux_x86_64.whl",
-                f"{CONFIG['wheel_prefix']}-{CONFIG['version']}-cp314-cp314-win_amd64.whl",
+                f"{CONFIG['wheel_prefix']}-{CONFIG['python_version']}-cp314-cp314-linux_x86_64.whl",
+                f"{CONFIG['wheel_prefix']}-{CONFIG['python_version']}-cp314-cp314-win_amd64.whl",
             }
             for name in names:
                 (release / name).write_bytes(b"asset")
@@ -72,7 +72,7 @@ class TestReleaseTools(unittest.TestCase):
     def add_command_wheel(stage: Path) -> Path:
         wheel = (
             stage / "plugins" /
-            "endstone_blockdata_inspector-0.6.3-cp314-cp314-win_amd64.whl"
+            "endstone_blockdata_inspector-0.6.4a1-cp314-cp314-win_amd64.whl"
         )
         wheel.parent.mkdir(parents=True, exist_ok=True)
         bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))

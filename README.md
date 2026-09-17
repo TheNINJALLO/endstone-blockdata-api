@@ -1,4 +1,24 @@
+## Current compatibility prerelease: `v0.6.4-alpha.1`
+
+This source and portable Python API prerelease prepares Minecraft **1.26.51** /
+BDS **1.26.51.1** with Endstone **0.11.11 or later** as the source dependency floor.
+Native adapter support for that runtime is still pending. Future Endstone versions
+are allowed by package metadata and require separate native qualification.
+See [release scope](RELEASE_NOTES.md).
+
 # Endstone BlockData API
+
+## BDS 1.26.51 / Endstone 0.11.11 target
+
+The active compatibility target is **game 1.26.51**, server package
+**1.26.51.1**, and **Endstone 0.11.11**. Source command wheels require
+**Endstone >=0.11.11**, with no upper bound. Both official server archives
+have been checksum-verified and the matching SDK commit is recorded.
+The native adapter port and live validation remain pending.
+See [target details and verification commands](docs/BDS_1_26_51.md).
+The release information below describes the previous exact server target.
+
+
 
 [![Version](https://img.shields.io/badge/version-v0.6.3-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.3)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.10-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)

@@ -13,15 +13,21 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.6.3
+  RELEASE_VERSION: 0.6.4-alpha.1
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
   metadata:
     name: Verify release metadata
     runs-on: ubuntu-24.04
+    outputs:
+      release_channel: ${{ steps.release-channel.outputs.value }}
     steps:
       - uses: actions/checkout@v6
+      - name: Read release channel
+        id: release-channel
+        shell: bash
+        run: echo "value=$(python -c "import json; print(json.load(open('SOURCE_RELEASE.json'))['release_channel'])")" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v6
         with:
           python-version: "3.14"
@@ -232,8 +238,8 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [portable, exact, test-wheel]
+    if: startsWith(github.ref, 'refs/tags/v') && needs.metadata.outputs.release_channel != 'compatibility-prerelease'
+    needs: [metadata, portable, exact, test-wheel]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

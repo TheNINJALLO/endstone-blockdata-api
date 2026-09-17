@@ -1,6 +1,18 @@
 # Build status
 
-Version: **0.6.3**
+## BDS 1.26.51 / Endstone 0.11.11 target
+
+The active compatibility target is **game 1.26.51**, server package
+**1.26.51.1**, and **Endstone 0.11.11**. Source command wheels require
+**Endstone >=0.11.11**, with no upper bound. Both official server archives
+have been checksum-verified and the matching SDK commit is recorded.
+The native adapter port and live validation remain pending.
+See [target details and verification commands](docs/BDS_1_26_51.md).
+The release information below describes the previous exact server target.
+
+
+
+Version: **0.6.4-alpha.1**
 
 ## Implemented
 

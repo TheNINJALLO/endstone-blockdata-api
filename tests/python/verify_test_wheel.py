@@ -37,8 +37,8 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/service.py",
     "endstone_blockdata/storage_item.py",
 }
-EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.10"]
-EXPECTED_VERSION = "0.6.3"
+EXPECTED_RUNTIME_DEPENDENCIES = ["endstone>=0.11.11"]
+EXPECTED_VERSION = "0.6.4a1"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -91,7 +91,7 @@ _build_permissions(copy.deepcopy(plugin_class.permissions))
 plugin_class()
 bridge = importlib.import_module("endstone_blockdata_inspector._endstone_blockdata_live")
 assert {{"available", "capabilities", "capture", "capture_region", "apply"}} <= set(dir(bridge))
-assert bridge.__version__ == api.__version__
+assert bridge.__version__ == plugin_class.version
 adapter = api.LiveBlockDataAdapter(None)
 assert adapter.bridge is bridge
 typed = {{
