@@ -71,7 +71,7 @@ def main() -> int:
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     ignore = shutil.ignore_patterns(
-        ".git", ".conan2-ci", "build", "build-*", "dist", "__pycache__",
+        ".git", ".cache", ".venv", "vendor", ".conan2-ci", "build", "build-*", "dist", "__pycache__",
         "*.egg-info", "*.dll", "*.pyd", "*.so",
     )
     with tempfile.TemporaryDirectory(prefix="endstone-blockdata-wheel-") as temporary:

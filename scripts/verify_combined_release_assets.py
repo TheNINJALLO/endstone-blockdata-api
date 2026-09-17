@@ -54,9 +54,13 @@ def main() -> int:
     parser.add_argument("--version", required=True)
     parser.add_argument("--bds", required=True)
     parser.add_argument("--release-dir", type=Path, required=True)
+    parser.add_argument("--platform", choices=("linux-x64", "windows-x64"))
     args = parser.parse_args()
 
     expected = expected_assets(args.slug, args.version, args.bds)
+    if args.platform:
+        wheel_suffix = "linux_x86_64.whl" if args.platform == "linux-x64" else "win_amd64.whl"
+        expected = {name for name in expected if args.platform in name or name.endswith(wheel_suffix)}
     entries = list(args.release_dir.iterdir()) if args.release_dir.is_dir() else []
     non_files = sorted(path.name for path in entries if not path.is_file())
     actual = {path.name: path.stat().st_size for path in entries if path.is_file()}

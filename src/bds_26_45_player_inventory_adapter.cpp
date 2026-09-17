@@ -283,7 +283,7 @@ NbtValue itemSnapshot(std::int32_t slot, const endstone::ItemStack &item)
     auto serialized = item;
     if (!flattenEndstoneStorageItem(serialized)) {
         throw std::runtime_error(
-            "BDS 1.26.45 storage-item clone flatten failed");
+            "BDS 1.26.51 storage-item clone flatten failed");
     }
 
     NbtCompound output;
@@ -503,7 +503,7 @@ public:
 
     [[nodiscard]] std::string_view name() const noexcept override
     {
-        return "bds-26.45-exact-player-inventory";
+        return "bds-26.51-exact-player-inventory";
     }
 
     [[nodiscard]] bool verify() const noexcept
@@ -705,7 +705,7 @@ public:
 
         auto updated = capture(player);
         return {ApplyStatus::Applied,
-                "applied canonical player inventory NBT through exact BDS 26.45 adapter",
+                "applied canonical player inventory NBT through exact BDS 26.51 adapter",
                 updated ? updated->revision : 0};
     }
 

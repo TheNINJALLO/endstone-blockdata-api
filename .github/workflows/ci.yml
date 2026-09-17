@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.6.4-alpha.1
+  RELEASE_VERSION: 0.6.4
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -67,10 +67,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             platform: linux-x64
-            bds: "1.26.45"
-          - os: windows-2022
-            platform: windows-x64
-            bds: "1.26.45"
+            bds: "1.26.51"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -87,7 +84,7 @@ jobs:
           "build==1.4.0"
           "setuptools==80.9.0"
           "wheel==0.46.3"
-          "endstone==0.11.10"
+          "endstone==0.11.11"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -96,16 +93,16 @@ jobs:
           set -euxo pipefail
           sudo apt-get update
           sudo apt-get install -y lsb-release wget software-properties-common gnupg
-          if ! command -v clang-18 &> /dev/null; then
+          if ! command -v clang-20 &> /dev/null; then
             wget https://apt.llvm.org/llvm.sh
             chmod +x llvm.sh
-            sudo ./llvm.sh 18
+            sudo ./llvm.sh 20
           fi
-          sudo apt-get install -y ninja-build clang-tools-18 libc++-18-dev libc++abi-18-dev
-          sudo update-alternatives --install /usr/bin/clang-scan-deps clang-scan-deps /usr/bin/clang-scan-deps-18 100 || true
-          echo "/usr/lib/llvm-18/bin" >> $GITHUB_PATH
-          clang-18 --version
-          clang++-18 --version
+          sudo apt-get install -y ninja-build clang-tools-20 libc++-20-dev libc++abi-20-dev
+          sudo update-alternatives --install /usr/bin/clang-scan-deps clang-scan-deps /usr/bin/clang-scan-deps-20 100 || true
+          echo "/usr/lib/llvm-20/bin" >> $GITHUB_PATH
+          clang-20 --version
+          clang++-20 --version
           cmake --version
           ninja --version
 
@@ -210,20 +207,20 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install Endstone runtime dependency
-        run: python -m pip install "endstone==0.11.10"
+        run: python -m pip install "endstone==0.11.11"
       - name: Install local Python package
         run: python -m pip install -e .
-      - name: Download both exact-built command wheels
+      - name: Download the exact-built Linux command wheel
         uses: actions/download-artifact@v8
         with:
           pattern: ${{ env.PROJECT_SLUG }}-exact-*
           path: dist/test-wheel
           merge-multiple: true
-      - name: Verify both platform wheels, entry point, commands, and permissions
+      - name: Verify the Linux wheel, entry point, commands, and permissions
         shell: bash
         run: |
           mapfile -t wheels < <(find dist/test-wheel -maxdepth 1 -type f -name '*.whl' | sort)
-          test "${#wheels[@]}" -eq 2
+          test "${#wheels[@]}" -eq 1
           for wheel in "${wheels[@]}"; do
             python tests/python/verify_test_wheel.py "$wheel" --structure-only
           done
@@ -280,8 +277,9 @@ jobs:
           python scripts/verify_combined_release_assets.py
           --slug "${{ env.PROJECT_SLUG }}"
           --version "${{ env.RELEASE_VERSION }}"
-          --bds "1.26.45"
+          --bds "1.26.51"
           --release-dir release-assets
+          --platform linux-x64
       - name: Generate combined checksums
         working-directory: release-assets
         shell: bash
@@ -290,7 +288,7 @@ jobs:
             | sort -z \
             | xargs -0 -r sha256sum > SHA256SUMS.txt
           test -s SHA256SUMS.txt
-          test "$(wc -l < SHA256SUMS.txt)" -eq 6
+          test "$(wc -l < SHA256SUMS.txt)" -eq 3
       - name: Create or update GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

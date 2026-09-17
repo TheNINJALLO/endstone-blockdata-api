@@ -1,56 +1,59 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.4-alpha.1",
-  "adapter_family": "Minecraft Bedrock 26.45",
+  "version": "0.6.4",
+  "adapter_family": "minecraft-bedrock-26.51",
   "supported_bds": [
-    "1.26.45"
+    "1.26.51"
   ],
   "endstone_tags": [
-    "v0.11.10"
+    "v0.11.11"
   ],
   "verified_bds_archives": {
     "linux-x64": {
-      "version": "1.26.45.1",
-      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.45.1.zip",
-      "sha256": "B0DB86098EE418A9BB226F6F3F51FF2BE36542236839375627B29AEF3DFA5CDA"
+      "version": "1.26.51.1",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.51.1.zip",
+      "sha256": "ad91d3b824e51ea50b5bb601c295cbd8f543a29b14315c2ad89ff27311e2d860"
     },
     "windows-x64": {
-      "version": "1.26.45.1",
-      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.45.1.zip",
-      "sha256": "B27216DD32D034F3BC5FBE3094A70D2B3CEC9A9871CA3D7B46A2B8690A1C0B14"
+      "version": "1.26.51.1",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.51.1.zip",
+      "sha256": "a1c1ebefde3036223234179f7c1eab4b445b4727f0482a0554818c9bcaf8e4a5"
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "exact adapter build matrix; stage-server runtime validation required",
+  "native_validation": "Passed native C++ and Python tests, exact binary checks, and disposable live server checks on Linux x86-64; see compatibility/native-qualification.json",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,
     "platforms": [
-      "linux-x64",
-      "windows-x64"
+      "linux-x64"
     ],
     "bds": [
-      "1.26.45"
+      "1.26.51"
     ],
-    "linux_runner": "ubuntu-22.04 + clang-18 + libc++18 + Ninja",
+    "linux_runner": "ubuntu-22.04 + clang-20 + libc++20 + Ninja",
     "windows_toolchain": "Visual Studio environment + clang-cl + lld-link + Ninja + Conan 2",
     "failure_diagnostics": true,
     "dependency_source": "Endstone Cloudsmith Conan remote + Conan Center"
   },
   "endstone_requirement": ">=0.11.11",
-  "pending_targets": [
+  "pending_targets": [],
+  "historical_preparation_profiles": [
+    "compatibility/bds-1.26.50.5.json"
+  ],
+  "python_version": "0.6.4",
+  "release_channel": "native-release",
+  "native_release_ready": true,
+  "qualified_targets": [
     {
       "game_version": "1.26.51",
       "bds_package": "1.26.51.1",
       "endstone": "0.11.11",
       "profile": "compatibility/bds-1.26.51.json",
-      "status": "pending-native-adapter-qualification"
+      "status": "qualified-linux-x64",
+      "platforms": [
+        "linux-x64"
+      ]
     }
-  ],
-  "historical_preparation_profiles": [
-    "compatibility/bds-1.26.50.5.json"
-  ],
-  "python_version": "0.6.4a1",
-  "release_channel": "compatibility-prerelease",
-  "native_release_ready": false
+  ]
 }

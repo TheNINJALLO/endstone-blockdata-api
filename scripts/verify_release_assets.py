@@ -21,7 +21,7 @@ WHEEL_PREFIXES = {
     "endstone-worldgen-api": "endstone_worldgen_studio",
 }
 SUPPORTED_BDS = {
-    "endstone-blockdata-api": {"1.26.45"},
+    "endstone-blockdata-api": {"1.26.51"},
 }
 
 
@@ -119,8 +119,10 @@ def verify_linux_dynamic_symbols(plugin: Path) -> None:
         capture_output=True,
         text=True,
     ).stdout
+    # Use the host's libgcc_s unwinder, as Endstone does, so exceptions can
+    # cross the service boundary. The C++ standard libraries remain static.
     nonportable_runtime = re.compile(
-        r"^(?:libstdc\+\+|libc\+\+|libc\+\+abi|libgcc_s)\.so(?:\.|$)"
+        r"^(?:libstdc\+\+|libc\+\+|libc\+\+abi)\.so(?:\.|$)"
     )
     for line in dynamic.splitlines():
         if "(NEEDED)" in line:

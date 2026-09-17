@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "pending-native-adapter-qualification",
+  "status": "qualified-linux-x64",
   "server_files": {
     "linux-x64": {
       "archive": {
@@ -63,10 +63,13 @@
     },
     "archive_checksums_verified": true
   },
-  "qualification_required": [
-    "Port private adapter layouts, symbols and instruction fingerprints to BDS 1.26.51.1 and Endstone 0.11.11",
-    "Build each native plugin and Python bridge against the selected SDK and the runtime Python/pybind11 ABI",
-    "Run native load, gameplay, persistence and shutdown checks on a disposable server"
+  "qualification_required": [],
+  "policy": "Endstone dependency has no upper version bound. Native hooks remain exact-build gated until independently qualified; matching server files and SDK identification do not qualify the native adapter.",
+  "qualified_platforms": [
+    "linux-x64"
   ],
-  "policy": "Endstone dependency has no upper version bound. Native hooks remain exact-build gated until independently qualified; matching server files and SDK identification do not qualify the native adapter."
+  "unqualified_platforms": {
+    "windows-x64": "Native adapter port and live qualification required before release"
+  },
+  "qualification_evidence": "compatibility/native-qualification.json"
 }

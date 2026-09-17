@@ -4,9 +4,9 @@ from conan.tools.cmake import CMakeDeps, CMakeToolchain
 
 class ExactEndstoneDependencies(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
-    options = {"bds_build": ["1.26.45"]}
+    options = {"bds_build": ["1.26.51"]}
     default_options = {
-        "bds_build": "1.26.45",
+        "bds_build": "1.26.51",
         "boost/*:header_only": True,
         "date/*:header_only": True,
         "raknet/*:minecraft_version": "r26u3",
@@ -28,7 +28,7 @@ class ExactEndstoneDependencies(ConanFile):
         self.requires("tomlplusplus/3.3.0")
         self.requires("zstr/1.0.7")
 
-        # Endstone v0.11.10 exact dependency graph.
+        # Endstone v0.11.11 exact dependency graph.
         self.requires("boost/1.91.0")
         self.requires("entt/3.16.0")
         self.requires("expected-lite/0.9.0")

@@ -125,7 +125,10 @@ def prepare(target: dict, archive: Path, platform: str, endstone_version: str | 
         "profile_endstone_version": target["endstone"].get("build_version"),
         "profile_endstone_source_commit": target["endstone"].get("source_commit"),
         "server_files_verified": True,
-        "native_adapter_qualified": False,
+        "native_adapter_qualified": (
+            platform in target.get("qualified_platforms", [])
+            and endstone_version.removeprefix("v") == target["endstone"].get("build_version")
+        ),
         "status": target["status"],
         "remaining": target["qualification_required"],
         "server_files": actual,
@@ -149,7 +152,7 @@ def main() -> int:
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(result, encoding="utf-8")
         print(result, end="")
-        if args.require_native:
+        if args.require_native and not report["native_adapter_qualified"]:
             print("Native adapter qualification is pending; see remaining in the report.", file=sys.stderr)
             return 2
         return 0

@@ -17,6 +17,8 @@ SPEC.loader.exec_module(RELEASE)
 class CompatibilityReleaseTests(unittest.TestCase):
     def setUp(self):
         self.source = json.loads((ROOT / "SOURCE_RELEASE.json").read_text(encoding="utf-8"))
+        self.source.update(version="1.2.3-alpha.1", python_version="1.2.3a1",
+                           release_channel="compatibility-prerelease", native_release_ready=False)
 
     def test_release_cannot_claim_native_or_stable_qualification(self):
         RELEASE.validate_release(self.source)

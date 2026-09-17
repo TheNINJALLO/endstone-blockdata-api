@@ -1,0 +1,17 @@
+{
+  "bds": "1.26.51.1",
+  "platform": "linux-x64",
+  "functions": {
+    "FlattenStorageItemRva": "0xbf32970",
+    "FlattenStorageItemCoreRva": "0xbf329e0",
+    "CreateTrackerRva": "0xbaaf2b0",
+    "TrackStorageItemRva": "0xbaadab0",
+    "ReceiveContainerLifetimesRva": "0xb4a91f0",
+    "ManagerGiveLifetimeRva": "0xba8a060"
+  },
+  "container_owner_offset": "0x120",
+  "tracker_list_offset": "0x30",
+  "flatten_context_offset": "0x25",
+  "flatten_call_offset": "0x2e",
+  "evidence": "Matched exact instruction sequences and call targets against verified .45.1/.51.1 executables; clone wrapper control flow re-inspected; owner and tracker offsets unchanged."
+}

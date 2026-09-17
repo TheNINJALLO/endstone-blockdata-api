@@ -41,7 +41,7 @@ def windows_executable() -> bytes:
 
 class TestBdsTarget(unittest.TestCase):
     def test_endstone_minimum_has_no_upper_bound(self):
-        for version in ("0.11.11", "v0.11.11", "0.11.12", "0.11.100", "0.12.0", "1.0.0",
+        for version in ("0.11.11", "v0.11.11", "0.11.12", "0.11.110", "0.12.0", "1.0.0",
                         "0.11.11.dev1", "0.11.11-dev.2+build.7", "v0.11.11+local"):
             with self.subTest(version=version):
                 self.assertTrue(TARGET.endstone_at_least(version, "0.11.11"))
@@ -59,10 +59,11 @@ class TestBdsTarget(unittest.TestCase):
         self.assertEqual(profile["endstone"]["source_commit"], "37b395378d91d6d20f1c52bf9d79dbd20e152458")
         self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.51.json")
         self.assertEqual(profile["game_version"], "1.26.51")
-        self.assertEqual(profile["status"], "pending-native-adapter-qualification")
+        self.assertEqual(profile["status"], "qualified-linux-x64")
+        self.assertEqual(profile["qualified_platforms"], ["linux-x64"])
         metadata = json.loads((ROOT / "compatibility/versions.json").read_text())
         self.assertEqual(metadata["endstone_requirement"], ">=0.11.11")
-        self.assertEqual(metadata["pending_targets"][0]["bds_package"], "1.26.51.1")
+        self.assertEqual(metadata["qualified_targets"][0]["bds_package"], "1.26.51.1")
         wheel_projects = {
             "endstone-blockdata-api": "examples/python/block_data_inspector_plugin/pyproject.toml",
             "endstone-worldgen-api": "examples/python/world_gen_studio_plugin/pyproject.toml",
@@ -115,6 +116,10 @@ class TestBdsTarget(unittest.TestCase):
                         corrupt["server_files"][platform][kind]["sha256"] = "0" * 64
                         with self.assertRaisesRegex(ValueError, f"{kind} sha256 mismatch"):
                             TARGET.prepare(corrupt, archive, platform, None)
+                    qualified = copy.deepcopy(profile)
+                    qualified["qualified_platforms"] = ["linux-x64"]
+                    self.assertEqual(TARGET.prepare(qualified, archive, platform, "0.11.11")["native_adapter_qualified"], platform == "linux-x64")
+                    self.assertFalse(TARGET.prepare(qualified, archive, platform, "0.11.12")["native_adapter_qualified"])
                     profile_path = folder / "profile.json"
                     profile_path.write_text(json.dumps(profile))
                     command = [sys.executable, str(ROOT / "scripts/prepare_bds_target.py"),

@@ -128,11 +128,11 @@ def main() -> int:
         env["PATH"] = llvm_bin + os.pathsep + env.get("PATH", "")
         compiler_conf = 'tools.build:compiler_executables={"c":"clang-cl","cpp":"clang-cl"}'
     else:
-        clang = require("clang-18")
-        clangxx = require("clang++-18")
+        clang = require("clang-20")
+        clangxx = require("clang++-20")
         env["CC"] = clang
         env["CXX"] = clangxx
-        compiler_conf = 'tools.build:compiler_executables={"c":"clang-18","cpp":"clang++-18"}'
+        compiler_conf = 'tools.build:compiler_executables={"c":"clang-20","cpp":"clang++-20"}'
 
     # Endstone publishes its patched RakNet recipe on this public Conan remote.
     run([conan, "remote", "add", "endstone", "https://conan.cloudsmith.io/endstone/conan/", "--force"],
@@ -156,7 +156,7 @@ def main() -> int:
         "-c:b", "tools.cmake.cmaketoolchain:generator=Ninja",
     ]
     if not host_windows:
-        conan_install += ["-s:h", "compiler=clang", "-s:h", "compiler.version=18", "-s:h", "compiler.libcxx=libc++"]
+        conan_install += ["-s:h", "compiler=clang", "-s:h", "compiler.version=20", "-s:h", "compiler.libcxx=libc++"]
     run(conan_install, env=env, log_file=log_file)
     toolchain = find_toolchain(conan_dir)
 
