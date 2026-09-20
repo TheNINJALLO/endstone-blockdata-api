@@ -1,3 +1,7 @@
+# Endstone 0.11.12 validation
+
+Current evidence is in `compatibility/native-qualification.json`; the server remains BDS 1.26.51.1. The records below describe the previous 0.11.11 release.
+
 # Validation results
 
 ## BDS 1.26.51 / Endstone 0.11.11 target

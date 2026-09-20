@@ -1,11 +1,9 @@
-# Install Endstone BlockData API v0.6.4
+# Install Endstone Blockdata API v0.6.5
 
-Release tag: `v0.6.4`.
+Version: `v0.6.5`. [Download release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.5).
 
-Download the Linux x86-64 assets from [v0.6.4](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4). Stop the server, remove the older plugin and command wheel, and copy the new `.so` plus its matching `cp314-cp314-linux_x86_64.whl` into `plugins/`. Start BDS 1.26.51.1 with Endstone 0.11.11.
+Use BDS **1.26.51.1**, **Endstone 0.11.12**, and **CPython 3.14** on Linux x86-64. Stop the server, replace the previous native plugin and command wheel together with the release `.so` and matching `cp314-cp314-linux_x86_64.whl`, then restart. BDS itself does not need updating.
 
-Linux x86-64 native release for Minecraft **1.26.51**, BDS **1.26.51.1**, and Endstone **0.11.11**, with matching CPython **3.14** command wheels.
+The complete deployment ZIP contains both plugin files. The portable API wheel alone does not install the server plugin. Windows native binaries are not included.
 
-Endstone package metadata accepts **>=0.11.11** with no upper bound. Native hooks require the verified BDS 1.26.51.1 / Endstone 0.11.11 binary pair; later private runtimes need separate qualification.
-
-The complete deployment ZIP includes both plugin files. The portable Python API wheel alone does not install the native server plugin. Windows native binaries are not included in this release.
+The published [v0.6.4 artifacts](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4) require Endstone 0.11.11. Package metadata keeps `endstone>=0.11.11`; native version gates still require the exact runtime used to build the plugin.

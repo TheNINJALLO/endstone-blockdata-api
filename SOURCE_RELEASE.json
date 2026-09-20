@@ -1,12 +1,12 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "adapter_family": "minecraft-bedrock-26.51",
   "supported_bds": [
     "1.26.51"
   ],
   "endstone_tags": [
-    "v0.11.11"
+    "v0.11.12"
   ],
   "verified_bds_archives": {
     "linux-x64": {
@@ -21,7 +21,7 @@
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "Passed native C++ and Python tests, exact binary checks, and disposable live server checks on Linux x86-64; see compatibility/native-qualification.json",
+  "native_validation": "Native build and disposable live checks passed for Endstone 0.11.12 on unchanged BDS 1.26.51.1; see compatibility/native-qualification.json",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,
@@ -41,19 +41,21 @@
   "historical_preparation_profiles": [
     "compatibility/bds-1.26.50.5.json"
   ],
-  "python_version": "0.6.4",
+  "python_version": "0.6.5",
   "release_channel": "native-release",
   "native_release_ready": true,
   "qualified_targets": [
     {
       "game_version": "1.26.51",
       "bds_package": "1.26.51.1",
-      "endstone": "0.11.11",
+      "endstone": "0.11.12",
       "profile": "compatibility/bds-1.26.51.json",
       "status": "qualified-linux-x64",
       "platforms": [
         "linux-x64"
       ]
     }
-  ]
+  ],
+  "publication_status": "release",
+  "release_tag": "v0.6.5"
 }

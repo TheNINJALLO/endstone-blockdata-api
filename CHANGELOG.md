@@ -1,11 +1,17 @@
+# Changelog
+
+## 0.6.5 — Endstone 0.11.12
+
+- Update the SDK and native Endstone guards to 0.11.12; retain BDS 1.26.51.1, runtime 26.51, and CPython 3.14.
+- Refresh Endstone binary identities and private addresses where used; preserve exact runtime checks and historical 0.11.11 evidence.
+- Keep the portable package requirement at Endstone >=0.11.11 without an upper bound.
+
 ## 0.6.4-alpha.1
 
 - Release the 1.26.51 / Endstone 0.11.11 compatibility preparation as source and a portable API wheel.
 - Native runtime qualification remains pending; see `RELEASE_NOTES.md`.
 
-## Unreleased
-
-## Unreleased ? BDS 1.26.51 / Endstone 0.11.11 target
+## 0.6.4 — BDS 1.26.51 / Endstone 0.11.11
 
 - Select game 1.26.51, actual server package 1.26.51.1, and Endstone 0.11.11.
 - Raise command-wheel requirements to Endstone >=0.11.11 with no upper bound.
@@ -149,7 +155,6 @@
 - Synchronized workflow, package, CMake and source-release versions.
 - Included the actual hidden `.github/workflows/ci.yml` files in the release package.
 
-# Changelog
 
 ## 0.4.5-alpha.9
 
