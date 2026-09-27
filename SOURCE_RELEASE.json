@@ -1,6 +1,6 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "adapter_family": "minecraft-bedrock-26.51",
   "supported_bds": [
     "1.26.51"
@@ -41,7 +41,7 @@
   "historical_preparation_profiles": [
     "compatibility/bds-1.26.50.5.json"
   ],
-  "python_version": "0.6.5",
+  "python_version": "0.6.6",
   "release_channel": "native-release",
   "native_release_ready": true,
   "qualified_targets": [
@@ -57,5 +57,5 @@
     }
   ],
   "publication_status": "release",
-  "release_tag": "v0.6.5"
+  "release_tag": "v0.6.6"
 }

@@ -1,6 +1,6 @@
-> Endstone-only release v0.6.5. BDS remains 1.26.51.1.
+> Endstone-only release v0.6.6. BDS remains 1.26.51.1.
 
-# Endstone BlockData API v0.6.5
+# Endstone BlockData API v0.6.6
 
 Linux x86-64 native release for Minecraft **1.26.51**, BDS **1.26.51.1**, and Endstone **0.11.12**, with matching CPython **3.14** command wheels.
 

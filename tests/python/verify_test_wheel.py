@@ -38,7 +38,7 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/storage_item.py",
 }
 EXPECTED_RUNTIME_DEPENDENCIES = ["endstone>=0.11.11"]
-EXPECTED_VERSION = "0.6.5"
+EXPECTED_VERSION = "0.6.6"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -247,7 +247,7 @@ def verify(wheel: Path, *, structure_only: bool = False) -> None:
         parser.read_string(archive.read(entry_files[0]).decode("utf-8"))
         if parser.sections() != ["endstone"]:
             raise AssertionError(f"expected only [endstone], got {parser.sections()}")
-        if dict(parser["endstone"]) != {EXPECTED_ENTRY: EXPECTED_TARGET}:
+        if dict(parser["endstone"]) != {EXPECTED_ENTRY: EXPECTED_TARGET, "blockdata-native": "endstone_blockdata_inspector._native_loader:BlockDataNativeBundle"}:
             raise AssertionError(f"unexpected entry point: {dict(parser['endstone'])}")
         if any(name.endswith("endstone_plugin.toml") for name in names):
             raise AssertionError("stale endstone_plugin.toml was packaged")

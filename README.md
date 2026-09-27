@@ -1,14 +1,14 @@
 # Endstone BlockData API
 
-## Endstone 0.11.12 update: v0.6.5
+## Endstone 0.11.12 update: v0.6.6
 
 This release targets **Endstone 0.11.12**, unchanged **BDS 1.26.51.1 / runtime 26.51**, and **CPython 3.14** on Linux x86-64. See [build status](BUILD_STATUS.md) for validation.
 
 The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.12** runtime. Rebuild or install the matching native plugin and command wheel together.
 
-Download [v0.6.5](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.5) for **Endstone 0.11.12**.
+Download [v0.6.6](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6) for **Endstone 0.11.12**.
 
-[![Version](https://img.shields.io/badge/version-v0.6.5-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.5)
+[![Version](https://img.shields.io/badge/version-v0.6.6-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6)
 [![Endstone](https://img.shields.io/badge/Endstone-v0.11.12-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
 [![BDS Version](https://img.shields.io/badge/BDS-1.26.51-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
@@ -28,15 +28,15 @@ Comprehensive guides, architecture diagrams, container audit tutorials, and full
 
 ---
 
-## 📦 Direct Release Downloads (`v0.6.5`)
+## 📦 Direct Release Downloads (`v0.6.6`)
 
 Use the **complete ZIP** matching BDS 1.26.51 and the server platform. It contains both the native plugin and the matching self-contained `/bd` command wheel. The raw library is for native-API-only/manual installations.
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Linux x64 ZIP (recommended)** | `1.26.51` | `endstone-blockdata-api-v0.6.5-bds-1.26.51-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.5/endstone-blockdata-api-v0.6.5-bds-1.26.51-linux-x64.zip) |
-| **Linux x64 raw plugin** | `1.26.51` | `endstone-blockdata-api-v0.6.5-bds-1.26.51-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.5/endstone-blockdata-api-v0.6.5-bds-1.26.51-linux-x64.so) |
-| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.6.5-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.5/endstone_blockdata_inspector-0.6.5-cp314-cp314-linux_x86_64.whl) |
+| **Linux x64 ZIP (recommended)** | `1.26.51` | `endstone-blockdata-api-v0.6.6-bds-1.26.51-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.6/endstone-blockdata-api-v0.6.6-bds-1.26.51-linux-x64.zip) |
+| **Linux x64 raw plugin** | `1.26.51` | `endstone-blockdata-api-v0.6.6-bds-1.26.51-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.6/endstone-blockdata-api-v0.6.6-bds-1.26.51-linux-x64.so) |
+| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.6/endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl) |
 
 ---
 
@@ -120,12 +120,12 @@ void onContainerTouch(endstone::Server &server) {
 
 The repository includes the [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/) command plugin. Choose the platform-specific **CPython 3.14** wheel from the same exact build as the native plugin; its `_endstone_blockdata_live` bridge is bundled inside the wheel.
 
-Stop the server and remove older BlockData inspector wheels before copying v0.6.5; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
+Stop the server and remove older BlockData inspector wheels before copying v0.6.6; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
 
 ```bash
 # Linux example: copy both files from the complete ZIP's plugins/ directory.
 cp endstone_blockdata_bds_1_26_45.so /path/to/endstone/plugins/
-cp endstone_blockdata_inspector-0.6.5-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
+cp endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
 ```
 
 ### In-Game Command Reference

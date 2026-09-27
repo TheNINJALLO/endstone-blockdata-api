@@ -21,11 +21,11 @@ Create and push a tag that exactly matches the version in `SOURCE_RELEASE.json`
 and points to a commit already merged into protected `main`:
 
 ```bash
-git tag v0.6.5
-git push origin v0.6.5
+git tag v0.6.6
+git push origin v0.6.6
 ```
 
-The workflow downloads the verified Linux build artifacts, creates `SHA256SUMS.txt`, and publishes a normal stable GitHub Release. Because `v0.6.5` has no prerelease suffix, the workflow marks it as **Latest**, not as a prerelease.
+The workflow downloads the verified Linux build artifacts, creates `SHA256SUMS.txt`, and publishes a normal stable GitHub Release. Because `v0.6.6` has no prerelease suffix, the workflow marks it as **Latest**, not as a prerelease.
 
 Re-running the tagged workflow updates existing assets with `--clobber` rather than creating a duplicate release.
 

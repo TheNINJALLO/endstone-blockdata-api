@@ -1,6 +1,6 @@
 # Build status
 
-Version: **0.6.5**
+Version: **0.6.6**
 
 Release target: Endstone **0.11.12**, BDS package
 1.26.51.1/runtime 26.51, and CPython 3.14 on Linux x86-64.
@@ -17,4 +17,4 @@ Endstone package metadata accepts **>=0.11.11** without an upper bound. Native h
 
 ## Publication
 
-Release: [v0.6.5](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.5). The previous [v0.6.4 release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4) and its 0.11.11 qualification remain historical records.
+Release: [v0.6.6](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6). The previous [v0.6.4 release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4) and its 0.11.11 qualification remain historical records.

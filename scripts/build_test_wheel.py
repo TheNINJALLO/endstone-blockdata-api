@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 from email.parser import Parser
 from pathlib import Path
 import shutil
@@ -81,6 +83,20 @@ def main() -> int:
         staged_package = staged_project / WHEEL_PACKAGE
         staged_package.mkdir(parents=True, exist_ok=True)
         shutil.copy2(bridge, staged_package / bridge.name)
+        native_plugins = list((stage_dir / "plugins").glob("endstone_blockdata_bds_*.so"))
+        native_plugins += list((stage_dir / "plugins").glob("endstone_blockdata_bds_*.dll"))
+        if len(native_plugins) != 1:
+            raise SystemExit("The exact stage must contain one BlockData native plugin to bundle with the bridge")
+        native_plugin = native_plugins[0]
+        native_dir = staged_package / "native"
+        native_dir.mkdir()
+        shutil.copy2(native_plugin, native_dir / native_plugin.name)
+        release = json.loads((ROOT / "SOURCE_RELEASE.json").read_text())
+        (native_dir / "manifest.json").write_text(json.dumps({
+            "filename": native_plugin.name,
+            "version": release["python_version"],
+            "sha256": hashlib.sha256(native_plugin.read_bytes()).hexdigest(),
+        }, indent=2) + "\n", encoding="utf-8")
         shutil.copytree(
             staged_root / API_PACKAGE,
             staged_project / "src" / "endstone_blockdata",
@@ -113,6 +129,9 @@ def main() -> int:
 
         with ZipFile(wheel) as archive:
             names = archive.namelist()
+            native_name = f"{PACKAGE_NAME}/native/{native_plugin.name}"
+            if names.count(native_name) != 1:
+                raise SystemExit("Command wheel must contain its matching native provider")
             expected_bridge = f"{PACKAGE_NAME}/{bridge.name}"
             if names.count(expected_bridge) != 1:
                 raise SystemExit(

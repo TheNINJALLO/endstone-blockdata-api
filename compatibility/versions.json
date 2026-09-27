@@ -1,7 +1,7 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.6.5",
+  "api": "0.6.6",
   "adapter_family": "minecraft-bedrock-26.51",
   "adapters": [
     {
