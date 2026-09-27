@@ -323,6 +323,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
             ${endstone_BINARY_DIR}/include/generated
         )
         if(UNIX)
+            # Keep bridge exception RTTI with its own static libc++abi. Endstone's
+            # exported pybind11 exception types otherwise interpose this module's
+            # types and cannot be matched by its local exception translator.
+            target_compile_definitions(_endstone_blockdata_live PRIVATE PYBIND11_EXPORT_EXCEPTION=)
             target_compile_options(_endstone_blockdata_live PRIVATE -fms-extensions)
             target_link_options(_endstone_blockdata_live PRIVATE "LINKER:--exclude-libs,ALL")
             # Match endstone_add_plugin's self-contained Linux runtime linkage;

@@ -10,7 +10,7 @@ def load_native_provider(plugin):
     manager = plugin.server.plugin_manager
     existing = manager.get_plugin("blockdata_api")
     if existing is not None:
-        found = existing.description.version
+        found = existing._get_description().version
         if found != version:
             raise RuntimeError(
                 f"BlockData native plugin {found} does not match bridge {version}. "

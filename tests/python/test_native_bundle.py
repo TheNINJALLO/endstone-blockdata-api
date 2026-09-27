@@ -40,14 +40,14 @@ class NativeBundleTests(unittest.TestCase):
 
     def test_mismatched_existing_plugin_is_not_reused(self):
         module, plugin, manager = self.load()
-        manager.get_plugin.return_value = SimpleNamespace(description=SimpleNamespace(version='0.4.8'))
+        manager.get_plugin.return_value = SimpleNamespace(_get_description=lambda: SimpleNamespace(version='0.4.8'))
         with self.assertRaisesRegex(RuntimeError, 'does not match'):
             module.load_native_provider(plugin)
         manager.load_plugin.assert_not_called()
 
     def test_matching_existing_plugin_does_not_load_twice(self):
         module, plugin, manager = self.load()
-        manager.get_plugin.return_value = SimpleNamespace(description=SimpleNamespace(version='0.6.6'))
+        manager.get_plugin.return_value = SimpleNamespace(_get_description=lambda: SimpleNamespace(version='0.6.6'))
         module.load_native_provider(plugin)
         manager.load_plugin.assert_not_called()
 
