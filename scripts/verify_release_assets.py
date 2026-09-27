@@ -262,7 +262,17 @@ def main() -> int:
         primary = manifest.get("primary_plugin")
         if not isinstance(primary, str) or f"{archive_root}{primary}" not in declared_members:
             raise SystemExit(f"Invalid primary_plugin in package manifest: {primary!r}")
-        if sha256_bytes(zf.read(f"{archive_root}{primary}")) != sha256_file(raw):
+        if args.slug == "endstone-blockdata-api":
+            if primary != f"plugins/{wheel.name}":
+                raise SystemExit("BlockData must deploy the complete bundle wheel")
+            with ZipFile(BytesIO(zf.read(bundled_wheel))) as bundle:
+                native_manifest = json.loads(bundle.read("endstone_blockdata_inspector/native/manifest.json"))
+                native_bytes = bundle.read("endstone_blockdata_inspector/native/" + native_manifest["filename"])
+                if native_manifest["version"] != args.version or sha256_bytes(native_bytes) != native_manifest["sha256"]:
+                    raise SystemExit("Invalid native bundle manifest")
+                if sha256_bytes(native_bytes) != sha256_file(raw):
+                    raise SystemExit("Bundled native provider differs from standalone release asset")
+        elif sha256_bytes(zf.read(f"{archive_root}{primary}")) != sha256_file(raw):
             raise SystemExit("Raw plugin does not match the primary plugin stored in the archive")
 
         supported_native_suffixes = {".dll", ".pyd"} if args.platform.startswith("windows") else {".so"}
