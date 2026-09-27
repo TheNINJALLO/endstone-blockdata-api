@@ -4,7 +4,7 @@
 
 This release targets **Endstone 0.11.12**, unchanged **BDS 1.26.51.1 / runtime 26.51**, and **CPython 3.14** on Linux x86-64. See [build status](BUILD_STATUS.md) for validation.
 
-The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.12** runtime. Rebuild or install the matching native plugin and command wheel together.
+The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.12** runtime. Install the complete inspector bundle wheel, which includes the matching native provider.
 
 Download [v0.6.6](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6) for **Endstone 0.11.12**.
 
@@ -30,7 +30,7 @@ Comprehensive guides, architecture diagrams, container audit tutorials, and full
 
 ## 📦 Direct Release Downloads (`v0.6.6`)
 
-Use the **complete ZIP** matching BDS 1.26.51 and the server platform. It contains both the native plugin and the matching self-contained `/bd` command wheel. The raw library is for native-API-only/manual installations.
+Use the **complete ZIP** matching BDS 1.26.51 and the server platform. It contains the self-contained `/bd` wheel with its matching native provider inside. The raw library is for native-API-only/manual installations.
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
@@ -124,7 +124,6 @@ Stop the server and remove older BlockData inspector wheels before copying v0.6.
 
 ```bash
 # Linux example: copy both files from the complete ZIP's plugins/ directory.
-cp endstone_blockdata_bds_1_26_45.so /path/to/endstone/plugins/
 cp endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
 ```
 

@@ -21,7 +21,7 @@
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "Native build and disposable live checks passed for Endstone 0.11.12 on unchanged BDS 1.26.51.1; see compatibility/native-qualification.json",
+  "native_validation": "Exact native build, relocated wheel/NBT checks, and bundle-only BDS startup with the AntiGrief adapter are checked by GitHub Actions. Previous native behavioral evidence remains in compatibility/native-qualification.json (0.6.5).",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,

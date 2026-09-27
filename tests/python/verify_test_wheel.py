@@ -11,6 +11,7 @@ from email.parser import Parser
 import hashlib
 import importlib
 import io
+import os
 import json
 from pathlib import Path
 from pathlib import PurePosixPath
@@ -203,7 +204,16 @@ bridge_path = Path(bridge.__file__).resolve()
 package_path = (Path({json.dumps(str(site_packages))}) / "endstone_blockdata_inspector").resolve()
 assert bridge_path.is_relative_to(package_path), (bridge_path, package_path)
 """
-        subprocess.run([sys.executable, "-I", "-c", smoke], check=True)
+        # Match the real server's preloaded Endstone/LLVM unwinder. Mixing
+        # libgcc _Unwind_RaiseException with LLVM _Unwind_GetCFA can crash
+        # deliberate NBT validation exceptions in a standalone Python process.
+        smoke_env = os.environ.copy()
+        if sys.platform.startswith("linux"):
+            unwinders = list((runtime_site_packages / "endstone.libs").glob("libunwind-*.so*"))
+            if len(unwinders) == 1:
+                smoke_env["LD_PRELOAD"] = str(unwinders[0]) + " " + smoke_env.get("LD_PRELOAD", "")
+        subprocess.run([sys.executable, "-I", "-X", "faulthandler", "-c", smoke], check=True, env=smoke_env)
+
 
 
 def verify(wheel: Path, *, structure_only: bool = False) -> None:

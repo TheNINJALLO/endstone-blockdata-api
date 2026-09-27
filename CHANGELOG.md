@@ -1,3 +1,7 @@
+# 0.6.6 - 2026-09-27
+
+Bundle and register the matching native provider from the inspector wheel; verify native checksums and matching versions. Test dependency loading with a real BDS startup and the AntiGrief 1.5.17 adapter. The isolated bridge test now uses the same LLVM unwinder loaded by the actual Endstone host.
+
 # Changelog
 
 ## 0.6.5 — Endstone 0.11.12
