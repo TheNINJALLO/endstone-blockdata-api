@@ -19,7 +19,8 @@ class BlockDataInspectorPlugin(Plugin):
     api_version = "0.11"
     version = "0.6.6"
     description = "Interactive in-game container, NBT, and block-state test suite"
-    depend = ["blockdata_api"]
+    depend = []
+    provides = ["blockdata_api"]
 
     commands = {
         "bd": {
@@ -122,6 +123,10 @@ class BlockDataInspectorPlugin(Plugin):
     _MAX_STORAGE_SUMMARY_ENTRIES = 8
     _MAX_STORAGE_SUMMARY_LINES = 32
     _MAX_STORAGE_ITEM_LABEL_CHARS = 160
+
+    def on_load(self) -> None:
+        from ._native_loader import load_native_provider
+        load_native_provider(self)
 
     def on_enable(self) -> None:
         self.selected_targets: dict[str, tuple[str, int, int, int]] = {}

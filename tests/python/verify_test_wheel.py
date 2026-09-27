@@ -28,7 +28,7 @@ from endstone.plugin.plugin_loader import _build_commands, _build_permissions
 EXPECTED_ENTRY = "blockdata-inspector"
 EXPECTED_TARGET = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
 EXPECTED_COMMANDS = {"bd"}
-EXPECTED_DEPENDENCIES = ["blockdata_api"]
+EXPECTED_DEPENDENCIES = []
 EXPECTED_PACKAGES = {"endstone_blockdata_inspector/", "endstone_blockdata/"}
 EXPECTED_API_MODULES = {
     "endstone_blockdata/__init__.py",
@@ -86,7 +86,8 @@ assert api.__version__ == {EXPECTED_VERSION!r}
 plugin_class = package.BlockDataInspectorPlugin
 assert plugin_class.api_version == "0.11"
 assert set(plugin_class.commands) == {{"bd"}}
-assert plugin_class.depend == ["blockdata_api"]
+assert plugin_class.depend == []
+assert plugin_class.provides == ["blockdata_api"]
 _build_commands(copy.deepcopy(plugin_class.commands))
 _build_permissions(copy.deepcopy(plugin_class.permissions))
 plugin_class()
@@ -257,7 +258,7 @@ def verify(wheel: Path, *, structure_only: bool = False) -> None:
         parser.read_string(archive.read(entry_files[0]).decode("utf-8"))
         if parser.sections() != ["endstone"]:
             raise AssertionError(f"expected only [endstone], got {parser.sections()}")
-        if dict(parser["endstone"]) != {EXPECTED_ENTRY: EXPECTED_TARGET, "blockdata-native": "endstone_blockdata_inspector._native_loader:BlockDataNativeBundle"}:
+        if dict(parser["endstone"]) != {EXPECTED_ENTRY: EXPECTED_TARGET}:
             raise AssertionError(f"unexpected entry point: {dict(parser['endstone'])}")
         if any(name.endswith("endstone_plugin.toml") for name in names):
             raise AssertionError("stale endstone_plugin.toml was packaged")

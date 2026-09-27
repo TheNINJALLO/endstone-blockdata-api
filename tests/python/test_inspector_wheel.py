@@ -509,7 +509,6 @@ class InspectorWheelTests(unittest.TestCase):
         self.assertEqual(
             project["entry-points"]["endstone"],
             {
-                "blockdata-native": "endstone_blockdata_inspector._native_loader:BlockDataNativeBundle",
                 "blockdata-inspector": (
                     "endstone_blockdata_inspector:BlockDataInspectorPlugin"
                 )
@@ -630,7 +629,8 @@ class InspectorWheelTests(unittest.TestCase):
 
     def test_all_commands_permissions_and_usages_are_declared(self) -> None:
         self.assertEqual(BlockDataInspectorPlugin.api_version, "0.11")
-        self.assertEqual(BlockDataInspectorPlugin.depend, ["blockdata_api"])
+        self.assertEqual(BlockDataInspectorPlugin.depend, [])
+        self.assertEqual(BlockDataInspectorPlugin.provides, ["blockdata_api"])
         self.assertEqual(set(BlockDataInspectorPlugin.commands), {"bd"})
         command = BlockDataInspectorPlugin.commands["bd"]
         self.assertEqual(command["aliases"], ["blockdata"])

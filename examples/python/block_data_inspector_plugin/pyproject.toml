@@ -13,7 +13,6 @@ dependencies = [
 ]
 
 [project.entry-points."endstone"]
-"blockdata-native" = "endstone_blockdata_inspector._native_loader:BlockDataNativeBundle"
 "blockdata-inspector" = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
 
 [tool.setuptools]
