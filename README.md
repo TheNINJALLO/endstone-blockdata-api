@@ -166,3 +166,7 @@ Full technical documentation, architecture deep dives, and API reference manuals
 ## 📜 License
 
 Distributed under the [Apache License 2.0](LICENSE).
+
+## 0.6.6 dependency repair
+
+The inspector wheel now bundles and loads the matching native `blockdata_api` provider. Install that complete wheel by itself in `plugins/`; remove older loose BlockData libraries and inspector wheels while stopped. The deployment ZIP uses the same wheel. See [installation](docs/INSTALL.md). The standalone native library is an optional advanced artifact, not an additional dependency to copy alongside the bundle.

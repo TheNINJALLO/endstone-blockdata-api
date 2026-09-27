@@ -16,8 +16,8 @@ class Probe(Plugin):
     def check(self):
         from endstone_blockdata_inspector import _endstone_blockdata_live as bridge
         native=self.server.plugin_manager.get_plugin("blockdata_api")
-        available=bridge.available()
-        result={{"available":available,"native_version":native.description.version,"bridge_version":bridge.__version__,"capabilities":bridge.capabilities()}}
+        available=bridge.available(self.server)
+        result={{"available":available,"native_version":native.description.version,"bridge_version":bridge.__version__,"capabilities":bridge.capabilities(self.server)}}
         result["passed"]=available and native.description.version==bridge.__version__=="0.6.6"
         Path({str(result)!r}).write_text(json.dumps(result,indent=2))
 '''

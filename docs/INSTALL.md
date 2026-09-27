@@ -1,9 +1,9 @@
-# Install Endstone Blockdata API v0.6.6
+# Install Endstone BlockData API v0.6.6
 
 Version: `v0.6.6`. [Download release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6).
 
-Use BDS **1.26.51.1**, **Endstone 0.11.12**, and **CPython 3.14** on Linux x86-64. Stop the server, replace the previous native plugin and command wheel together with the release `.so` and matching `cp314-cp314-linux_x86_64.whl`, then restart. BDS itself does not need updating.
+Use BDS **1.26.51.1**, **Endstone 0.11.12**, and **CPython 3.14** on Linux x86-64.
 
-The complete deployment ZIP contains both plugin files. The portable API wheel alone does not install the server plugin. Windows native binaries are not included.
+Stop the server. Replace old inspector wheels and native BlockData libraries with `endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl` in `plugins/`, then restart. Preserve plugin data folders. The wheel now contains both the bridge and its matching native provider, verifies its checksum, and registers `blockdata_api` automatically before dependent plugins load.
 
-The published [v0.6.4 artifacts](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4) require Endstone 0.11.11. Package metadata keeps `endstone>=0.11.11`; native version gates still require the exact runtime used to build the plugin.
+The deployment ZIP contains this same complete wheel. The standalone `.so` is available for advanced/manual deployments; do not add it alongside the complete wheel. The portable Python SDK alone does not install the server plugin. Windows native binaries are not included. Mixed versions are rejected before a bridge/native call.

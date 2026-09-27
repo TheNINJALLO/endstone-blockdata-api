@@ -1,11 +1,5 @@
-> Endstone-only release v0.6.6. BDS remains 1.26.51.1.
+# BlockData API 0.6.6
 
-# Endstone BlockData API v0.6.6
+The inspector wheel now includes the exact native provider and registers `blockdata_api` before dependent plugins load. This repairs wheel-only installs that left AntiGrief and other consumers without a native service. Checksums and version checks reject corrupted or mixed bundles.
 
-Linux x86-64 native release for Minecraft **1.26.51**, BDS **1.26.51.1**, and Endstone **0.11.12**, with matching CPython **3.14** command wheels.
-
-Endstone package metadata accepts **>=0.11.11** with no upper bound. Native hooks require the verified BDS 1.26.51.1 / Endstone 0.11.12 binary pair; later private runtimes need separate qualification.
-
-Includes the native Linux `.so`, matching command wheel, deployment archive, source/SDK assets, and SHA-256 checksums.
-
-Verified against the supplied server files using isolated live servers, native C++ tests, Python tests, exact binary guards, and clean shutdown checks. See `compatibility/native-qualification.json` for retained live evidence. No server binaries are redistributed.
+Linux x86-64 only: Endstone 0.11.12, BDS 1.26.51.1, CPython 3.14. Replace old provider libraries and inspector wheels with the complete release wheel while the server is stopped. Preserve data folders; do not install the standalone `.so` alongside the bundle.
