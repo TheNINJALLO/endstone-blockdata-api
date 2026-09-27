@@ -288,8 +288,6 @@ def main() -> int:
             raise SystemExit(
                 f"Release archive contains native binaries for the wrong platform: {unexpected_native}"
             )
-        if not native_members:
-            raise SystemExit("Release archive does not contain a native plugin or bridge")
 
         bridge_base = BRIDGE_MODULES.get(args.slug)
         if bridge_base is None:

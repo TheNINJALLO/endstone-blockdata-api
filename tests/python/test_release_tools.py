@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import hashlib
 import subprocess
 import sys
 import tempfile
@@ -9,7 +11,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.5","python_version": "0.6.5"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.6","python_version": "0.6.6"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -72,11 +74,18 @@ class TestReleaseTools(unittest.TestCase):
     def add_command_wheel(stage: Path) -> Path:
         wheel = (
             stage / "plugins" /
-            "endstone_blockdata_inspector-0.6.5-cp314-cp314-win_amd64.whl"
+            "endstone_blockdata_inspector-0.6.6-cp314-cp314-win_amd64.whl"
         )
         wheel.parent.mkdir(parents=True, exist_ok=True)
         bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))
         with ZipFile(wheel, "w", compression=ZIP_DEFLATED) as archive:
+            native = next((stage / "plugins").glob("endstone_blockdata_bds_*.dll"))
+            payload = native.read_bytes()
+            archive.writestr("endstone_blockdata_inspector/native/" + native.name, payload)
+            archive.writestr("endstone_blockdata_inspector/native/manifest.json", json.dumps({
+                "filename": native.name, "version": CONFIG["version"],
+                "sha256": hashlib.sha256(payload).hexdigest(),
+            }))
             if bridges:
                 archive.writestr(
                     f"endstone_blockdata_inspector/{bridges[0].name}",

@@ -502,13 +502,14 @@ class InspectorWheelTests(unittest.TestCase):
     def test_packaging_uses_current_endstone_entry_point(self) -> None:
         metadata = tomllib.loads((PLUGIN_PROJECT / "pyproject.toml").read_text("utf-8"))
         project = metadata["project"]
-        self.assertEqual(project["version"], "0.6.5")
-        self.assertEqual(BlockDataInspectorPlugin.version, "0.6.5")
+        self.assertEqual(project["version"], "0.6.6")
+        self.assertEqual(BlockDataInspectorPlugin.version, "0.6.6")
         self.assertEqual(project["requires-python"], "==3.14.*")
         self.assertEqual(project["dependencies"], ["endstone>=0.11.11"])
         self.assertEqual(
             project["entry-points"]["endstone"],
             {
+                "blockdata-native": "endstone_blockdata_inspector._native_loader:BlockDataNativeBundle",
                 "blockdata-inspector": (
                     "endstone_blockdata_inspector:BlockDataInspectorPlugin"
                 )

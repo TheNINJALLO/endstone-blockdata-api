@@ -171,6 +171,20 @@ jobs:
           $wheelPath = $wheels[0].FullName
           python tests/python/verify_test_wheel.py "$wheelPath"
 
+      - name: Start BDS with only the native bundle wheel
+        if: runner.os == 'Linux'
+        shell: bash
+        run: python tests/live/test_bundle_startup.py dist/release/*-cp314-cp314-linux_x86_64.whl --server "$RUNNER_TEMP/blockdata-bundle-server"
+
+      - name: Upload bundle startup evidence
+        if: always() && runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: blockdata-bundle-startup-${{ matrix.platform }}
+          path: |
+            ${{ runner.temp }}/blockdata-bundle-server/server.log
+            ${{ runner.temp }}/blockdata-bundle-server/probe.json
+
       - name: Upload compiled plugin package
         uses: actions/upload-artifact@v7
         with:
