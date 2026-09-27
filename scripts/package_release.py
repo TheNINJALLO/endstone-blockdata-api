@@ -16,7 +16,7 @@ PROJECTS = {
         "slug": "endstone-blockdata-api",
         "plugin_prefix": "endstone_blockdata_bds_",
         "wheel_prefix": "endstone_blockdata_inspector",
-        "supported_bds": {"1.26.45"},
+        "supported_bds": {"1.26.51"},
     },
     "worldgen": {
         "slug": "endstone-worldgen-api",
@@ -110,7 +110,7 @@ def main() -> int:
     manifest_path = stage / "PACKAGE_MANIFEST.json"
     files = []
     for path in sorted(stage.rglob("*")):
-        if path.is_file() and path != manifest_path:
+        if path.is_file() and path != manifest_path and (args.project != "blockdata" or path != plugin):
             files.append(
                 {
                     "path": path.relative_to(stage).as_posix(),
@@ -126,7 +126,7 @@ def main() -> int:
         "bds": args.bds,
         "platform": args.platform,
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "primary_plugin": plugin.relative_to(stage).as_posix(),
+        "primary_plugin": (bundled_wheel if args.project == "blockdata" else plugin).relative_to(stage).as_posix(),
         "files": files,
     }
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -134,7 +134,7 @@ def main() -> int:
     archive = release_dir / f"{release_stem}.zip"
     with ZipFile(archive, "w", compression=ZIP_DEFLATED, compresslevel=9) as zf:
         for path in sorted(stage.rglob("*")):
-            if path.is_file():
+            if path.is_file() and (args.project != "blockdata" or path != plugin):
                 zf.write(path, arcname=f"{release_stem}/{path.relative_to(stage).as_posix()}")
 
     checksums = release_dir / f"{release_stem}.sha256"

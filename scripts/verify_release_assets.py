@@ -21,7 +21,7 @@ WHEEL_PREFIXES = {
     "endstone-worldgen-api": "endstone_worldgen_studio",
 }
 SUPPORTED_BDS = {
-    "endstone-blockdata-api": {"1.26.45"},
+    "endstone-blockdata-api": {"1.26.51"},
 }
 
 
@@ -119,8 +119,10 @@ def verify_linux_dynamic_symbols(plugin: Path) -> None:
         capture_output=True,
         text=True,
     ).stdout
+    # Use the host's libgcc_s unwinder, as Endstone does, so exceptions can
+    # cross the service boundary. The C++ standard libraries remain static.
     nonportable_runtime = re.compile(
-        r"^(?:libstdc\+\+|libc\+\+|libc\+\+abi|libgcc_s)\.so(?:\.|$)"
+        r"^(?:libstdc\+\+|libc\+\+|libc\+\+abi)\.so(?:\.|$)"
     )
     for line in dynamic.splitlines():
         if "(NEEDED)" in line:
@@ -260,7 +262,17 @@ def main() -> int:
         primary = manifest.get("primary_plugin")
         if not isinstance(primary, str) or f"{archive_root}{primary}" not in declared_members:
             raise SystemExit(f"Invalid primary_plugin in package manifest: {primary!r}")
-        if sha256_bytes(zf.read(f"{archive_root}{primary}")) != sha256_file(raw):
+        if args.slug == "endstone-blockdata-api":
+            if primary != f"plugins/{wheel.name}":
+                raise SystemExit("BlockData must deploy the complete bundle wheel")
+            with ZipFile(BytesIO(zf.read(bundled_wheel))) as bundle:
+                native_manifest = json.loads(bundle.read("endstone_blockdata_inspector/native/manifest.json"))
+                native_bytes = bundle.read("endstone_blockdata_inspector/native/" + native_manifest["filename"])
+                if native_manifest["version"] != args.version or sha256_bytes(native_bytes) != native_manifest["sha256"]:
+                    raise SystemExit("Invalid native bundle manifest")
+                if sha256_bytes(native_bytes) != sha256_file(raw):
+                    raise SystemExit("Bundled native provider differs from standalone release asset")
+        elif sha256_bytes(zf.read(f"{archive_root}{primary}")) != sha256_file(raw):
             raise SystemExit("Raw plugin does not match the primary plugin stored in the archive")
 
         supported_native_suffixes = {".dll", ".pyd"} if args.platform.startswith("windows") else {".so"}
@@ -276,8 +288,6 @@ def main() -> int:
             raise SystemExit(
                 f"Release archive contains native binaries for the wrong platform: {unexpected_native}"
             )
-        if not native_members:
-            raise SystemExit("Release archive does not contain a native plugin or bridge")
 
         bridge_base = BRIDGE_MODULES.get(args.slug)
         if bridge_base is None:

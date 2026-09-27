@@ -550,6 +550,26 @@ std::shared_ptr<LivePlayerInventoryService> loadPlayerInventoryService(
 } // namespace
 
 PYBIND11_MODULE(_endstone_blockdata_live, module) {
+    // Endstone and this self-contained bridge can use separate libc++ typeinfo.
+    // Translate our exceptions locally before another extension's global
+    // translator turns a validation failure into "Caught an unknown exception".
+    py::register_local_exception_translator([](std::exception_ptr error) {
+        try {
+            if (error) std::rethrow_exception(error);
+        } catch (py::error_already_set &error) {
+            error.restore();
+        } catch (const py::builtin_exception &error) {
+            error.set_error();
+        } catch (const std::out_of_range &error) {
+            PyErr_SetString(PyExc_ValueError, error.what());
+        } catch (const std::invalid_argument &error) {
+            PyErr_SetString(PyExc_ValueError, error.what());
+        } catch (const std::overflow_error &error) {
+            PyErr_SetString(PyExc_OverflowError, error.what());
+        } catch (const std::exception &error) {
+            PyErr_SetString(PyExc_RuntimeError, error.what());
+        }
+    });
     module.doc() = "Live Endstone BlockData service bridge for Python anti-grief plugins";
     module.attr("__version__") = ENDSTONE_BLOCKDATA_VERSION;
 
@@ -603,7 +623,7 @@ PYBIND11_MODULE(_endstone_blockdata_live, module) {
         out["container_save_nbt"] = c.container_save_nbt;
         out["raw_block_entity_nbt"] = c.raw_block_entity_nbt;
         const bool exact_container_items =
-            service->adapterName() == "bds-26.45-exact-nbt";
+            service->adapterName() == "bds-26.51-exact-nbt";
         out["storage_item_reads"] = exact_container_items;
         out["storage_item_writes"] = exact_container_items;
         out["shelf_reads"] = exact_container_items;

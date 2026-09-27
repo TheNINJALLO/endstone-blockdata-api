@@ -1,4 +1,38 @@
-## Unreleased
+# 0.6.6 - 2026-09-27
+
+Bundle and register the matching native provider from the inspector wheel; verify native checksums and matching versions. Test dependency loading with a real BDS startup and the AntiGrief 1.5.18 adapter. Keep the bridge's exception types local so malformed NBT raises the correct Python exception inside Endstone. Read native versions through the actual bound metadata method. The isolated bridge test now uses the same LLVM unwinder loaded by the actual Endstone host.
+
+# Changelog
+
+## 0.6.5 — Endstone 0.11.12
+
+- Update the SDK and native Endstone guards to 0.11.12; retain BDS 1.26.51.1, runtime 26.51, and CPython 3.14.
+- Refresh Endstone binary identities and private addresses where used; preserve exact runtime checks and historical 0.11.11 evidence.
+- Keep the portable package requirement at Endstone >=0.11.11 without an upper bound.
+
+## 0.6.4-alpha.1
+
+- Release the 1.26.51 / Endstone 0.11.11 compatibility preparation as source and a portable API wheel.
+- Native runtime qualification remains pending; see `RELEASE_NOTES.md`.
+
+## 0.6.4 — BDS 1.26.51 / Endstone 0.11.11
+
+- Select game 1.26.51, actual server package 1.26.51.1, and Endstone 0.11.11.
+- Raise command-wheel requirements to Endstone >=0.11.11 with no upper bound.
+- Verify both official 1.26.51.1 downloads against Endstone's server metadata.
+- Record the v0.11.11 SDK commit and generated symbol-table fingerprints.
+- Default target preparation to this known release and retain 1.26.50.5 as history.
+- Keep native deployment qualification pending the adapter port and live tests.
+
+
+## Unreleased ? BDS 1.26.50.5 preparation
+
+- Record supplied Linux and Windows archive/executable fingerprints.
+- Accept Endstone >=0.11.10 in command wheels without an upper version bound.
+- Add target preparation and a gate that rejects unqualified native releases.
+- Keep old exact ABI profiles active until the new Endstone runtime is available
+  and new server layouts have been verified.
+
 
 ## 0.6.3
 
@@ -125,7 +159,6 @@
 - Synchronized workflow, package, CMake and source-release versions.
 - Included the actual hidden `.github/workflows/ci.yml` files in the release package.
 
-# Changelog
 
 ## 0.4.5-alpha.9
 

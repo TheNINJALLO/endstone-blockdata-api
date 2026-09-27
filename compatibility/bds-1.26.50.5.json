@@ -1,0 +1,52 @@
+{
+  "project": "endstone-blockdata-api",
+  "schema_version": 1,
+  "bds_package": "1.26.50.5",
+  "bds_runtime": "26.50",
+  "bds_runtime_status": "expected from package; verify with the matching Endstone runtime",
+  "endstone": {
+    "minimum_version": "0.11.10",
+    "requirement": ">=0.11.10",
+    "maximum_version": null,
+    "api_version": "0.11",
+    "build_version": null,
+    "source_commit": null
+  },
+  "status": "pending-endstone-native-qualification",
+  "server_files": {
+    "linux-x64": {
+      "archive": {
+        "filename": "bedrock-server-linux-1.26.50.5.zip",
+        "sha256": "a0e86d66162e039c43e5609ad45b3459df26592763c5577cf276ef04b7047b05",
+        "size_bytes": 94923270
+      },
+      "executable": {
+        "filename": "bedrock_server",
+        "sha256": "d5a2b6d0f6904d64d8718868d8e39bbe9db06600a88eab0e400596d7235798aa",
+        "size_bytes": 256131456,
+        "format": "ELF64",
+        "gnu_build_id": "e37f8fb7750805398ea363f2238a79c195763595"
+      }
+    },
+    "windows-x64": {
+      "archive": {
+        "filename": "bedrock-server-windows-1.26.50.5.zip",
+        "sha256": "21b35dc1907eb448cbe27c35a688c592e4cca4492a9a1c179f5f7d84b25b336d",
+        "size_bytes": 85764562
+      },
+      "executable": {
+        "filename": "bedrock_server.exe",
+        "sha256": "53ae0fa4b3b6e7e6c0572fd83283f40fb78e424bccb3591c8284158352c041b0",
+        "size_bytes": 223218032,
+        "format": "PE32+"
+      }
+    }
+  },
+  "qualification_required": [
+    "An Endstone SDK and runtime that support BDS 1.26.50.5",
+    "Rebuild against that SDK and verify private layouts, symbols and instruction fingerprints on each platform",
+    "Build each Python bridge using the Python and pybind11 ABI of the selected Endstone runtime",
+    "Run native load, gameplay, persistence and shutdown checks on a disposable server"
+  ],
+  "policy": "Endstone dependency has no upper version bound. Private native adapters remain exact-build gated; server fingerprints alone do not establish ABI compatibility."
+}

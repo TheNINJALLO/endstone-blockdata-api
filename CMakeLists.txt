@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
-project(endstone_blockdata VERSION 0.6.3 LANGUAGES CXX)
+project(endstone_blockdata VERSION 0.6.6 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(ENDSTONE_BLOCKDATA_RELEASE_VERSION "${PROJECT_VERSION}")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/SOURCE_RELEASE.json")
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/SOURCE_RELEASE.json")
     file(READ "${CMAKE_CURRENT_SOURCE_DIR}/SOURCE_RELEASE.json" ENDSTONE_BLOCKDATA_RELEASE_JSON)
     string(JSON ENDSTONE_BLOCKDATA_RELEASE_VERSION
@@ -22,8 +23,8 @@ option(ENDSTONE_BLOCKDATA_BUILD_TESTS "Build portable tests" ON)
 option(ENDSTONE_BLOCKDATA_BUILD_PLUGIN "Build the Endstone plugin wrapper" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_PYTHON "Build portable pybind11 bindings" OFF)
 option(ENDSTONE_BLOCKDATA_BUILD_LIVE_PYTHON "Build live Endstone Python bridge" ON)
-option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2645 "Build exact BDS 26.45-family adapter" ON)
-set(ENDSTONE_BDS_BUILD "1.26.45" CACHE STRING "Exact supported BDS build")
+option(ENDSTONE_BLOCKDATA_BUILD_NATIVE_2645 "Build exact BDS 26.51-family adapter" ON)
+set(ENDSTONE_BDS_BUILD "1.26.51" CACHE STRING "Exact supported BDS build")
 string(REPLACE "." "_" ENDSTONE_BDS_BUILD_FILE "${ENDSTONE_BDS_BUILD}")
 if(DEFINED ENDSTONE_CONAN_BDS_BUILD AND
    NOT ENDSTONE_CONAN_BDS_BUILD STREQUAL ENDSTONE_BDS_BUILD)
@@ -47,14 +48,17 @@ target_compile_features(endstone_blockdata_core PUBLIC cxx_std_20)
 configure_file(include/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/version.h @ONLY)
 
 if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
+    if(WIN32)
+        message(FATAL_ERROR "BDS 1.26.51 storage hooks are currently qualified only for Linux x86-64")
+    endif()
     if(NOT DEFINED ENDSTONE_CONAN_BDS_BUILD)
         message(FATAL_ERROR
             "ENDSTONE_CONAN_BDS_BUILD is missing; configure the exact plugin with this project's Conan toolchain")
     endif()
-    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.45")
-        set(ENDSTONE_EXACT_TAG "v0.11.10")
+    if(ENDSTONE_BDS_BUILD STREQUAL "1.26.51")
+        set(ENDSTONE_EXACT_TAG "v0.11.12")
     else()
-        message(FATAL_ERROR "The exact adapter supports only BDS 1.26.45 with Endstone v0.11.10")
+        message(FATAL_ERROR "The exact adapter supports only BDS 1.26.51 with Endstone v0.11.12")
     endif()
     string(REGEX REPLACE "^v" "" ENDSTONE_EXACT_VERSION "${ENDSTONE_EXACT_TAG}")
 
@@ -106,7 +110,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_FORMAT}" ENDSTONE_RESULT_ERROR_FORMAT_INDEX)
         string(FIND "${ENDSTONE_RESULT_H_CONTENT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_ERROR_MESSAGE_INDEX)
         if(ENDSTONE_RESULT_ERROR_FORMAT_INDEX EQUAL -1 AND ENDSTONE_RESULT_ERROR_MESSAGE_INDEX EQUAL -1)
-            message(FATAL_ERROR "Endstone v0.11.10 result.h no longer contains the expected std::error_code format expression")
+            message(FATAL_ERROR "Endstone v0.11.12 result.h no longer contains the expected std::error_code format expression")
         endif()
         string(REPLACE "${ENDSTONE_RESULT_ERROR_FORMAT}" "${ENDSTONE_RESULT_ERROR_MESSAGE}" ENDSTONE_RESULT_H_CONTENT "${ENDSTONE_RESULT_H_CONTENT}")
         file(WRITE "${endstone_SOURCE_DIR}/src/bedrock/platform/result.h" "${ENDSTONE_RESULT_H_CONTENT}")
@@ -174,12 +178,12 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
                 ENDSTONE_PLAYER_SAFE_RETURN_INDEX)
             if(ENDSTONE_PLAYER_SAFE_RETURN_INDEX EQUAL -1)
                 message(FATAL_ERROR
-                    "Endstone v0.11.10 player.cpp no longer matches the validated Windows link patch")
+                    "Endstone v0.11.12 player.cpp no longer matches the validated Windows link patch")
             endif()
         endif()
     else()
         message(FATAL_ERROR
-            "Endstone v0.11.10 player.cpp was not found for the Windows link patch")
+            "Endstone v0.11.12 player.cpp was not found for the Windows link patch")
     endif()
     # END BlockData Windows player.cpp link fix
 
@@ -218,6 +222,15 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
         CXX_VISIBILITY_PRESET hidden
         VISIBILITY_INLINES_HIDDEN ON
     )
+    if(UNIX AND NOT APPLE)
+        # Exceptions can cross the host/plugin boundary. Use the host's shared
+        # unwinder; a hidden static libgcc copy aborts on host unwind contexts.
+        get_target_property(native_link_libraries blockdata_api LINK_LIBRARIES)
+        list(REMOVE_ITEM native_link_libraries -static-libgcc)
+        set_property(TARGET blockdata_api PROPERTY LINK_LIBRARIES "${native_link_libraries}")
+        target_link_libraries(blockdata_api PRIVATE -shared-libgcc)
+    endif()
+
     target_include_directories(blockdata_api PRIVATE
         include
         ${CMAKE_CURRENT_BINARY_DIR}/include
@@ -310,6 +323,10 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
             ${endstone_BINARY_DIR}/include/generated
         )
         if(UNIX)
+            # Keep bridge exception RTTI with its own static libc++abi. Endstone's
+            # exported pybind11 exception types otherwise interpose this module's
+            # types and cannot be matched by its local exception translator.
+            target_compile_definitions(_endstone_blockdata_live PRIVATE PYBIND11_EXPORT_EXCEPTION=)
             target_compile_options(_endstone_blockdata_live PRIVATE -fms-extensions)
             target_link_options(_endstone_blockdata_live PRIVATE "LINKER:--exclude-libs,ALL")
             # Match endstone_add_plugin's self-contained Linux runtime linkage;
@@ -318,7 +335,7 @@ if(ENDSTONE_BLOCKDATA_BUILD_PLUGIN)
                 target_compile_options(_endstone_blockdata_live PRIVATE -stdlib=libc++)
                 target_link_options(_endstone_blockdata_live PRIVATE -stdlib=libc++)
                 target_link_libraries(_endstone_blockdata_live PRIVATE
-                    -static-libgcc
+                    -shared-libgcc
                     -static-libstdc++
                     libc++.a
                     libc++abi.a

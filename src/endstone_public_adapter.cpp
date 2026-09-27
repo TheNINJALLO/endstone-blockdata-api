@@ -48,7 +48,9 @@ public:
         if (!block) return {ApplyStatus::ChunkUnavailable, "block unavailable", current->revision};
         try {
             auto type = patch.replacement_type.value_or(current->type);
-            auto states = current->states;
+            // A replacement block has its own state schema. Carrying the
+            // previous block's states into it can reject a valid replacement.
+            auto states = type == current->type ? current->states : BlockStates{};
             for (const auto &[key, value] : patch.state_updates) states[key] = value;
             for (const auto &key : patch.state_removals) states.erase(key);
             endstone::BlockStates native_states;

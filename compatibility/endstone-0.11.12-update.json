@@ -1,0 +1,15 @@
+{
+  "endstone": "0.11.12",
+  "previous_endstone": "0.11.11",
+  "source_commit": "1c71186cba896c5e0bc432384a8a8e72dfb2a626",
+  "bds_package": "1.26.51.1",
+  "bds_files_unchanged": true,
+  "runtime": {
+    "sha256": "009c03d636b1e2c9a251a5c4ac1b522456cb90bbfaf6e1c7076b6affc03e3f78",
+    "size_bytes": 77317993,
+    "gnu_build_id": "a5b7b0378ab88262024164502707839c850e7dcd",
+    "source_commit": "1c71186cba896c5e0bc432384a8a8e72dfb2a626"
+  },
+  "upstream_release": "https://github.com/EndstoneMC/endstone/releases/tag/v0.11.12",
+  "qualification_evidence": "compatibility/native-qualification.json"
+}

@@ -3,8 +3,8 @@
 namespace endstone_blockdata {
 namespace {
 std::string_view canonicalBdsBuild(std::string_view build) noexcept {
-    // Endstone reports the BDS minor/patch pair (for example, "26.45"),
-    // while release packaging uses the full Minecraft version ("1.26.45").
+    // Endstone reports the BDS minor/patch pair (for example, "26.51"),
+    // while release packaging uses the full Minecraft version ("1.26.51").
     if (build.starts_with("1.")) build.remove_prefix(2);
     return build;
 }
@@ -74,7 +74,7 @@ bool isSafeEndstoneSuffix(std::string_view suffix) noexcept {
 } // namespace
 
 bool isSupportedBds2645Build(std::string_view build) noexcept {
-    return canonicalBdsBuild(build) == "26.45";
+    return canonicalBdsBuild(build) == "26.51";
 }
 
 bool isExpectedBds2645Build(std::string_view runtime_build,

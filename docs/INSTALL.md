@@ -1,33 +1,9 @@
-# Installation
+# Install Endstone BlockData API v0.6.6
 
-## Downloading an automatic build
+Version: `v0.6.6`. [Download release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6).
 
-Every GitHub push produces downloadable Windows x64 and Linux x64 artifacts for BDS 1.26.45 with Endstone 0.11.10. Open the repository's **Actions** tab, select the completed build, and download the package matching your operating system.
+Use BDS **1.26.51.1**, **Endstone 0.11.12**, and **CPython 3.14** on Linux x86-64.
 
-A tagged release such as `v0.6.3` publishes the same files under the repository's **Releases** page.
+Stop the server. Replace old inspector wheels and native BlockData libraries with `endstone_blockdata_inspector-0.6.6-cp314-cp314-linux_x86_64.whl` in `plugins/`, then restart. Preserve plugin data folders. The wheel now contains both the bridge and its matching native provider, verifies its checksum, and registers `blockdata_api` automatically before dependent plugins load.
 
-Use the ZIP matching the server's operating system. Copy its packaged plugin from `plugins/` into Endstone's native plugin directory. Do not use it with any BDS or Endstone version other than BDS 1.26.45 / Endstone 0.11.10.
-
-The `/bd` plugin requires Endstone's **CPython 3.14** runtime. The complete ZIP contains a platform-specific `cp314` wheel with `_endstone_blockdata_live` bundled inside it. Stop the server, remove every older BlockData inspector wheel from `plugins/` and any manually copied top-level `_endstone_blockdata_live` file from `.local`, then copy both files from the ZIP's `plugins/` directory into the server's `plugins/` directory. No `PYTHONPATH` or manual `site-packages` copy is required.
-
-## Building locally
-
-Linux:
-
-```bash
-./scripts/build_exact.sh 1.26.45 linux-x64
-```
-
-Windows PowerShell:
-
-```powershell
-./scripts/build_exact.ps1 -BdsBuild 1.26.45 -Platform windows-x64
-```
-
-Completed raw plugins, self-contained platform wheels, ZIP packages, and checksums are written to `dist/release/`.
-
-At startup the native plugin verifies the exact BDS build, registers service ABI 2 as `endstone:blockdata:v2`, and logs whether canonical actor NBT, nested item NBT, and inventory access are active.
-
-## Native build boundary
-
-The exact adapters include Endstone's private BDS declarations and must be compiled with the matching Endstone source tag and ABI toolchain. The portable test build does not certify the native adapter. Treat the first live load as a staging test, keep a world backup, and confirm the startup capability log before allowing writes.
+The deployment ZIP contains this same complete wheel. The standalone `.so` is available for advanced/manual deployments; do not add it alongside the complete wheel. The portable Python SDK alone does not install the server plugin. Windows native binaries are not included. Mixed versions are rejected before a bridge/native call.

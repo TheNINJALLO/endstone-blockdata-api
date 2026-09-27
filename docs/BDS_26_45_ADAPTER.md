@@ -1,13 +1,13 @@
-# Exact Bedrock 26.45 BlockActor NBT adapter
+# Exact Bedrock 26.51 BlockActor NBT adapter
 
 | BDS build | Endstone tag | Runtime result |
 |---|---|---|
-| 1.26.45 | v0.11.10 | accepted |
-| 1.26.45 with any other Endstone version | mismatch | refused; public adapter only |
+| 1.26.51 | v0.11.12 | accepted |
+| 1.26.51 with any other Endstone version | mismatch | refused; public adapter only |
 | anything else | none | refused |
 
 The native entry points and instruction fingerprints were verified against the
-official `1.26.45.1` Linux and Windows server executables. The source-release
+official `1.26.51.1` Linux and Windows server executables. The source-release
 metadata records the exact archive URLs and SHA-256 checksums. The downloaded
 server archives are not redistributed by this project.
 
@@ -39,13 +39,13 @@ Native plugins compiled for service ABI 2 load `endstone:blockdata:v2` through E
 Linux requires the same Clang/libc++ environment as Endstone:
 
 ```bash
-./scripts/build_exact.sh 1.26.45
+./scripts/build_exact.sh 1.26.51
 ```
 
 Windows requires clang-cl, CMake 3.29+ and Ninja:
 
 ```powershell
-./scripts/build_exact.ps1 -BdsBuild 1.26.45
+./scripts/build_exact.ps1 -BdsBuild 1.26.51
 ```
 
-Only BDS `1.26.45` with Endstone `v0.11.10` is supported. Back up the world before enabling native writes.
+Only BDS `1.26.51` with Endstone `v0.11.12` is supported. Back up the world before enabling native writes.

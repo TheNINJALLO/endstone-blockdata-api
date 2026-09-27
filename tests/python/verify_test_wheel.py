@@ -11,6 +11,7 @@ from email.parser import Parser
 import hashlib
 import importlib
 import io
+import os
 import json
 from pathlib import Path
 from pathlib import PurePosixPath
@@ -27,7 +28,7 @@ from endstone.plugin.plugin_loader import _build_commands, _build_permissions
 EXPECTED_ENTRY = "blockdata-inspector"
 EXPECTED_TARGET = "endstone_blockdata_inspector:BlockDataInspectorPlugin"
 EXPECTED_COMMANDS = {"bd"}
-EXPECTED_DEPENDENCIES = ["blockdata_api"]
+EXPECTED_DEPENDENCIES = []
 EXPECTED_PACKAGES = {"endstone_blockdata_inspector/", "endstone_blockdata/"}
 EXPECTED_API_MODULES = {
     "endstone_blockdata/__init__.py",
@@ -37,8 +38,8 @@ EXPECTED_API_MODULES = {
     "endstone_blockdata/service.py",
     "endstone_blockdata/storage_item.py",
 }
-EXPECTED_RUNTIME_DEPENDENCIES = ["endstone==0.11.10"]
-EXPECTED_VERSION = "0.6.3"
+EXPECTED_RUNTIME_DEPENDENCIES = ["endstone>=0.11.11"]
+EXPECTED_VERSION = "0.6.6"
 EXPECTED_BRIDGE = "_endstone_blockdata_live"
 SUPPORTED_TAGS = {
     "cp314-cp314-linux_x86_64": (".so", ".cpython-314-", b"\x7fELF"),
@@ -85,13 +86,14 @@ assert api.__version__ == {EXPECTED_VERSION!r}
 plugin_class = package.BlockDataInspectorPlugin
 assert plugin_class.api_version == "0.11"
 assert set(plugin_class.commands) == {{"bd"}}
-assert plugin_class.depend == ["blockdata_api"]
+assert plugin_class.depend == []
+assert plugin_class.provides == ["blockdata_api"]
 _build_commands(copy.deepcopy(plugin_class.commands))
 _build_permissions(copy.deepcopy(plugin_class.permissions))
 plugin_class()
 bridge = importlib.import_module("endstone_blockdata_inspector._endstone_blockdata_live")
 assert {{"available", "capabilities", "capture", "capture_region", "apply"}} <= set(dir(bridge))
-assert bridge.__version__ == api.__version__
+assert bridge.__version__ == plugin_class.version
 adapter = api.LiveBlockDataAdapter(None)
 assert adapter.bridge is bridge
 typed = {{
@@ -203,7 +205,16 @@ bridge_path = Path(bridge.__file__).resolve()
 package_path = (Path({json.dumps(str(site_packages))}) / "endstone_blockdata_inspector").resolve()
 assert bridge_path.is_relative_to(package_path), (bridge_path, package_path)
 """
-        subprocess.run([sys.executable, "-I", "-c", smoke], check=True)
+        # Match the real server's preloaded Endstone/LLVM unwinder. Mixing
+        # libgcc _Unwind_RaiseException with LLVM _Unwind_GetCFA can crash
+        # deliberate NBT validation exceptions in a standalone Python process.
+        smoke_env = os.environ.copy()
+        if sys.platform.startswith("linux"):
+            unwinders = list((runtime_site_packages / "endstone.libs").glob("libunwind-*.so*"))
+            if len(unwinders) == 1:
+                smoke_env["LD_PRELOAD"] = str(unwinders[0]) + " " + smoke_env.get("LD_PRELOAD", "")
+        subprocess.run([sys.executable, "-I", "-X", "faulthandler", "-c", smoke], check=True, env=smoke_env)
+
 
 
 def verify(wheel: Path, *, structure_only: bool = False) -> None:

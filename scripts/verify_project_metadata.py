@@ -93,7 +93,7 @@ def main() -> int:
                 r'^dependencies\s*=\s*\[\s*"([^"]+)"\s*,?\s*\]',
                 "test wheel dependency",
             ),
-            "endstone==0.11.10",
+            "endstone>=0.11.11",
         ),
         "test plugin version": (
             capture(config["wheel_plugin"], r'^\s+version\s*=\s*"([^"]+)"', "plugin version"),
@@ -146,13 +146,13 @@ def main() -> int:
     supported_bds = source.get("supported_bds", [])
     endstone_tags = source.get("endstone_tags", [])
     if slug == "endstone-blockdata-api":
-        if supported_bds != ["1.26.45"]:
+        if supported_bds != ["1.26.51"]:
             failures.append(
-                f"BlockData exact BDS support must be ['1.26.45'], got {supported_bds!r}"
+                f"BlockData exact BDS support must be ['1.26.51'], got {supported_bds!r}"
             )
-        if endstone_tags != ["v0.11.10"]:
+        if endstone_tags != ["v0.11.12"]:
             failures.append(
-                f"BlockData exact Endstone support must be ['v0.11.10'], got {endstone_tags!r}"
+                f"BlockData exact Endstone support must be ['v0.11.12'], got {endstone_tags!r}"
             )
         workflow_bds = source.get("github_actions", {}).get("bds")
         if workflow_bds != supported_bds:
@@ -161,20 +161,20 @@ def main() -> int:
             )
         expected_archives = {
             "linux-x64": {
-                "version": "1.26.45.1",
-                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.45.1.zip",
-                "sha256": "B0DB86098EE418A9BB226F6F3F51FF2BE36542236839375627B29AEF3DFA5CDA",
+                "version": "1.26.51.1",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.51.1.zip",
+                "sha256": "ad91d3b824e51ea50b5bb601c295cbd8f543a29b14315c2ad89ff27311e2d860",
             },
             "windows-x64": {
-                "version": "1.26.45.1",
-                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.45.1.zip",
-                "sha256": "B27216DD32D034F3BC5FBE3094A70D2B3CEC9A9871CA3D7B46A2B8690A1C0B14",
+                "version": "1.26.51.1",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.51.1.zip",
+                "sha256": "a1c1ebefde3036223234179f7c1eab4b445b4727f0482a0554818c9bcaf8e4a5",
             },
         }
         verified_archives = source.get("verified_bds_archives")
         if verified_archives != expected_archives:
             failures.append(
-                "verified BDS archive metadata does not match the exact 1.26.45.1 ABI inputs"
+                "verified BDS archive metadata does not match the exact 1.26.51.1 ABI inputs"
             )
     if len(supported_bds) != len(endstone_tags):
         failures.append("supported_bds and endstone_tags must have a one-to-one mapping")
