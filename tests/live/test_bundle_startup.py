@@ -34,7 +34,7 @@ class Probe(Plugin):
         result["antigrief_connected"]=connected
         result["antigrief_error"]=antigrief.error
         result["invalid_nbt_rejected"]=invalid_nbt_rejected
-        result["passed"]=connected and invalid_nbt_rejected and available and native._get_description().version==bridge.__version__=="0.6.6"
+        result["passed"]=connected and invalid_nbt_rejected and available and native._get_description().version==bridge.__version__=="0.6.7"
         Path({str(result)!r}).write_text(json.dumps(result,indent=2))
 '''
 with ZipFile(plugins/"endstone_bundle_probe-1.0.0-py3-none-any.whl","w") as z:

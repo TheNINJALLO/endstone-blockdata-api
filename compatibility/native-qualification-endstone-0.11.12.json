@@ -1,35 +1,33 @@
 {
   "schema_version": 1,
   "project": "endstone-blockdata-api",
-  "version": "0.6.7",
-  "created_at_utc": "2026-10-06T17:16:46.654570+00:00",
+  "version": "0.6.5",
+  "created_at_utc": "2026-09-20T22:40:21.171293+00:00",
   "platform": "linux-x64",
-  "game_version": "1.26.52",
-  "bds_package": "1.26.52.3",
-  "bds_runtime": "26.52",
-  "network_protocol": 2193,
-  "endstone": "0.11.13",
-  "endstone_source_commit": "3491c609ddfde392cee2b062e3063e39aae87274",
+  "game_version": "1.26.51",
+  "bds_package": "1.26.51.1",
+  "endstone": "0.11.12",
+  "endstone_source_commit": "1c71186cba896c5e0bc432384a8a8e72dfb2a626",
   "python_abi": "cp314",
   "compiler": "Clang 20.1.8 / libc++ 20",
   "passed": true,
   "cpp_tests_passed": 6,
   "clean_shutdown": true,
   "publication_status": "release",
-  "server_binary_unchanged": false,
+  "server_binary_unchanged": true,
   "artifacts": {
-    "endstone_blockdata_bds_1_26_52.so": {
-      "sha256": "7c8ad6349f63322b4ff7ece8c2586bcd005b66f26fe5e478a1322523c865c422",
-      "size_bytes": 6449376
+    "endstone_blockdata_bds_1_26_51.so": {
+      "sha256": "077531f3d168847dd84b9f8aea03224a05a6255260ff91a6ab9b0b470598749d",
+      "size_bytes": 6449328
     },
-    "endstone_blockdata_inspector-0.6.7-cp314-cp314-linux_x86_64.whl": {
-      "sha256": "7264e7d0f66ec622b217ec785835808d796ddc9b6b31593e562354b8b48f8dc4",
-      "size_bytes": 2335546
+    "endstone_blockdata_inspector-0.6.5-cp314-cp314-linux_x86_64.whl": {
+      "sha256": "c19c87f4562009f5bae0a0331d15966b19f97bfb1e40ec443d8dfa09fec7bd78",
+      "size_bytes": 238334
     }
   },
   "checks": [
     {
-      "test": "Endstone 0.11.13 startup",
+      "test": "Endstone 0.11.12 startup",
       "passed": true,
       "detail": null
     },
@@ -41,19 +39,19 @@
           "ok": true,
           "status": "applied",
           "message": "applied through public Endstone API",
-          "resulting_revision": 15165677825542284090
+          "resulting_revision": 17488383143248611636
         },
         "nbt": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 10701471913075389630
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 11207255155692342240
         },
         "inventory": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 12793868278320587419
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 14246444519194801599
         },
         "snapshot": {
           "location": {
@@ -68,12 +66,12 @@
             "facing_direction": 0,
             "open_bit": false
           },
-          "revision": 12793868278320587419,
+          "revision": 14246444519194801599,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:barrel",
             "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
+              "CustomName": "Native 1.26.51 qualification",
               "HasCustomName": 1,
               "Items": [
                 {
@@ -86,7 +84,7 @@
                 }
               ],
               "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 27,
               "id": "minecraft:barrel",
               "x": 0,
@@ -116,8 +114,8 @@
         "bundle": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 14610252863904311093
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 15398778263324188219
         },
         "bundle_snapshot": {
           "location": {
@@ -132,12 +130,12 @@
             "facing_direction": 0,
             "open_bit": false
           },
-          "revision": 14610252863904311093,
+          "revision": 15398778263324188219,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:barrel",
             "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
+              "CustomName": "Native 1.26.51 qualification",
               "HasCustomName": 1,
               "Items": [
                 {
@@ -611,7 +609,7 @@
                 }
               ],
               "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 27,
               "id": "minecraft:barrel",
               "x": 0,
@@ -1107,13 +1105,13 @@
           "ok": true,
           "status": "applied",
           "message": "applied through public Endstone API",
-          "resulting_revision": 7565504739569740472
+          "resulting_revision": 7588713237260147333
         },
         "shelf_item": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 5162031868012985797
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 8842775745109502947
         },
         "shelf_snapshot": {
           "location": {
@@ -1129,7 +1127,7 @@
             "powered_bit": false,
             "powered_shelf_type": 0
           },
-          "revision": 5162031868012985797,
+          "revision": 8842775745109502947,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:shelf",
@@ -1146,7 +1144,7 @@
                 }
               ],
               "_endstone_actor_type": 59,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 3,
               "id": "minecraft:shelf",
               "x": 0,
@@ -1191,25 +1189,24 @@
       "detail": []
     }
   ],
-  "previous_evidence": "compatibility/native-qualification-endstone-0.11.12.json",
   "live_report": {
     "block": {
       "ok": true,
       "status": "applied",
       "message": "applied through public Endstone API",
-      "resulting_revision": 15165677825542284090
+      "resulting_revision": 17488383143248611636
     },
     "nbt": {
       "ok": true,
       "status": "applied",
-      "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-      "resulting_revision": 10701471913075389630
+      "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+      "resulting_revision": 11207255155692342240
     },
     "inventory": {
       "ok": true,
       "status": "applied",
-      "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-      "resulting_revision": 12793868278320587419
+      "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+      "resulting_revision": 14246444519194801599
     },
     "snapshot": {
       "location": {
@@ -1224,12 +1221,12 @@
         "facing_direction": 0,
         "open_bit": false
       },
-      "revision": 12793868278320587419,
+      "revision": 14246444519194801599,
       "block_entity_status": "captured",
       "block_entity": {
         "type": "minecraft:barrel",
         "nbt": {
-          "CustomName": "Native 1.26.52 qualification",
+          "CustomName": "Native 1.26.51 qualification",
           "HasCustomName": 1,
           "Items": [
             {
@@ -1242,7 +1239,7 @@
             }
           ],
           "_endstone_actor_type": 42,
-          "_endstone_bds_build": "26.52",
+          "_endstone_bds_build": "26.51",
           "_endstone_container_size": 27,
           "id": "minecraft:barrel",
           "x": 0,
@@ -1272,8 +1269,8 @@
     "bundle": {
       "ok": true,
       "status": "applied",
-      "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-      "resulting_revision": 14610252863904311093
+      "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+      "resulting_revision": 15398778263324188219
     },
     "bundle_snapshot": {
       "location": {
@@ -1288,12 +1285,12 @@
         "facing_direction": 0,
         "open_bit": false
       },
-      "revision": 14610252863904311093,
+      "revision": 15398778263324188219,
       "block_entity_status": "captured",
       "block_entity": {
         "type": "minecraft:barrel",
         "nbt": {
-          "CustomName": "Native 1.26.52 qualification",
+          "CustomName": "Native 1.26.51 qualification",
           "HasCustomName": 1,
           "Items": [
             {
@@ -1767,7 +1764,7 @@
             }
           ],
           "_endstone_actor_type": 42,
-          "_endstone_bds_build": "26.52",
+          "_endstone_bds_build": "26.51",
           "_endstone_container_size": 27,
           "id": "minecraft:barrel",
           "x": 0,
@@ -2263,13 +2260,13 @@
       "ok": true,
       "status": "applied",
       "message": "applied through public Endstone API",
-      "resulting_revision": 7565504739569740472
+      "resulting_revision": 7588713237260147333
     },
     "shelf_item": {
       "ok": true,
       "status": "applied",
-      "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-      "resulting_revision": 5162031868012985797
+      "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+      "resulting_revision": 8842775745109502947
     },
     "shelf_snapshot": {
       "location": {
@@ -2285,7 +2282,7 @@
         "powered_bit": false,
         "powered_shelf_type": 0
       },
-      "revision": 5162031868012985797,
+      "revision": 8842775745109502947,
       "block_entity_status": "captured",
       "block_entity": {
         "type": "minecraft:shelf",
@@ -2302,7 +2299,7 @@
             }
           ],
           "_endstone_actor_type": 59,
-          "_endstone_bds_build": "26.52",
+          "_endstone_bds_build": "26.51",
           "_endstone_container_size": 3,
           "id": "minecraft:shelf",
           "x": 0,
@@ -2335,21 +2332,20 @@
     },
     "passed": true
   },
-  "python_tests_passed": 85,
-  "python_tests_log_sha256": "9fd1edc181017023439503783ffd7ebe65792b5c963611845edc67a2a1029df3",
+  "python_tests_passed": 81,
   "packaged_artifacts": {
-    "endstone_blockdata_bds_1_26_52.so": {
-      "sha256": "c62dc4209c04de4ed6fbf4a3b76ace4227e3c719b62ef924486c77aef7c8a878",
-      "size_bytes": 6449376
+    "endstone_blockdata_bds_1_26_51.so": {
+      "sha256": "fb156ff0f40c390017f99e83c4b9f46703bd73c7dec0b9474881fd3386fe1909",
+      "size_bytes": 6449328
     },
-    "endstone_blockdata_inspector-0.6.7-cp314-cp314-linux_x86_64.whl": {
-      "sha256": "0bcdf76d7f23951fbf896f35af7839e4d482dccd887dd609d1bac2c7cc9ae656",
-      "size_bytes": 2335352
+    "endstone_blockdata_inspector-0.6.5-cp314-cp314-linux_x86_64.whl": {
+      "sha256": "35d29babbb1b3663b7c43ed0c6d3f05d25632a2aff1d5e4ab34c17896bc7c95c",
+      "size_bytes": 238334
     }
   },
   "packaged_live_checks": [
     {
-      "test": "Endstone 0.11.13 startup",
+      "test": "Endstone 0.11.12 startup",
       "passed": true,
       "detail": null
     },
@@ -2361,19 +2357,19 @@
           "ok": true,
           "status": "applied",
           "message": "applied through public Endstone API",
-          "resulting_revision": 15165677825542284090
+          "resulting_revision": 17488383143248611636
         },
         "nbt": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 10701471913075389630
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 11207255155692342240
         },
         "inventory": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 12793868278320587419
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 14246444519194801599
         },
         "snapshot": {
           "location": {
@@ -2388,12 +2384,12 @@
             "facing_direction": 0,
             "open_bit": false
           },
-          "revision": 12793868278320587419,
+          "revision": 14246444519194801599,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:barrel",
             "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
+              "CustomName": "Native 1.26.51 qualification",
               "HasCustomName": 1,
               "Items": [
                 {
@@ -2406,7 +2402,7 @@
                 }
               ],
               "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 27,
               "id": "minecraft:barrel",
               "x": 0,
@@ -2436,8 +2432,8 @@
         "bundle": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 14610252863904311093
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 15398778263324188219
         },
         "bundle_snapshot": {
           "location": {
@@ -2452,12 +2448,12 @@
             "facing_direction": 0,
             "open_bit": false
           },
-          "revision": 14610252863904311093,
+          "revision": 15398778263324188219,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:barrel",
             "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
+              "CustomName": "Native 1.26.51 qualification",
               "HasCustomName": 1,
               "Items": [
                 {
@@ -2931,7 +2927,7 @@
                 }
               ],
               "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 27,
               "id": "minecraft:barrel",
               "x": 0,
@@ -3427,13 +3423,13 @@
           "ok": true,
           "status": "applied",
           "message": "applied through public Endstone API",
-          "resulting_revision": 7565504739569740472
+          "resulting_revision": 7588713237260147333
         },
         "shelf_item": {
           "ok": true,
           "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 5162031868012985797
+          "message": "applied canonical block-actor NBT through exact BDS 26.51 adapter",
+          "resulting_revision": 8842775745109502947
         },
         "shelf_snapshot": {
           "location": {
@@ -3449,7 +3445,7 @@
             "powered_bit": false,
             "powered_shelf_type": 0
           },
-          "revision": 5162031868012985797,
+          "revision": 8842775745109502947,
           "block_entity_status": "captured",
           "block_entity": {
             "type": "minecraft:shelf",
@@ -3466,7 +3462,7 @@
                 }
               ],
               "_endstone_actor_type": 59,
-              "_endstone_bds_build": "26.52",
+              "_endstone_bds_build": "26.51",
               "_endstone_container_size": 3,
               "id": "minecraft:shelf",
               "x": 0,
@@ -3511,5 +3507,7 @@
       "detail": []
     }
   ],
-  "release_tag": "v0.6.7"
+  "validation_scope": "Disposable server and offline tests; no connected-player session in this update.",
+  "python_tests_log_sha256": "06d942064c30ddd39d9906ab34b5df96e1de8ff2d030d9b7ebb4dbf01cc14d03",
+  "release_tag": "v0.6.5"
 }

@@ -74,7 +74,7 @@ public:
                          endstone_blockdata::BlockDataServiceName, caps.block_states, caps.block_writes,
                          caps.block_entity_nbt, caps.block_entity_nbt_write, caps.item_user_nbt,
                          caps.inventory, caps.canonical_actor_nbt, caps.raw_block_entity_nbt);
-        if (service_->adapterName() == "bds-26.51-exact-nbt") {
+        if (service_->adapterName() == "bds-26.52-exact-nbt") {
             getLogger().info(
                 "live_features storage_item_reads=true storage_item_writes=true shelf_reads=true shelf_writes=true");
         }

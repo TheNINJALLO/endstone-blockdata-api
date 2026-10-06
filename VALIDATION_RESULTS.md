@@ -1,3 +1,9 @@
+# Endstone 0.11.13 / BDS 1.26.52.3 validation
+
+6 CTest checks and 85 Python tests passed. The packaged native plugin and matching CPython 3.14 wheel passed live behavioral checks, save/query/resume, and clean shutdown in disposable servers.
+
+Evidence: `compatibility/native-qualification.json`. Network protocol remains 2193. Previous results below refer to earlier releases.
+
 # Endstone 0.11.12 validation
 
 Current evidence is in `compatibility/native-qualification.json`; the server remains BDS 1.26.51.1. The records below describe the previous 0.11.11 release.

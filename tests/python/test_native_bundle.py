@@ -13,13 +13,13 @@ class NativeBundleTests(unittest.TestCase):
         plugin_module = ModuleType('endstone.plugin')
         plugin_module.Plugin = object
         api_module = ModuleType('endstone_blockdata')
-        api_module.__version__ = '0.6.6'
+        api_module.__version__ = '0.6.7'
         source = Path(__file__).parents[2] / 'examples/python/block_data_inspector_plugin/src/endstone_blockdata_inspector/_native_loader.py'
         spec = spec_from_file_location('bundle_under_test', source)
         module = module_from_spec(spec)
         with patch.dict('sys.modules', {'endstone.plugin': plugin_module, 'endstone_blockdata': api_module}):
             spec.loader.exec_module(module)
-        plugin = SimpleNamespace(version="0.6.6")
+        plugin = SimpleNamespace(version="0.6.7")
         manager = SimpleNamespace(get_plugin=Mock(return_value=None), load_plugin=Mock(return_value=object()))
         plugin.server = SimpleNamespace(plugin_manager=manager)
         return module, plugin, manager
@@ -32,7 +32,7 @@ class NativeBundleTests(unittest.TestCase):
             native.mkdir()
             payload = native / 'provider.so'
             payload.write_bytes(b'fixture')
-            (native / 'manifest.json').write_text(json.dumps({'filename': payload.name, 'version': '0.6.6',
+            (native / 'manifest.json').write_text(json.dumps({'filename': payload.name, 'version': '0.6.7',
                                                              'sha256': hashlib.sha256(payload.read_bytes()).hexdigest()}))
             module.__file__ = str(root / '_native_loader.py')
             module.load_native_provider(plugin)
@@ -47,7 +47,7 @@ class NativeBundleTests(unittest.TestCase):
 
     def test_matching_existing_plugin_does_not_load_twice(self):
         module, plugin, manager = self.load()
-        manager.get_plugin.return_value = SimpleNamespace(_get_description=lambda: SimpleNamespace(version='0.6.6'))
+        manager.get_plugin.return_value = SimpleNamespace(_get_description=lambda: SimpleNamespace(version='0.6.7'))
         module.load_native_provider(plugin)
         manager.load_plugin.assert_not_called()
 
@@ -57,7 +57,7 @@ class NativeBundleTests(unittest.TestCase):
             native = Path(temporary) / 'native'
             native.mkdir()
             (native / 'provider.so').write_bytes(b'changed')
-            (native / 'manifest.json').write_text(json.dumps({'filename': 'provider.so', 'version': '0.6.6', 'sha256': 'bad'}))
+            (native / 'manifest.json').write_text(json.dumps({'filename': 'provider.so', 'version': '0.6.7', 'sha256': 'bad'}))
             module.__file__ = str(native.parent / '_native_loader.py')
             with self.assertRaisesRegex(RuntimeError, 'checksum mismatch'):
                 module.load_native_provider(plugin)

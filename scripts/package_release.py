@@ -16,7 +16,7 @@ PROJECTS = {
         "slug": "endstone-blockdata-api",
         "plugin_prefix": "endstone_blockdata_bds_",
         "wheel_prefix": "endstone_blockdata_inspector",
-        "supported_bds": {"1.26.51"},
+        "supported_bds": {"1.26.52"},
     },
     "worldgen": {
         "slug": "endstone-worldgen-api",

@@ -1,0 +1,76 @@
+{
+  "project": "endstone-blockdata-api",
+  "schema_version": 1,
+  "game_version": "1.26.52",
+  "bds_package": "1.26.52.3",
+  "bds_runtime": "26.52",
+  "bds_runtime_status": "BDS 1.26.52.3 / runtime 26.52; unchanged network protocol 2193",
+  "endstone": {
+    "minimum_version": "0.11.11",
+    "requirement": ">=0.11.11",
+    "maximum_version": null,
+    "api_version": "0.11",
+    "build_version": "0.11.13",
+    "source_tag": "v0.11.13",
+    "source_commit": "3491c609ddfde392cee2b062e3063e39aae87274",
+    "source_repository": "https://github.com/EndstoneMC/endstone.git",
+    "source_symbol_tables": {
+      "linux": {
+        "path": "src/bedrock/symbols/linux.h",
+        "sha256_lf": "209790a138bf58852af81d8adac35f9b907696c978f8eea37669b07bf1b56621"
+      },
+      "windows": {
+        "path": "src/bedrock/symbols/windows.h",
+        "sha256_lf": "72c50bc777477361f56c490e0cd027b314ecbae17580a6dfc781b89cefbddedb"
+      }
+    }
+  },
+  "status": "qualified-linux-x64",
+  "server_files": {
+    "linux-x64": {
+      "archive": {
+        "filename": "bedrock-server-linux-1.26.52.3.zip",
+        "sha256": "f6348d84fa714d04ca194f207e89453ca6bba0a1359396475271a52a150471c6",
+        "size_bytes": 94927522
+      },
+      "executable": {
+        "filename": "bedrock_server",
+        "sha256": "0a490c711d4a2ce075debcd979e8862b7eaba008373f9970f0edbb67f98f9207",
+        "size_bytes": 256133808,
+        "format": "ELF64",
+        "gnu_build_id": "c0ff36e2eacfc191f01e189237df71f139b5d04a"
+      }
+    },
+    "windows-x64": {
+      "archive": {
+        "filename": "bedrock-server-windows-1.26.52.3.zip",
+        "sha256": "2c9b98d07d2504786996f2335980e88bd969b4a77514925e75471a1349995825",
+        "size_bytes": 85766941
+      },
+      "executable": {
+        "filename": "bedrock_server.exe",
+        "sha256": "19c88569af2e4b7d984e999055a31cbcb0799dacf8bbbf7371eda42f5772a443",
+        "size_bytes": 223223112,
+        "format": "PE32+"
+      }
+    }
+  },
+  "provenance": {
+    "server_metadata_url": "https://raw.githubusercontent.com/EndstoneMC/bedrock-server-data/v2/release/1.26.52/metadata.json",
+    "download_urls": {
+      "linux-x64": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.52.3.zip",
+      "windows-x64": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.52.3.zip"
+    },
+    "archive_checksums_verified": true
+  },
+  "qualification_required": [],
+  "policy": "Endstone dependency has no upper version bound. Native hooks remain exact-build gated until independently qualified; matching server files and SDK identification do not qualify the native adapter.",
+  "qualified_platforms": [
+    "linux-x64"
+  ],
+  "unqualified_platforms": {
+    "windows-x64": "Native adapter port and live qualification required before release"
+  },
+  "qualification_evidence": "compatibility/native-qualification.json",
+  "network_protocol": 2193
+}
