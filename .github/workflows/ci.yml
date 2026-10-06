@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASE_VERSION: 0.6.6
+  RELEASE_VERSION: 0.6.7
   PROJECT_SLUG: endstone-blockdata-api
 
 jobs:
@@ -67,7 +67,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             platform: linux-x64
-            bds: "1.26.51"
+            bds: "1.26.52"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
@@ -84,7 +84,7 @@ jobs:
           "build==1.4.0"
           "setuptools==80.9.0"
           "wheel==0.46.3"
-          "endstone==0.11.12"
+          "endstone==0.11.13"
 
       - name: Install Linux compiler toolchain
         if: runner.os == 'Linux'
@@ -221,7 +221,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install Endstone runtime dependency
-        run: python -m pip install "endstone==0.11.12"
+        run: python -m pip install "endstone==0.11.13"
       - name: Install local Python package
         run: python -m pip install -e .
       - name: Download the exact-built Linux command wheel
@@ -291,7 +291,7 @@ jobs:
           python scripts/verify_combined_release_assets.py
           --slug "${{ env.PROJECT_SLUG }}"
           --version "${{ env.RELEASE_VERSION }}"
-          --bds "1.26.51"
+          --bds "1.26.52"
           --release-dir release-assets
           --platform linux-x64
       - name: Generate combined checksums
@@ -316,8 +316,7 @@ jobs:
             edit_flags=(--prerelease --latest=false)
           fi
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release-assets/* --clobber
-            gh release edit "$RELEASE_TAG" "${edit_flags[@]}"
+            echo "Release already exists; preserving its qualified assets."
           else
             gh release create "$RELEASE_TAG" release-assets/* \
               --verify-tag --generate-notes "${create_flags[@]}" \

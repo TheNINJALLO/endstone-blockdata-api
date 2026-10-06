@@ -79,13 +79,13 @@ def main() -> int:
     if len(wheels) != 1:
         raise SystemExit("Expected exactly one portable API wheel")
     verify_wheel(wheels[0], source)
-    shutil.copyfile(ROOT / "compatibility/bds-1.26.51.json", output / "bds-1.26.51.json")
+    shutil.copyfile(ROOT / "compatibility/bds-1.26.52.json", output / "bds-1.26.52.json")
     hashes = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
               for path in sorted(output.iterdir())}
     manifest = {"project": source["name"], "version": source["version"],
                 "python_version": source["python_version"], "git_commit": commit,
                 "tag": tag, "release_channel": source["release_channel"],
-                "native_release_ready": False, "game_version": "1.26.51",
+                "native_release_ready": False, "game_version": "1.26.52",
                 "endstone_requirement": source["endstone_requirement"],
                 "assets_sha256": hashes}
     (output / "COMPATIBILITY_RELEASE.json").write_text(

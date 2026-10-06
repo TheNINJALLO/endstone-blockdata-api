@@ -146,13 +146,13 @@ def main() -> int:
     supported_bds = source.get("supported_bds", [])
     endstone_tags = source.get("endstone_tags", [])
     if slug == "endstone-blockdata-api":
-        if supported_bds != ["1.26.51"]:
+        if supported_bds != ["1.26.52"]:
             failures.append(
-                f"BlockData exact BDS support must be ['1.26.51'], got {supported_bds!r}"
+                f"BlockData exact BDS support must be ['1.26.52'], got {supported_bds!r}"
             )
-        if endstone_tags != ["v0.11.12"]:
+        if endstone_tags != ["v0.11.13"]:
             failures.append(
-                f"BlockData exact Endstone support must be ['v0.11.12'], got {endstone_tags!r}"
+                f"BlockData exact Endstone support must be ['v0.11.13'], got {endstone_tags!r}"
             )
         workflow_bds = source.get("github_actions", {}).get("bds")
         if workflow_bds != supported_bds:
@@ -161,20 +161,20 @@ def main() -> int:
             )
         expected_archives = {
             "linux-x64": {
-                "version": "1.26.51.1",
-                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.51.1.zip",
-                "sha256": "ad91d3b824e51ea50b5bb601c295cbd8f543a29b14315c2ad89ff27311e2d860",
+                "version": "1.26.52.3",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.52.3.zip",
+                "sha256": "f6348d84fa714d04ca194f207e89453ca6bba0a1359396475271a52a150471c6",
             },
             "windows-x64": {
-                "version": "1.26.51.1",
-                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.51.1.zip",
-                "sha256": "a1c1ebefde3036223234179f7c1eab4b445b4727f0482a0554818c9bcaf8e4a5",
+                "version": "1.26.52.3",
+                "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.52.3.zip",
+                "sha256": "2c9b98d07d2504786996f2335980e88bd969b4a77514925e75471a1349995825",
             },
         }
         verified_archives = source.get("verified_bds_archives")
         if verified_archives != expected_archives:
             failures.append(
-                "verified BDS archive metadata does not match the exact 1.26.51.1 ABI inputs"
+                "verified BDS archive metadata does not match the exact 1.26.52.3 ABI inputs"
             )
     if len(supported_bds) != len(endstone_tags):
         failures.append("supported_bds and endstone_tags must have a one-to-one mapping")

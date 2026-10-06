@@ -1,20 +1,18 @@
 # Build status
 
-Version: **0.6.6**
+Version: **0.6.7**
 
-Release target: Endstone **0.11.12**, BDS package
-1.26.51.1/runtime 26.51, and CPython 3.14 on Linux x86-64.
+Release target: Endstone **0.11.13**, Minecraft **1.26.52**,
+BDS package
+1.26.52.3/runtime 26.52, and CPython **3.14** on Linux x86-64.
+Network protocol remains **2193**.
 
-Pinned SDK commit: `1c71186cba896c5e0bc432384a8a8e72dfb2a626`. BDS executables, archive hashes, and native BDS addresses are unchanged.
+SDK commit: `3491c609ddfde392cee2b062e3063e39aae87274`.
 
-## Validation
+Native addresses and binary guards have been refreshed. Native builds and disposable live qualification passed. Native C++ and Python test suites passed (6 CTest checks and 85 Python tests) and are recorded in `compatibility/native-qualification.json`.
+See `compatibility/bds-1.26.52.json` and `compatibility/native-qualification.json`.
 
-Block replacement, canonical NBT, inventory and bundle read/write, shelf read/write, invalid-state rejection, save/resume, and shutdown.
+The package dependency remains `endstone>=0.11.11`. Private native hooks require the exact verified binary pair.
 
-Native C++ and Python test suites and disposable-server evidence are recorded in `compatibility/native-qualification.json`.
-
-Endstone package metadata accepts **>=0.11.11** without an upper bound. Native hooks remain gated to the exact qualified runtime.
-
-## Publication
-
-Release: [v0.6.6](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.6). The previous [v0.6.4 release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.4) and its 0.11.11 qualification remain historical records.
+Release: [v0.6.7](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.7). Previous Endstone 0.11.12 qualification is preserved in
+`compatibility/native-qualification-endstone-0.11.12.json`.

@@ -1,0 +1,1479 @@
+{
+  "endstone": "0.11.13",
+  "previous_endstone": "0.11.12",
+  "source_commit": "3491c609ddfde392cee2b062e3063e39aae87274",
+  "game_version": "1.26.52",
+  "bds_package": "1.26.52.3",
+  "network_protocol": 2193,
+  "protocol_changed": false,
+  "bds_files_unchanged": false,
+  "binary_identities": {
+    "EndstoneOffsets": {
+      "sha256": "1d7b8d5bdd72924829eb8f8a3c91ed0e9f6f0a028f50914bc1d86f088f66e225",
+      "size_bytes": 79715177,
+      "gnu_build_id": "b5e1d52bb2f4a3f8cfd793e2ad632377d8da7b3a"
+    },
+    "BdsOffsets": {
+      "sha256": "0a490c711d4a2ce075debcd979e8862b7eaba008373f9970f0edbb67f98f9207",
+      "size_bytes": 256133808,
+      "gnu_build_id": "c0ff36e2eacfc191f01e189237df71f139b5d04a"
+    }
+  },
+  "upstream_release": "https://github.com/EndstoneMC/endstone/releases/tag/v0.11.13",
+  "qualification_evidence": "compatibility/native-qualification.json",
+  "native_relocation_evidence": {
+    "bds": {
+      "0x1707ae6": {
+        "candidates": [
+          "0x1707ae6"
+        ],
+        "reason": "string:21CatchFireSubcomponent",
+        "instructions_identical": false
+      },
+      "0x402d3d0": {
+        "candidates": [
+          "0x402d450"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0x402d4a0": {
+        "candidates": [
+          "0x402d520"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0x51a37b0": {
+        "candidates": [
+          "0x51a3830"
+        ],
+        "reason": "instructions:224",
+        "instructions_identical": true
+      },
+      "0x6d6f22d": {
+        "candidates": [
+          "0x6d6f2ad"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d6f412": {
+        "candidates": [
+          "0x6d6f492"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d71850": {
+        "candidates": [
+          "0x6d718d0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d71af0": {
+        "candidates": [
+          "0x6d71b70"
+        ],
+        "reason": "instructions:320",
+        "instructions_identical": true
+      },
+      "0x6d71bf5": {
+        "candidates": [
+          "0x6d71c75"
+        ],
+        "reason": "instructions:59",
+        "instructions_identical": true
+      },
+      "0x6d71c30": {
+        "candidates": [
+          "0x6d71cb0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d76410": {
+        "candidates": [
+          "0x6d76490"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d76442": {
+        "candidates": [
+          "0x6d764c2"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6d76855": {
+        "candidates": [
+          "0x6d768d5"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x6dc2c00": {
+        "candidates": [
+          "0x6dc2c80"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x6f342a0": {
+        "candidates": [
+          "0x6f34320"
+        ],
+        "reason": "instructions:48",
+        "instructions_identical": true
+      },
+      "0x7077630": {
+        "candidates": [
+          "0x70776b0"
+        ],
+        "reason": "instructions:128",
+        "instructions_identical": true
+      },
+      "0x7120d50": {
+        "candidates": [
+          "0x7120dd0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x7120d60": {
+        "candidates": [
+          "0x7120de0"
+        ],
+        "reason": "instructions:176",
+        "instructions_identical": true
+      },
+      "0x7120e10": {
+        "candidates": [
+          "0x7120e90"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x748e6a0": {
+        "candidates": [
+          "0x748ea90"
+        ],
+        "reason": "instructions:208",
+        "instructions_identical": true
+      },
+      "0x82a9e00": {
+        "candidates": [
+          "0x82aa1f0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0x8a13840": {
+        "candidates": [
+          "0x8a13c30"
+        ],
+        "reason": "instructions:160",
+        "instructions_identical": true
+      },
+      "0x98abfe0": {
+        "candidates": [
+          "0x98ac3d0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x98ac120": {
+        "candidates": [
+          "0x98ac510"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x98ac260": {
+        "candidates": [
+          "0x98ac650"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x9929e90": {
+        "candidates": [
+          "0x992a280"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0x9929f00": {
+        "candidates": [
+          "0x992a2f0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xaf4cbc0": {
+        "candidates": [
+          "0xaf4cfb0"
+        ],
+        "reason": "instructions:240",
+        "instructions_identical": true
+      },
+      "0xb2c6f10": {
+        "candidates": [
+          "0xb2c7300"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xb2d5400": {
+        "candidates": [
+          "0xb2d57f0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xb330010": {
+        "candidates": [
+          "0xb330400"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xb4a91f0": {
+        "candidates": [
+          "0xb4a95e0"
+        ],
+        "reason": "instructions:160",
+        "instructions_identical": true
+      },
+      "0xba8a060": {
+        "candidates": [
+          "0xba8a450"
+        ],
+        "reason": "instructions:256",
+        "instructions_identical": true
+      },
+      "0xba8bf5a": {
+        "candidates": [
+          "0xba8c34a"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xba8bf8d": {
+        "candidates": [
+          "0xba8c37d"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xba8c540": {
+        "candidates": [
+          "0xba8c930"
+        ],
+        "reason": "instructions:336",
+        "instructions_identical": true
+      },
+      "0xba98320": {
+        "candidates": [
+          "0xba98710"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xbaadab0": {
+        "candidates": [
+          "0xbaadea0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbaaf2b0": {
+        "candidates": [
+          "0xbaaf6a0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbb09eb0": {
+        "candidates": [
+          "0xbb0a2a0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xbb5a250": {
+        "candidates": [
+          "0xbb5a640"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xbe5ec40": {
+        "candidates": [
+          "0xbe5f060"
+        ],
+        "reason": "instructions:48",
+        "instructions_identical": true
+      },
+      "0xbe5fad0": {
+        "candidates": [
+          "0xbe5fef0"
+        ],
+        "reason": "instructions:80",
+        "instructions_identical": true
+      },
+      "0xbe60390": {
+        "candidates": [
+          "0xbe607b0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbe603d7": {
+        "candidates": [
+          "0xbe607f7"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbe60a39": {
+        "candidates": [
+          "0xbe60e59"
+        ],
+        "reason": "instructions:167",
+        "instructions_identical": true
+      },
+      "0xbe60a52": {
+        "candidates": [
+          "0xbe60e72"
+        ],
+        "reason": "instructions:142",
+        "instructions_identical": true
+      },
+      "0xbf22670": {
+        "candidates": [
+          "0xbf22a90"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbf22930": {
+        "candidates": [
+          "0xbf22d50"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xbf32970": {
+        "candidates": [
+          "0xbf32d90"
+        ],
+        "reason": "instructions:112",
+        "instructions_identical": true
+      },
+      "0xbf329e0": {
+        "candidates": [
+          "0xbf32e00"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc34f250": {
+        "candidates": [
+          "0xc34f670"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc355ea0": {
+        "candidates": [
+          "0xc3562c0"
+        ],
+        "reason": "instructions:336",
+        "instructions_identical": true
+      },
+      "0xc3870c0": {
+        "candidates": [
+          "0xc3874e0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc4413b0": {
+        "candidates": [
+          "0xc4417d0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc452c10": {
+        "candidates": [
+          "0xc453030"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc452f07": {
+        "candidates": [
+          "0xc453327"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc452f3d": {
+        "candidates": [
+          "0xc45335d"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc4530f0": {
+        "candidates": [
+          "0xc453510"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc4537b0": {
+        "candidates": [
+          "0xc453bd0"
+        ],
+        "reason": "instructions:352",
+        "instructions_identical": true
+      },
+      "0xc453910": {
+        "candidates": [
+          "0xc453d30"
+        ],
+        "reason": "instructions:112",
+        "instructions_identical": true
+      },
+      "0xc453a50": {
+        "candidates": [
+          "0xc453e70"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc453c8d": {
+        "candidates": [
+          "0xc4540ad"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc453ca2": {
+        "candidates": [
+          "0xc4540c2"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc454d60": {
+        "candidates": [
+          "0xc455180"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc455b00": {
+        "candidates": [
+          "0xc455f20"
+        ],
+        "reason": "instructions:256",
+        "instructions_identical": true
+      },
+      "0xc45e790": {
+        "candidates": [
+          "0xc45ebb0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc45ee2e": {
+        "candidates": [
+          "0xc45f24e"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc460e50": {
+        "candidates": [
+          "0xc461270"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46af80": {
+        "candidates": [
+          "0xc46b3a0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc46af90": {
+        "candidates": [
+          "0xc46b3b0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46b34d": {
+        "candidates": [
+          "0xc46b76d"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46bf7c": {
+        "candidates": [
+          "0xc46c39c"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46bf9f": {
+        "candidates": [
+          "0xc46c3bf"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46bfcd": {
+        "candidates": [
+          "0xc46c3ed"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46bfe7": {
+        "candidates": [
+          "0xc46c407"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46bfec": {
+        "candidates": [
+          "0xc46c40c"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c05a": {
+        "candidates": [
+          "0xc46c47a"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c4f0": {
+        "candidates": [
+          "0xc46c910"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c4f5": {
+        "candidates": [
+          "0xc46c915"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c6e5": {
+        "candidates": [
+          "0xc46cb05"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c6ea": {
+        "candidates": [
+          "0xc46cb0a"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46c713": {
+        "candidates": [
+          "0xc46cb33"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc46cb90": {
+        "candidates": [
+          "0xc46cfb0"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc46cca0": {
+        "candidates": [
+          "0xc46d0c0"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc46ce00": {
+        "candidates": [
+          "0xc46d220"
+        ],
+        "reason": "instructions:144",
+        "instructions_identical": true
+      },
+      "0xc46f550": {
+        "candidates": [
+          "0xc46f970"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc4771cb": {
+        "candidates": [
+          "0xc4775eb"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc4771d7": {
+        "candidates": [
+          "0xc4775f7"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc4771fa": {
+        "candidates": [
+          "0xc47761a"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc47730a": {
+        "candidates": [
+          "0xc47772a"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc483127": {
+        "candidates": [
+          "0xc483547"
+        ],
+        "reason": "instructions:73",
+        "instructions_identical": true
+      },
+      "0xc497730": {
+        "candidates": [
+          "0xc497b50"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc49d5e0": {
+        "candidates": [
+          "0xc49da00"
+        ],
+        "reason": "instructions:32",
+        "instructions_identical": true
+      },
+      "0xc7f2350": {
+        "candidates": [
+          "0xc7f2770"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc7f2384": {
+        "candidates": [
+          "0xc7f27a4"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc7f25cb": {
+        "candidates": [
+          "0xc7f29eb"
+        ],
+        "reason": "instructions:245",
+        "instructions_identical": true
+      },
+      "0xc7f2609": {
+        "candidates": [
+          "0xc7f2a29"
+        ],
+        "reason": "instructions:183",
+        "instructions_identical": true
+      },
+      "0xc7f264b": {
+        "candidates": [
+          "0xc7f2a6b"
+        ],
+        "reason": "instructions:117",
+        "instructions_identical": true
+      },
+      "0xc8a0480": {
+        "candidates": [
+          "0xc8a08a0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc8a3a90": {
+        "candidates": [
+          "0xc8a3eb0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc8c6600": {
+        "candidates": [
+          "0xc8c6a20"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc8c7850": {
+        "candidates": [
+          "0xc8c7c70"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc8c87b0": {
+        "candidates": [
+          "0xc8c8bd0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc8d0ce0": {
+        "candidates": [
+          "0xc8d1100"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc8d40a0": {
+        "candidates": [
+          "0xc8d44c0"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xc8e27f0": {
+        "candidates": [
+          "0xc8e2c10"
+        ],
+        "reason": "instructions:176",
+        "instructions_identical": true
+      },
+      "0xc919df0": {
+        "candidates": [
+          "0xc91a210"
+        ],
+        "reason": "instructions:256",
+        "instructions_identical": true
+      },
+      "0xc91a170": {
+        "candidates": [
+          "0xc91a590"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc91a1b0": {
+        "candidates": [
+          "0xc91a5d0"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc91a250": {
+        "candidates": [
+          "0xc91a670"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a260": {
+        "candidates": [
+          "0xc91a680"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a270": {
+        "candidates": [
+          "0xc91a690"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a280": {
+        "candidates": [
+          "0xc91a6a0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a290": {
+        "candidates": [
+          "0xc91a6b0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a2a0": {
+        "candidates": [
+          "0xc91a6c0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91a2b0": {
+        "candidates": [
+          "0xc91a6d0"
+        ],
+        "reason": "instruction neighborhood:2048",
+        "instructions_identical": true
+      },
+      "0xc91a2c0": {
+        "candidates": [
+          "0xc91a6e0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xc91ac10": {
+        "candidates": [
+          "0xc91b030"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xc91c6f0": {
+        "candidates": [
+          "0xc91cb10"
+        ],
+        "reason": "instructions:80",
+        "instructions_identical": true
+      },
+      "0xc969a30": {
+        "candidates": [
+          "0xc969e50"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xca0a330": {
+        "candidates": [
+          "0xca0a750"
+        ],
+        "reason": "vtable ordinal and instruction position",
+        "instructions_identical": true
+      },
+      "0xca0a660": {
+        "candidates": [
+          "0xca0aa80"
+        ],
+        "reason": "instructions:128",
+        "instructions_identical": true
+      },
+      "0xca2c930": {
+        "candidates": [
+          "0xca2cd50"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xca310c0": {
+        "candidates": [
+          "0xca314e0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xca33dd0": {
+        "candidates": [
+          "0xca341f0"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xca35440": {
+        "candidates": [
+          "0xca35860"
+        ],
+        "reason": "instructions:384",
+        "instructions_identical": true
+      },
+      "0xca3a990": {
+        "candidates": [
+          "0xca3adb0"
+        ],
+        "reason": "instructions:48",
+        "instructions_identical": true
+      },
+      "0xca3a9c0": {
+        "candidates": [
+          "0xca3ade0"
+        ],
+        "reason": "instructions:48",
+        "instructions_identical": true
+      },
+      "0xcd3ed80": {
+        "candidates": [
+          "0xcd3f1a0"
+        ],
+        "reason": "instructions:16",
+        "instructions_identical": true
+      },
+      "0xd09a530": {
+        "candidates": [
+          "0xd09a950"
+        ],
+        "reason": "instructions:144",
+        "instructions_identical": true
+      },
+      "0xd0e0030": {
+        "candidates": [
+          "0xd0e0450"
+        ],
+        "reason": "instructions:240",
+        "instructions_identical": true
+      },
+      "0xef93430": {
+        "candidates": [
+          "0xef93850"
+        ],
+        "reason": "typeinfo:21CatchFireSubcomponent",
+        "instructions_identical": false
+      },
+      "0xefa6aa0": {
+        "candidates": [
+          "0xefa6ec0"
+        ],
+        "reason": "vtable:21CatchFireSubcomponent",
+        "instructions_identical": false
+      },
+      "0xefb5c88": {
+        "candidates": [
+          "0xefb60a8"
+        ],
+        "reason": "vtable:9DataItem2IlE",
+        "instructions_identical": false
+      },
+      "0xefbf4f0": {
+        "candidates": [
+          "0xefbf910"
+        ],
+        "reason": "three relocated callback operation pointers",
+        "instructions_identical": false
+      },
+      "0xf011188": {
+        "candidates": [
+          "0xf0115a8"
+        ],
+        "reason": "vtable:26PlayerEnchantOptionsPacket",
+        "instructions_identical": false
+      },
+      "0xf0caf88": {
+        "candidates": [
+          "0xf0cb3a8"
+        ],
+        "reason": "vtable:25ScriptItemGameplayHandler",
+        "instructions_identical": false
+      },
+      "0xf0cb210": {
+        "candidates": [
+          "0xf0cb630"
+        ],
+        "reason": "vtable:27ScriptPlayerGameplayHandler",
+        "instructions_identical": false
+      },
+      "0xf0cb9b8": {
+        "candidates": [
+          "0xf0cbdd8"
+        ],
+        "reason": "vtable:26ScriptLevelGameplayHandler",
+        "instructions_identical": false
+      },
+      "0xf0cef78": {
+        "candidates": [
+          "0xf0cf398"
+        ],
+        "reason": "vtable:26ScriptActorGameplayHandler",
+        "instructions_identical": false
+      },
+      "0xf0d1f78": {
+        "candidates": [
+          "0xf0d2398"
+        ],
+        "reason": "vtable:20EmptyGameplayHandlerI21PlayerGameplayHandlerE",
+        "instructions_identical": false
+      },
+      "0xf0d25b8": {
+        "candidates": [
+          "0xf0d29d8"
+        ],
+        "reason": "vtable:20EmptyGameplayHandlerI20ActorGameplayHandlerE",
+        "instructions_identical": false
+      },
+      "0xf0d2810": {
+        "candidates": [
+          "0xf0d2c30"
+        ],
+        "reason": "vtable:20EmptyGameplayHandlerI19ItemGameplayHandlerE",
+        "instructions_identical": false
+      },
+      "0xf1a7720": {
+        "candidates": [
+          "0xf1a7b40"
+        ],
+        "reason": "typeinfo:29ActorDamageByChildActorSource",
+        "instructions_identical": false
+      },
+      "0xf1b9020": {
+        "candidates": [
+          "0xf1b9440"
+        ],
+        "reason": "vtable:29ActorDamageByChildActorSource",
+        "instructions_identical": false
+      },
+      "0xf200bd8": {
+        "candidates": [
+          "0xf200ff8"
+        ],
+        "reason": "vtable:31EnchantingContainerManagerModel",
+        "instructions_identical": false
+      },
+      "0xf204998": {
+        "candidates": [
+          "0xf204db8"
+        ],
+        "reason": "vtable:13ThrownTrident",
+        "instructions_identical": false
+      },
+      "0xf208740": {
+        "candidates": [
+          "0xf208b60"
+        ],
+        "reason": "vtable:13SmallFireball",
+        "instructions_identical": false
+      },
+      "0xf208c30": {
+        "candidates": [
+          "0xf209050"
+        ],
+        "reason": "typeinfo:13SmallFireball",
+        "instructions_identical": false
+      },
+      "0xf217dc0": {
+        "candidates": [
+          "0xf2181e0"
+        ],
+        "reason": "vtable:9ItemActor",
+        "instructions_identical": false
+      },
+      "0xf247028": {
+        "candidates": [
+          "0xf247448"
+        ],
+        "reason": "vtable:11FishingHook",
+        "instructions_identical": false
+      },
+      "0xf271988": {
+        "candidates": [
+          "0xf271da8"
+        ],
+        "reason": "vtable:9ItemStack",
+        "instructions_identical": false
+      },
+      "0xf272668": {
+        "candidates": [
+          "0xf272a88"
+        ],
+        "reason": "vtable:14FishingRodItem",
+        "instructions_identical": false
+      },
+      "0xf287ed8": {
+        "candidates": [
+          "0xf2882f8"
+        ],
+        "reason": "vtable:19CraftHandlerEnchant",
+        "instructions_identical": false
+      },
+      "0xf287f28": {
+        "candidates": [
+          "0xf288348"
+        ],
+        "reason": "vtable:22CraftHandlerGrindstone",
+        "instructions_identical": false
+      },
+      "0xf288478": {
+        "candidates": [
+          "0xf288898"
+        ],
+        "reason": "vtable:29AnvilContainerScreenValidator",
+        "instructions_identical": false
+      },
+      "0xf288d88": {
+        "candidates": [
+          "0xf2891a8"
+        ],
+        "reason": "typeinfo:29AnvilContainerScreenValidator",
+        "instructions_identical": false
+      },
+      "0xf28b118": {
+        "candidates": [
+          "0xf28b538"
+        ],
+        "reason": "vtable:8GameMode",
+        "instructions_identical": false
+      },
+      "0xf28b1d0": {
+        "candidates": [
+          "0xf28b5f0"
+        ],
+        "reason": "vtable:12SurvivalMode",
+        "instructions_identical": false
+      },
+      "0xf28bcb8": {
+        "candidates": [
+          "0xf28c0d8"
+        ],
+        "reason": "typeinfo:8GameMode",
+        "instructions_identical": false
+      },
+      "0xf28bcf0": {
+        "candidates": [
+          "0xf28c110"
+        ],
+        "reason": "typeinfo:12SurvivalMode",
+        "instructions_identical": false
+      },
+      "0xf2e55d8": {
+        "candidates": [
+          "0xf2e59f8"
+        ],
+        "reason": "vtable:20EmptyGameplayHandlerI20LevelGameplayHandlerE",
+        "instructions_identical": false
+      },
+      "0xf2ea0e0": {
+        "candidates": [
+          "0xf2ea500"
+        ],
+        "reason": "vtable:14BedrockSpawner",
+        "instructions_identical": false
+      },
+      "0xf2ea2f0": {
+        "candidates": [
+          "0xf2ea710"
+        ],
+        "reason": "vtable:11BlockSource",
+        "instructions_identical": false
+      },
+      "0xf2ea6e0": {
+        "candidates": [
+          "0xf2eab00"
+        ],
+        "reason": "typeinfo:14BedrockSpawner",
+        "instructions_identical": false
+      },
+      "0xf2eb038": {
+        "candidates": [
+          "0xf2eb458"
+        ],
+        "reason": "typeinfo:11BlockSource",
+        "instructions_identical": false
+      },
+      "0xf2eb290": {
+        "candidates": [
+          "0xf2eb6b0"
+        ],
+        "reason": "vtable:18MerchantRecipeList",
+        "instructions_identical": false
+      },
+      "0xf2ef6c0": {
+        "candidates": [
+          "0xf2efae0"
+        ],
+        "reason": "vtable:15MainChunkSource",
+        "instructions_identical": false
+      },
+      "0xf30f388": {
+        "candidates": [
+          "0xf30f7a8"
+        ],
+        "reason": "vtable:20MobSpawnerBlockActor",
+        "instructions_identical": false
+      },
+      "0xf30f5d0": {
+        "candidates": [
+          "0xf30f9f0"
+        ],
+        "reason": "vtable:20MobSpawnerBlockActor",
+        "instructions_identical": false
+      },
+      "0xf30f788": {
+        "candidates": [
+          "0xf30fba8"
+        ],
+        "reason": "vtable:17DefaultMobSpawner",
+        "instructions_identical": false
+      },
+      "0xf314f68": {
+        "candidates": [
+          "0xf315388"
+        ],
+        "reason": "typeinfo:20MobSpawnerBlockActor",
+        "instructions_identical": false
+      },
+      "0xf314f80": {
+        "candidates": [
+          "0xf3153a0"
+        ],
+        "reason": "typeinfo:17DefaultMobSpawner",
+        "instructions_identical": false
+      }
+    },
+    "endstone": {
+      "0xfe230": {
+        "candidates": [
+          "0x102750"
+        ],
+        "reason": "symbol:_ZN9ItemStackD2Ev",
+        "instructions_identical": true
+      },
+      "0x153430": {
+        "candidates": [
+          "0x158fb0"
+        ],
+        "reason": "symbol:_ZNK8endstone4core17EndstoneActorBaseINS_6PlayerE6PlayerE9getHandleEv",
+        "instructions_identical": true
+      },
+      "0x1968c0": {
+        "candidates": [
+          "0x19ba00"
+        ],
+        "reason": "symbol:_ZNK5Actor17getEndstoneActor0Ev",
+        "instructions_identical": true
+      },
+      "0x1a0c30": {
+        "candidates": [
+          "0x1a5d70"
+        ],
+        "reason": "symbol:_ZNK8endstone4core13EndstoneBlock11getPositionEv",
+        "instructions_identical": true
+      },
+      "0x1d5560": {
+        "candidates": [
+          "0x1da710"
+        ],
+        "reason": "symbol:_ZN8endstone4core17EndstoneItemStack11toMinecraftERKNS_9ItemStackE",
+        "instructions_identical": true
+      },
+      "0x1d5620": {
+        "candidates": [
+          "0x1da7d0"
+        ],
+        "reason": "symbol:_ZN8endstone4core17EndstoneItemStack13fromMinecraftERK13ItemStackBase",
+        "instructions_identical": true
+      },
+      "0x1d8480": {
+        "candidates": [
+          "0x1dd630"
+        ],
+        "reason": "symbol:_ZNK8endstone4core17EndstoneDimension9getHandleEv",
+        "instructions_identical": true
+      },
+      "0x1d97d0": {
+        "candidates": [
+          "0x1de9f0"
+        ],
+        "reason": "symbol:_ZNK8endstone4core13EndstoneLevel9getHandleEv",
+        "instructions_identical": true
+      },
+      "0x21b420": {
+        "candidates": [
+          "0x230830"
+        ],
+        "reason": "symbol:_ZN8endstone4core3nbt13fromMinecraftERK3Tag",
+        "instructions_identical": true
+      },
+      "0x21b850": {
+        "candidates": [
+          "0x230c60"
+        ],
+        "reason": "symbol:_ZN8endstone4core3nbt11toMinecraftERKNS_3nbt3TagE",
+        "instructions_identical": true
+      },
+      "0x231a80": {
+        "candidates": [
+          "0x246e90"
+        ],
+        "reason": "symbol:_ZN24StackResultStorageEntityC2ERK17WeakStorageEntity",
+        "instructions_identical": true
+      },
+      "0x231be0": {
+        "candidates": [
+          "0x246ff0"
+        ],
+        "reason": "symbol:_ZNK24StackResultStorageEntity9_hasValueEv",
+        "instructions_identical": true
+      },
+      "0x231bf0": {
+        "candidates": [
+          "0x247000"
+        ],
+        "reason": "symbol:_ZNK24StackResultStorageEntity12_getStackRefEv",
+        "instructions_identical": true
+      },
+      "0x232680": {
+        "candidates": [
+          "0x247a90"
+        ],
+        "reason": "symbol:_ZNK11CompoundTag5cloneEv",
+        "instructions_identical": true
+      },
+      "0x241640": {
+        "candidates": [
+          "0x256a50"
+        ],
+        "reason": "symbol:_ZNK5Actor12getRuntimeIDEv",
+        "instructions_identical": true
+      },
+      "0x2418b0": {
+        "candidates": [
+          "0x256cc0"
+        ],
+        "reason": "symbol:_ZN5Actor16tryGetFromEntityERK13EntityContextb",
+        "instructions_identical": true
+      },
+      "0x24f2a0": {
+        "candidates": [
+          "0x2646b0"
+        ],
+        "reason": "symbol:_ZN12ItemInstanceC2ERK13ItemStackBase",
+        "instructions_identical": true
+      },
+      "0x2506a0": {
+        "candidates": [
+          "0x265ab0"
+        ],
+        "reason": "symbol:_ZN13ItemStackBase11setUserDataENSt3__110unique_ptrI11CompoundTagNS0_14default_deleteIS2_EEEE",
+        "instructions_identical": true
+      },
+      "0x251eb0": {
+        "candidates": [
+          "0x2672c0"
+        ],
+        "reason": "symbol:_ZNK13ItemStackBase11getUserDataEv",
+        "instructions_identical": true
+      },
+      "0x251ec0": {
+        "candidates": [
+          "0x2672d0"
+        ],
+        "reason": "symbol:_ZN13ItemStackBaseD2Ev",
+        "instructions_identical": true
+      },
+      "0xac5110": {
+        "candidates": [
+          "0xae8168"
+        ],
+        "reason": "vtable:N8endstone4core14EndstonePlayerE",
+        "instructions_identical": false
+      },
+      "0xac54c0": {
+        "candidates": [
+          "0xae8518"
+        ],
+        "reason": "symbol:_ZTIN8endstone4core14EndstonePlayerE",
+        "instructions_identical": false
+      },
+      "0xac7630": {
+        "candidates": [
+          "0xaea688"
+        ],
+        "reason": "vtable:N8endstone4core11EndstoneMobE",
+        "instructions_identical": false
+      },
+      "0xac77e8": {
+        "candidates": [
+          "0xaea840"
+        ],
+        "reason": "symbol:_ZTIN8endstone4core11EndstoneMobE",
+        "instructions_identical": false
+      },
+      "0xac7cb8": {
+        "candidates": [
+          "0xaead10"
+        ],
+        "reason": "vtable:N8endstone4core13EndstoneActorE",
+        "instructions_identical": false
+      },
+      "0xac7e48": {
+        "candidates": [
+          "0xaeaea0"
+        ],
+        "reason": "symbol:_ZTIN8endstone4core13EndstoneActorE",
+        "instructions_identical": false
+      },
+      "0xac8028": {
+        "candidates": [
+          "0xaeb080"
+        ],
+        "reason": "vtable:N8endstone4core12EndstoneItemE",
+        "instructions_identical": false
+      },
+      "0xac81f8": {
+        "candidates": [
+          "0xaeb250"
+        ],
+        "reason": "symbol:_ZTIN8endstone4core12EndstoneItemE",
+        "instructions_identical": false
+      },
+      "0xac8380": {
+        "candidates": [
+          "0xaeb3d8"
+        ],
+        "reason": "vtable:N8endstone4core13EndstoneBlockE",
+        "instructions_identical": false
+      },
+      "0xac8410": {
+        "candidates": [
+          "0xaeb468"
+        ],
+        "reason": "symbol:_ZTIN8endstone4core13EndstoneBlockE",
+        "instructions_identical": false
+      },
+      "0xaca9a0": {
+        "candidates": [
+          "0xaed9f8"
+        ],
+        "reason": "vtable:N8endstone4core13EndstoneLevelE",
+        "instructions_identical": false
+      },
+      "0xacde08": {
+        "candidates": [
+          "0xaf1d18"
+        ],
+        "reason": "vtable:11CompoundTag",
+        "instructions_identical": false
+      },
+      "0xacde68": {
+        "candidates": [
+          "0xaf1d78"
+        ],
+        "reason": "symbol:_ZTI11CompoundTag",
+        "instructions_identical": false
+      }
+    }
+  }
+}

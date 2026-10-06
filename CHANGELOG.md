@@ -1,8 +1,14 @@
-# 0.6.6 - 2026-09-27
+# Changelog
+
+## 0.6.7 - Endstone 0.11.13 / Minecraft 1.26.52
+
+- Update the pinned SDK and runtime gates to Endstone 0.11.13 and BDS 1.26.52.3 / runtime 26.52.
+- Refresh native hook addresses, binary identities, and instruction fingerprints.
+- Keep network protocol 2193 and preserve earlier compatibility evidence.
+
+## 0.6.6 - 2026-09-27
 
 Bundle and register the matching native provider from the inspector wheel; verify native checksums and matching versions. Test dependency loading with a real BDS startup and the AntiGrief 1.5.18 adapter. Keep the bridge's exception types local so malformed NBT raises the correct Python exception inside Endstone. Read native versions through the actual bound metadata method. The isolated bridge test now uses the same LLVM unwinder loaded by the actual Endstone host.
-
-# Changelog
 
 ## 0.6.5 — Endstone 0.11.12
 
