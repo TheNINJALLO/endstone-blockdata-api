@@ -1,4 +1,10 @@
-# Endstone 0.11.13 / BDS 1.26.52.3 validation
+# Endstone 0.11.14 validation — 2026-10-12
+
+BDS remains 1.26.52.3 (protocol 2193). Linux native build, 85 Python tests, the recorded CTest suite and disposable live checks passed. Exact runtime guards remain enabled. Current evidence: `compatibility/native-qualification.json`. Windows native API ports remain unqualified. Release assets contain the qualified Linux build.
+
+Previous validation records follow.
+
+# Endstone 0.11.14 / BDS 1.26.52.3 validation
 
 6 CTest checks and 85 Python tests passed. The packaged native plugin and matching CPython 3.14 wheel passed live behavioral checks, save/query/resume, and clean shutdown in disposable servers.
 

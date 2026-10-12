@@ -1,12 +1,12 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "adapter_family": "minecraft-bedrock-26.52",
   "supported_bds": [
     "1.26.52"
   ],
   "endstone_tags": [
-    "v0.11.13"
+    "v0.11.14"
   ],
   "verified_bds_archives": {
     "linux-x64": {
@@ -21,7 +21,7 @@
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "Native build and disposable live checks passed for Endstone 0.11.13 / BDS 1.26.52.3; see compatibility/native-qualification.json",
+  "native_validation": "Endstone 0.11.14 / BDS 1.26.52.3: Linux native build, CTest, Python suites and disposable live checks passed; compatibility/native-qualification.json records the executed scope.",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,
@@ -37,18 +37,17 @@
     "dependency_source": "Endstone Cloudsmith Conan remote + Conan Center"
   },
   "endstone_requirement": ">=0.11.11",
-  "pending_targets": [],
   "historical_preparation_profiles": [
     "compatibility/bds-1.26.50.5.json"
   ],
-  "python_version": "0.6.7",
+  "python_version": "0.6.8",
   "release_channel": "native-release",
   "native_release_ready": true,
   "qualified_targets": [
     {
       "game_version": "1.26.52",
       "bds_package": "1.26.52.3",
-      "endstone": "0.11.13",
+      "endstone": "0.11.14",
       "profile": "compatibility/bds-1.26.52.json",
       "status": "qualified-linux-x64",
       "platforms": [
@@ -56,6 +55,6 @@
       ]
     }
   ],
-  "publication_status": "release",
-  "release_tag": "v0.6.7"
+  "publication_status": "release-prepared",
+  "release_tag": "v0.6.8"
 }

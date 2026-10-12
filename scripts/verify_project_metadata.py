@@ -150,9 +150,9 @@ def main() -> int:
             failures.append(
                 f"BlockData exact BDS support must be ['1.26.52'], got {supported_bds!r}"
             )
-        if endstone_tags != ["v0.11.13"]:
+        if endstone_tags != ["v0.11.14"]:
             failures.append(
-                f"BlockData exact Endstone support must be ['v0.11.13'], got {endstone_tags!r}"
+                f"BlockData exact Endstone support must be ['v0.11.14'], got {endstone_tags!r}"
             )
         workflow_bds = source.get("github_actions", {}).get("bds")
         if workflow_bds != supported_bds:

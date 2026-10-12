@@ -4,24 +4,24 @@
   "game_version": "1.26.52",
   "bds_package": "1.26.52.3",
   "bds_runtime": "26.52",
-  "bds_runtime_status": "BDS 1.26.52.3 / runtime 26.52; unchanged network protocol 2193",
+  "bds_runtime_status": "unchanged BDS 1.26.52.3 / runtime 26.52; Endstone-only update to 0.11.14",
   "endstone": {
     "minimum_version": "0.11.11",
     "requirement": ">=0.11.11",
     "maximum_version": null,
     "api_version": "0.11",
-    "build_version": "0.11.13",
-    "source_tag": "v0.11.13",
-    "source_commit": "3491c609ddfde392cee2b062e3063e39aae87274",
+    "build_version": "0.11.14",
+    "source_tag": "v0.11.14",
+    "source_commit": "03f4189b1535af0870861748fc569f6deac0ad65",
     "source_repository": "https://github.com/EndstoneMC/endstone.git",
     "source_symbol_tables": {
       "linux": {
         "path": "src/bedrock/symbols/linux.h",
-        "sha256_lf": "209790a138bf58852af81d8adac35f9b907696c978f8eea37669b07bf1b56621"
+        "sha256_lf": "88b324a762bf4b5c90100c8108d37d4eae0bf2a4489d099ddce0cc1e77542db4"
       },
       "windows": {
         "path": "src/bedrock/symbols/windows.h",
-        "sha256_lf": "72c50bc777477361f56c490e0cd027b314ecbae17580a6dfc781b89cefbddedb"
+        "sha256_lf": "e823d5313a3b3e02c1f374c456d7e1e6cf6a55631e94544aebc1f5b51bf9c88e"
       }
     }
   },
@@ -63,7 +63,9 @@
     },
     "archive_checksums_verified": true
   },
-  "qualification_required": [],
+  "qualification_required": [
+    "Endstone 0.11.14 native build and live regression checks"
+  ],
   "policy": "Endstone dependency has no upper version bound. Native hooks remain exact-build gated until independently qualified; matching server files and SDK identification do not qualify the native adapter.",
   "qualified_platforms": [
     "linux-x64"
