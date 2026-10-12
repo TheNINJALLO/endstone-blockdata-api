@@ -20,7 +20,7 @@ Only occupied slots are returned. The separate size fields preserve the complete
 Player inventory access is enabled only for the exact supported runtime:
 
 - BDS `1.26.52`
-- Endstone `0.11.13`
+- Endstone `0.11.14`
 - 64-bit Windows or Linux
 - Endstone primary thread
 

@@ -1,15 +1,17 @@
 # Endstone BlockData API
 
-## Endstone 0.11.13 update: v0.6.7
+> Endstone 0.11.14 release 0.6.8: This release includes verified Linux native artifacts. Windows runtime qualification remains pending for this Endstone update. The recorded validation defines the tested scope.
 
-This release targets **Endstone 0.11.13**, **BDS 1.26.52.3 / runtime 26.52**, and **CPython 3.14** on Linux x86-64. Network protocol remains **2193**. See [build status](BUILD_STATUS.md) for validation.
+## Endstone 0.11.14 update: v0.6.8
 
-The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.13** runtime. Install the complete inspector bundle wheel, which includes the matching native provider.
+This release targets **Endstone 0.11.14**, **BDS 1.26.52.3 / runtime 26.52**, and **CPython 3.14** on Linux x86-64. Network protocol remains **2193**. See [build status](BUILD_STATUS.md) for validation.
 
-Download [v0.6.7](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.7) for **Endstone 0.11.13**.
+The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.14** runtime. Install the complete inspector bundle wheel, which includes the matching native provider.
 
-[![Version](https://img.shields.io/badge/version-v0.6.7-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.7)
-[![Endstone](https://img.shields.io/badge/Endstone-v0.11.13-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
+Download [v0.6.8](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.8) for **Endstone 0.11.14**.
+
+[![Version](https://img.shields.io/badge/version-v0.6.8-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.8)
+[![Endstone](https://img.shields.io/badge/Endstone-v0.11.14-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
 [![BDS Version](https://img.shields.io/badge/BDS-1.26.52-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
 [![Platform](https://img.shields.io/badge/platform-Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v067)
@@ -28,15 +30,15 @@ Comprehensive guides, architecture diagrams, container audit tutorials, and full
 
 ---
 
-## 📦 Direct Release Downloads (`v0.6.7`)
+## 📦 Direct Release Downloads (`v0.6.8`)
 
 Use the **complete ZIP** matching BDS 1.26.52 and the server platform. It contains the self-contained `/bd` wheel with its matching native provider inside. The raw library is for native-API-only/manual installations.
 
 | Platform | BDS Version | Artifact Filename | Direct Download |
 | :--- | :--- | :--- | :--- |
-| **Linux x64 ZIP (recommended)** | `1.26.52` | `endstone-blockdata-api-v0.6.7-bds-1.26.52-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.7/endstone-blockdata-api-v0.6.7-bds-1.26.52-linux-x64.zip) |
-| **Linux x64 raw plugin** | `1.26.52` | `endstone-blockdata-api-v0.6.7-bds-1.26.52-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.7/endstone-blockdata-api-v0.6.7-bds-1.26.52-linux-x64.so) |
-| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.6.7-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.7/endstone_blockdata_inspector-0.6.7-cp314-cp314-linux_x86_64.whl) |
+| **Linux x64 ZIP (recommended)** | `1.26.52` | `endstone-blockdata-api-v0.6.8-bds-1.26.52-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.8/endstone-blockdata-api-v0.6.8-bds-1.26.52-linux-x64.zip) |
+| **Linux x64 raw plugin** | `1.26.52` | `endstone-blockdata-api-v0.6.8-bds-1.26.52-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.8/endstone-blockdata-api-v0.6.8-bds-1.26.52-linux-x64.so) |
+| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.6.8-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.8/endstone_blockdata_inspector-0.6.8-cp314-cp314-linux_x86_64.whl) |
 
 ---
 
@@ -120,11 +122,11 @@ void onContainerTouch(endstone::Server &server) {
 
 The repository includes the [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/) command plugin. Choose the platform-specific **CPython 3.14** wheel from the same exact build as the native plugin; its `_endstone_blockdata_live` bridge is bundled inside the wheel.
 
-Stop the server and remove older BlockData inspector wheels before copying v0.6.7; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
+Stop the server and remove older BlockData inspector wheels before copying v0.6.8; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
 
 ```bash
 # Linux example: copy both files from the complete ZIP's plugins/ directory.
-cp endstone_blockdata_inspector-0.6.7-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
+cp endstone_blockdata_inspector-0.6.8-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
 ```
 
 ### In-Game Command Reference
@@ -166,6 +168,6 @@ Full technical documentation, architecture deep dives, and API reference manuals
 
 Distributed under the [Apache License 2.0](LICENSE).
 
-## 0.6.7 dependency repair
+## 0.6.8 dependency repair
 
 The inspector wheel now bundles and loads the matching native `blockdata_api` provider. Install that complete wheel by itself in `plugins/`; remove older loose BlockData libraries and inspector wheels while stopped. The deployment ZIP uses the same wheel. See [installation](docs/INSTALL.md). The standalone native library is an optional advanced artifact, not an additional dependency to copy alongside the bundle.

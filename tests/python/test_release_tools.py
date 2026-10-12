@@ -11,7 +11,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.7","python_version": "0.6.7"}
+CONFIG = {"project": "blockdata","slug": "endstone-blockdata-api","plugin_prefix": "endstone_blockdata_bds_","bridge_prefix": "_endstone_blockdata_live","wheel_prefix": "endstone_blockdata_inspector","version": "0.6.8","python_version": "0.6.8"}
 
 
 class TestReleaseTools(unittest.TestCase):
@@ -74,7 +74,7 @@ class TestReleaseTools(unittest.TestCase):
     def add_command_wheel(stage: Path) -> Path:
         wheel = (
             stage / "plugins" /
-            "endstone_blockdata_inspector-0.6.7-cp314-cp314-win_amd64.whl"
+            "endstone_blockdata_inspector-0.6.8-cp314-cp314-win_amd64.whl"
         )
         wheel.parent.mkdir(parents=True, exist_ok=True)
         bridges = sorted((stage / "python").glob("_endstone_blockdata_live.*"))

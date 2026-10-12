@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.8 - 2026-10-12
+
+Update the pinned SDK and exact native runtime for Endstone 0.11.14. Refresh native addresses and binary guards, rebuild matching packages, and qualify them on disposable BDS 1.26.52.3 servers. Preserve historical 0.11.13 profiles and evidence.
+
 ## 0.6.7 - Endstone 0.11.13 / Minecraft 1.26.52
 
 - Update the pinned SDK and runtime gates to Endstone 0.11.13 and BDS 1.26.52.3 / runtime 26.52.
