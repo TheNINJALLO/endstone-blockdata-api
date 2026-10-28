@@ -1,1188 +1,1288 @@
 {
   "schema_version": 1,
   "project": "endstone-blockdata-api",
-  "version": "0.6.8",
-  "endstone": "0.11.14",
-  "bds_package": "1.26.52.3",
+  "version": "0.6.9",
+  "endstone": "0.11.15",
+  "sdk_commit": "b4aaa87d2c5305e7d340168f824ac2e2ea722e44",
+  "bds_package": "1.26.60.6",
+  "bds_runtime": "26.60",
+  "network_protocol": 2225,
+  "python_abi": "cp314",
+  "platform": "linux-x64",
+  "checked_on": "2026-10-28",
   "passed": true,
   "status": "qualified-linux-x64",
-  "previous_evidence": "compatibility/native-qualification-endstone-0.11.13.json",
-  "platform": "linux-x64",
-  "cpp_tests_passed": 6,
-  "artifacts": {
-    "endstone_blockdata_bds_1_26_52.so": {
-      "sha256": "903ae3a4844e584d08748a63481f8df64a4a70ab2ae0213a4c2f446fb9b6bb10",
-      "size_bytes": 6467448
-    },
-    "endstone_blockdata_inspector-0.6.8-cp314-cp314-linux_x86_64.whl": {
-      "sha256": "7493e3a3e9b556e22d8f9773fdecf8efdafcb087f1249bb86186845c9265a08c",
-      "size_bytes": 2337344
-    }
+  "publication_status": "release-prepared",
+  "release_tag": "v0.6.9",
+  "tests": {
+    "ctest_checks": 6,
+    "python_tests": 89,
+    "subtests": 0
   },
-  "live_checks": [
-    {
-      "test": "Endstone 0.11.14 startup",
-      "passed": true,
-      "detail": null
-    },
-    {
-      "test": "native behavioral probe",
-      "passed": true,
-      "detail": {
-        "block": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied through public Endstone API",
-          "resulting_revision": 15165677825542284090
-        },
-        "nbt": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 10701471913075389630
-        },
-        "inventory": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 12793868278320587419
-        },
-        "snapshot": {
-          "location": {
-            "dimension": "Overworld",
-            "x": 0,
-            "y": 290,
-            "z": 0
-          },
-          "type": "minecraft:barrel",
-          "runtime_id": 198111737,
-          "states": {
-            "facing_direction": 0,
-            "open_bit": false
-          },
-          "revision": 12793868278320587419,
-          "block_entity_status": "captured",
-          "block_entity": {
-            "type": "minecraft:barrel",
-            "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
-              "HasCustomName": 1,
-              "Items": [
-                {
-                  "Aux": 0,
-                  "Count": 4,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                }
-              ],
-              "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
-              "_endstone_container_size": 27,
-              "id": "minecraft:barrel",
-              "x": 0,
-              "y": 290,
-              "z": 0
-            },
-            "snbt": "10 entries",
-            "canonical": true,
-            "is_container": true,
-            "container_size": 27,
-            "inventory": [
-              {
-                "slot": 0,
-                "item": {
-                  "Aux": 0,
-                  "Count": 4,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                },
-                "revision": 15231329502233120809
-              }
-            ]
-          }
-        },
-        "bundle": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 14610252863904311093
-        },
-        "bundle_snapshot": {
-          "location": {
-            "dimension": "Overworld",
-            "x": 0,
-            "y": 290,
-            "z": 0
-          },
-          "type": "minecraft:barrel",
-          "runtime_id": 198111737,
-          "states": {
-            "facing_direction": 0,
-            "open_bit": false
-          },
-          "revision": 14610252863904311093,
-          "block_entity_status": "captured",
-          "block_entity": {
-            "type": "minecraft:barrel",
-            "nbt": {
-              "CustomName": "Native 1.26.52 qualification",
-              "HasCustomName": 1,
-              "Items": [
-                {
-                  "Aux": 0,
-                  "Count": 4,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                },
-                {
-                  "Aux": 0,
-                  "Count": 1,
-                  "Damage": 0,
-                  "LegacyId": 864,
-                  "Name": "minecraft:bundle",
-                  "Slot": 1,
-                  "tag": {
-                    "bundle_weight": 7,
-                    "storage_item_component_content": [
-                      {
-                        "Count": 3,
-                        "Damage": 0,
-                        "Name": "minecraft:emerald",
-                        "Slot": 0,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 1,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 2,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 3,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 4,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 5,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 6,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 7,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 8,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 9,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 10,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 11,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 12,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 13,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 14,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 15,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 16,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 17,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 18,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 19,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 20,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 21,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 22,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 23,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 24,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 25,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 26,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 27,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 28,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 29,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 30,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 31,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 32,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 33,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 34,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 35,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 36,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 37,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 38,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 39,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 40,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 41,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 42,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 43,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 44,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 45,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 46,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 47,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 48,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 49,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 50,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 51,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 52,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 53,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 54,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 55,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 56,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 57,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 58,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 59,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 60,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 61,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 62,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 63,
-                        "WasPickedUp": 0
-                      }
-                    ]
-                  }
-                }
-              ],
-              "_endstone_actor_type": 42,
-              "_endstone_bds_build": "26.52",
-              "_endstone_container_size": 27,
-              "id": "minecraft:barrel",
-              "x": 0,
-              "y": 290,
-              "z": 0
-            },
-            "snbt": "10 entries",
-            "canonical": true,
-            "is_container": true,
-            "container_size": 27,
-            "inventory": [
-              {
-                "slot": 0,
-                "item": {
-                  "Aux": 0,
-                  "Count": 4,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                },
-                "revision": 15231329502233120809
-              },
-              {
-                "slot": 1,
-                "item": {
-                  "Aux": 0,
-                  "Count": 1,
-                  "Damage": 0,
-                  "LegacyId": 864,
-                  "Name": "minecraft:bundle",
-                  "Slot": 1,
-                  "tag": {
-                    "bundle_weight": 7,
-                    "storage_item_component_content": [
-                      {
-                        "Count": 3,
-                        "Damage": 0,
-                        "Name": "minecraft:emerald",
-                        "Slot": 0,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 1,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 2,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 3,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 4,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 5,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 6,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 7,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 8,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 9,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 10,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 11,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 12,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 13,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 14,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 15,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 16,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 17,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 18,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 19,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 20,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 21,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 22,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 23,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 24,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 25,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 26,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 27,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 28,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 29,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 30,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 31,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 32,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 33,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 34,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 35,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 36,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 37,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 38,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 39,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 40,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 41,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 42,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 43,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 44,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 45,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 46,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 47,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 48,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 49,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 50,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 51,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 52,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 53,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 54,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 55,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 56,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 57,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 58,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 59,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 60,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 61,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 62,
-                        "WasPickedUp": 0
-                      },
-                      {
-                        "Count": 0,
-                        "Damage": 0,
-                        "Name": "",
-                        "Slot": 63,
-                        "WasPickedUp": 0
-                      }
-                    ]
-                  }
-                },
-                "revision": 3492253006266916428
-              }
-            ]
-          }
-        },
-        "shelf": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied through public Endstone API",
-          "resulting_revision": 7565504739569740472
-        },
-        "shelf_item": {
-          "ok": true,
-          "status": "applied",
-          "message": "applied canonical block-actor NBT through exact BDS 26.52 adapter",
-          "resulting_revision": 5162031868012985797
-        },
-        "shelf_snapshot": {
-          "location": {
-            "dimension": "Overworld",
-            "x": 0,
-            "y": 290,
-            "z": 0
-          },
-          "type": "minecraft:oak_shelf",
-          "runtime_id": 3881061342,
-          "states": {
-            "minecraft:cardinal_direction": "south",
-            "powered_bit": false,
-            "powered_shelf_type": 0
-          },
-          "revision": 5162031868012985797,
-          "block_entity_status": "captured",
-          "block_entity": {
-            "type": "minecraft:shelf",
-            "nbt": {
-              "HasCustomName": 0,
-              "Items": [
-                {
-                  "Aux": 0,
-                  "Count": 1,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                }
-              ],
-              "_endstone_actor_type": 59,
-              "_endstone_bds_build": "26.52",
-              "_endstone_container_size": 3,
-              "id": "minecraft:shelf",
-              "x": 0,
-              "y": 290,
-              "z": 0
-            },
-            "snbt": "9 entries",
-            "canonical": true,
-            "is_container": true,
-            "container_size": 3,
-            "inventory": [
-              {
-                "slot": 0,
-                "item": {
-                  "Aux": 0,
-                  "Count": 1,
-                  "Damage": 0,
-                  "LegacyId": 306,
-                  "Name": "minecraft:diamond",
-                  "Slot": 0
-                },
-                "revision": 10555570230372187493
-              }
-            ]
-          }
-        },
-        "invalid_state": {
-          "ok": false,
-          "rejected": "Block type minecraft:oak_shelf cannot be found in the registry."
-        },
-        "passed": true
+  "runtime_checks": {
+    "endstone": "0.11.15",
+    "bds_package": "1.26.60.6",
+    "kind": "blockdata",
+    "platform": "linux",
+    "passed": true,
+    "artifacts": {
+      "endstone_blockdata_bds_1_26_60.so": {
+        "sha256": "e6ee901d1916577bbe63ed74c56d6a5b9aabc6e308bd7bc2b6b1f0fb2ac2ef86",
+        "size_bytes": 6467080
+      },
+      "endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl": {
+        "sha256": "07f282cf474dd81ea55c765763eaa7f6a35ed0b5be399e06252225299a3a3476",
+        "size_bytes": 2337210
       }
     },
-    {
-      "test": "clean shutdown",
-      "passed": true,
-      "detail": 0
+    "checks": [
+      {
+        "test": "Endstone 0.11.15 startup",
+        "passed": true,
+        "detail": null
+      },
+      {
+        "test": "native behavioral probe",
+        "passed": true,
+        "detail": {
+          "runtime": {
+            "protocol": 2225
+          },
+          "block": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied through public Endstone API",
+            "resulting_revision": 12913928685020156776
+          },
+          "nbt": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied canonical block-actor NBT through exact BDS 26.60 adapter",
+            "resulting_revision": 3074579717529533933
+          },
+          "inventory": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied canonical block-actor NBT through exact BDS 26.60 adapter",
+            "resulting_revision": 1893202987634488305
+          },
+          "snapshot": {
+            "location": {
+              "dimension": "Overworld",
+              "x": 0,
+              "y": 290,
+              "z": 0
+            },
+            "type": "minecraft:barrel",
+            "runtime_id": 198111737,
+            "states": {
+              "facing_direction": 0,
+              "open_bit": false
+            },
+            "revision": 1893202987634488305,
+            "block_entity_status": "captured",
+            "block_entity": {
+              "type": "minecraft:barrel",
+              "nbt": {
+                "CustomName": "Native 1.26.60 qualification",
+                "HasCustomName": 1,
+                "Items": [
+                  {
+                    "Aux": 0,
+                    "Count": 4,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  }
+                ],
+                "_endstone_actor_type": 42,
+                "_endstone_bds_build": "26.60",
+                "_endstone_container_size": 27,
+                "id": "minecraft:barrel",
+                "x": 0,
+                "y": 290,
+                "z": 0
+              },
+              "snbt": "10 entries",
+              "canonical": true,
+              "is_container": true,
+              "container_size": 27,
+              "inventory": [
+                {
+                  "slot": 0,
+                  "item": {
+                    "Aux": 0,
+                    "Count": 4,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  },
+                  "revision": 15231329502233120809
+                }
+              ]
+            }
+          },
+          "bundle": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied canonical block-actor NBT through exact BDS 26.60 adapter",
+            "resulting_revision": 9129601221334442425
+          },
+          "bundle_snapshot": {
+            "location": {
+              "dimension": "Overworld",
+              "x": 0,
+              "y": 290,
+              "z": 0
+            },
+            "type": "minecraft:barrel",
+            "runtime_id": 198111737,
+            "states": {
+              "facing_direction": 0,
+              "open_bit": false
+            },
+            "revision": 9129601221334442425,
+            "block_entity_status": "captured",
+            "block_entity": {
+              "type": "minecraft:barrel",
+              "nbt": {
+                "CustomName": "Native 1.26.60 qualification",
+                "HasCustomName": 1,
+                "Items": [
+                  {
+                    "Aux": 0,
+                    "Count": 4,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  },
+                  {
+                    "Aux": 0,
+                    "Count": 1,
+                    "Damage": 0,
+                    "LegacyId": 865,
+                    "Name": "minecraft:bundle",
+                    "Slot": 1,
+                    "tag": {
+                      "bundle_weight": 7,
+                      "storage_item_component_content": [
+                        {
+                          "Count": 3,
+                          "Damage": 0,
+                          "Name": "minecraft:emerald",
+                          "Slot": 0,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 1,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 2,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 3,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 4,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 5,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 6,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 7,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 8,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 9,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 10,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 11,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 12,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 13,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 14,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 15,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 16,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 17,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 18,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 19,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 20,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 21,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 22,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 23,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 24,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 25,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 26,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 27,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 28,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 29,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 30,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 31,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 32,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 33,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 34,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 35,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 36,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 37,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 38,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 39,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 40,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 41,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 42,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 43,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 44,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 45,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 46,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 47,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 48,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 49,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 50,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 51,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 52,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 53,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 54,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 55,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 56,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 57,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 58,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 59,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 60,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 61,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 62,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 63,
+                          "WasPickedUp": 0
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "_endstone_actor_type": 42,
+                "_endstone_bds_build": "26.60",
+                "_endstone_container_size": 27,
+                "id": "minecraft:barrel",
+                "x": 0,
+                "y": 290,
+                "z": 0
+              },
+              "snbt": "10 entries",
+              "canonical": true,
+              "is_container": true,
+              "container_size": 27,
+              "inventory": [
+                {
+                  "slot": 0,
+                  "item": {
+                    "Aux": 0,
+                    "Count": 4,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  },
+                  "revision": 15231329502233120809
+                },
+                {
+                  "slot": 1,
+                  "item": {
+                    "Aux": 0,
+                    "Count": 1,
+                    "Damage": 0,
+                    "LegacyId": 865,
+                    "Name": "minecraft:bundle",
+                    "Slot": 1,
+                    "tag": {
+                      "bundle_weight": 7,
+                      "storage_item_component_content": [
+                        {
+                          "Count": 3,
+                          "Damage": 0,
+                          "Name": "minecraft:emerald",
+                          "Slot": 0,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 1,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 2,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 3,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 4,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 5,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 6,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 7,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 8,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 9,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 10,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 11,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 12,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 13,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 14,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 15,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 16,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 17,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 18,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 19,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 20,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 21,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 22,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 23,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 24,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 25,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 26,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 27,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 28,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 29,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 30,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 31,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 32,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 33,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 34,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 35,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 36,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 37,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 38,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 39,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 40,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 41,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 42,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 43,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 44,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 45,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 46,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 47,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 48,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 49,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 50,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 51,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 52,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 53,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 54,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 55,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 56,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 57,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 58,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 59,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 60,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 61,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 62,
+                          "WasPickedUp": 0
+                        },
+                        {
+                          "Count": 0,
+                          "Damage": 0,
+                          "Name": "",
+                          "Slot": 63,
+                          "WasPickedUp": 0
+                        }
+                      ]
+                    }
+                  },
+                  "revision": 3492251626129769577
+                }
+              ]
+            }
+          },
+          "shelf": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied through public Endstone API",
+            "resulting_revision": 4859532388533654388
+          },
+          "shelf_item": {
+            "ok": true,
+            "status": "applied",
+            "message": "applied canonical block-actor NBT through exact BDS 26.60 adapter",
+            "resulting_revision": 2394563930199267715
+          },
+          "shelf_snapshot": {
+            "location": {
+              "dimension": "Overworld",
+              "x": 0,
+              "y": 290,
+              "z": 0
+            },
+            "type": "minecraft:oak_shelf",
+            "runtime_id": 3881061342,
+            "states": {
+              "minecraft:cardinal_direction": "south",
+              "powered_bit": false,
+              "powered_shelf_type": 0
+            },
+            "revision": 2394563930199267715,
+            "block_entity_status": "captured",
+            "block_entity": {
+              "type": "minecraft:shelf",
+              "nbt": {
+                "HasCustomName": 0,
+                "Items": [
+                  {
+                    "Aux": 0,
+                    "Count": 1,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  }
+                ],
+                "_endstone_actor_type": 59,
+                "_endstone_bds_build": "26.60",
+                "_endstone_container_size": 3,
+                "id": "minecraft:shelf",
+                "x": 0,
+                "y": 290,
+                "z": 0
+              },
+              "snbt": "9 entries",
+              "canonical": true,
+              "is_container": true,
+              "container_size": 3,
+              "inventory": [
+                {
+                  "slot": 0,
+                  "item": {
+                    "Aux": 0,
+                    "Count": 1,
+                    "Damage": 0,
+                    "LegacyId": 306,
+                    "Name": "minecraft:diamond",
+                    "Slot": 0
+                  },
+                  "revision": 10555570230372187493
+                }
+              ]
+            }
+          },
+          "invalid_state": {
+            "ok": false,
+            "rejected": "Block type minecraft:oak_shelf cannot be found in the registry."
+          },
+          "passed": true
+        }
+      },
+      {
+        "test": "clean shutdown",
+        "passed": true,
+        "detail": 0
+      },
+      {
+        "test": "no unexpected runtime errors",
+        "passed": true,
+        "detail": []
+      }
+    ]
+  },
+  "restart": {
+    "passed": true,
+    "endstone": "0.11.15",
+    "bds_package": "1.26.60.6",
+    "kind": "blockdata",
+    "platform": "linux",
+    "variant": "-packaged",
+    "saved_block_survived_restart": true,
+    "clean_shutdowns": 2,
+    "deployment_inputs": {
+      "endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl": "07f282cf474dd81ea55c765763eaa7f6a35ed0b5be399e06252225299a3a3476",
+      "endstone_native_probe-1.0.0-py3-none-any.whl": "456e4fb15c6381f9c1f8d0005275a406dfa23f3f17f62081cd1c4616f7c09fc1"
     },
-    {
-      "test": "no unexpected runtime errors",
-      "passed": true,
-      "detail": []
+    "checks": [
+      {
+        "phase": "save",
+        "passed": true,
+        "log": "persistence-save.log",
+        "log_sha256": "c4caf2e563dc201f0efd17ff4116a3684a220a96b44318ced75f697f19eedb24"
+      },
+      {
+        "phase": "restart",
+        "passed": true,
+        "log": "persistence-restart.log",
+        "log_sha256": "b9ed6a148553f8ac23993e77023e010bea0f4231528b8ed4ebba9ba30a06c02f"
+      }
+    ]
+  },
+  "packaged_artifacts": {
+    "endstone_blockdata_bds_1_26_60.so": {
+      "sha256": "e6ee901d1916577bbe63ed74c56d6a5b9aabc6e308bd7bc2b6b1f0fb2ac2ef86",
+      "size_bytes": 6467080
+    },
+    "endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl": {
+      "sha256": "07f282cf474dd81ea55c765763eaa7f6a35ed0b5be399e06252225299a3a3476",
+      "size_bytes": 2337210
     }
-  ],
-  "publication_status": "release-prepared",
-  "python_tests_passed": 85
+  },
+  "server_files": {
+    "windows-x64": {
+      "archive": {
+        "filename": "bedrock-server-windows-x64-1.26.60.6.zip",
+        "sha256": "21620db4f80d0fe206f21cb08f52f4e5f14252ce865ec49ccfbe0d9f93ce88b0",
+        "size_bytes": 88759231
+      },
+      "executable": {
+        "filename": "bedrock_server.exe",
+        "sha256": "d7b26d6c5e8f3e910f66e8cbf7e1dfde06e570032349bf7abdd070deb6e9d884",
+        "size_bytes": 232647024,
+        "format": "PE32+"
+      }
+    },
+    "linux-x64": {
+      "archive": {
+        "filename": "bedrock-server-linux-x64-1.26.60.6.zip",
+        "sha256": "cbbd5414fa6a310353ed1fc76a0ba691c3fd1ea852fd04bb76764ee4c1afdb98",
+        "size_bytes": 98094690
+      },
+      "executable": {
+        "filename": "bedrock_server",
+        "sha256": "ea16b541a448e07c337848d2c5f37321b706554b5216dd942f3f11e7a8ed2bad",
+        "size_bytes": 265500280,
+        "format": "ELF64",
+        "gnu_build_id": "52576b75b6af5a09a6bde582be804e29657dbbf3"
+      }
+    }
+  },
+  "endstone_runtime": {
+    "sha256": "a4e59b0a02760cd5ab87784d71a3cbbf99a7c287484b0163da91a91ca3bf791c",
+    "size_bytes": 83934793,
+    "gnu_build_id": "26d44d49d70642ca60a8664e1969e070f5f76549",
+    "filename": "libendstone_runtime.so"
+  },
+  "previous_evidence": "compatibility/native-qualification-endstone-0.11.14.json",
+  "scope": "Automated disposable-server tests. No connected-player session. Exact packaged binaries and wheels passed save/query/resume, persisted-block restart and clean shutdown.",
+  "runtime_configuration": {
+    "enable-script": true
+  },
+  "limitations": [
+    "Windows native API packages remain unqualified.",
+    "enable-script=false is unqualified; BlockData/WorldGen initialization failed in that configuration during this update."
+  ]
 }

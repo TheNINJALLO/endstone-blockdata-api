@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "project": "endstone-blockdata-api",
+  "bds_package": "1.26.60.6",
+  "platform": "linux-x64",
+  "status": "offline-preparation-only",
+  "native_adapter_qualified": false,
+  "native_release_ready": false,
+  "endstone_runtime": null,
+  "executable": {
+    "filename": "bedrock_server",
+    "sha256": "ea16b541a448e07c337848d2c5f37321b706554b5216dd942f3f11e7a8ed2bad",
+    "size_bytes": 265500280,
+    "format": "ELF64",
+    "gnu_build_id": "52576b75b6af5a09a6bde582be804e29657dbbf3"
+  },
+  "qualification_required": [
+    "Obtain an Endstone SDK and runtime supporting BDS 1.26.60.6; record its actual version, commit, Python ABI, and binary identities",
+    "Review changed BDS functions, object layouts, virtual slots, and callsite contracts recorded in the prepared hook manifest",
+    "Relocate and fingerprint private Endstone functions against the new runtime; do not reuse the 0.11.14 addresses",
+    "Rebuild the native plugin and matching Python bridge against that exact SDK and Python ABI",
+    "Run disposable-server load, gameplay, persistence, restart, and clean-shutdown regressions before marking any platform qualified",
+    "Keep this preparation unpublished until native qualification passes and release is separately requested"
+  ],
+  "sites": [
+    {
+      "previous_address": "0xb4a95e0",
+      "uses": [
+        "endstone-blockdata-api/ReceiveContainerLifetimesRva"
+      ],
+      "method": "instructions:160",
+      "review_required": true,
+      "normalized_function_identical": true,
+      "status": "mapped-offline",
+      "address": "0xb540220",
+      "file_offset": 190050848,
+      "bytes": "4157415641554154534989f64889fb4c8ba7200100004c8baf280100004d39ec"
+    },
+    {
+      "previous_address": "0xba8a450",
+      "uses": [
+        "endstone-blockdata-api/ManagerGiveLifetimeRva"
+      ],
+      "method": "instructions:256",
+      "review_required": true,
+      "normalized_function_identical": true,
+      "status": "mapped-offline",
+      "address": "0xbc2b970",
+      "file_offset": 197306736,
+      "bytes": "534883ec204889f3488b4f1048894c2410488b571848895424184885d27431f0"
+    },
+    {
+      "previous_address": "0xbaadea0",
+      "uses": [
+        "endstone-blockdata-api/TrackStorageItemRva"
+      ],
+      "method": "instructions:384",
+      "review_required": true,
+      "normalized_function_identical": true,
+      "status": "mapped-offline",
+      "address": "0xbc4f1d0",
+      "file_offset": 197452240,
+      "bytes": "55415741564155415453504889fb488b42084885c00f84c1000000488b384885"
+    },
+    {
+      "previous_address": "0xbaaf6a0",
+      "uses": [
+        "endstone-blockdata-api/CreateTrackerRva"
+      ],
+      "method": "instructions:192",
+      "review_required": true,
+      "normalized_function_identical": false,
+      "status": "mapped-offline",
+      "address": "0xbc50800",
+      "file_offset": 197457920,
+      "bytes": "4157415641554154534883ec104989d44989f54889fb488b056b470e04488d3d"
+    },
+    {
+      "previous_address": "0xbf32d90",
+      "uses": [
+        "endstone-blockdata-api/FlattenStorageItemRva"
+      ],
+      "method": "instructions:64",
+      "review_required": true,
+      "normalized_function_identical": false,
+      "status": "mapped-offline",
+      "address": "0xc4afa50",
+      "file_offset": 206236240,
+      "bytes": "415653504989fe488b052a558803488d3d23558803be01000000ff50104889c3"
+    },
+    {
+      "previous_address": "0xbf32e00",
+      "uses": [
+        "endstone-blockdata-api/FlattenStorageItemCoreRva"
+      ],
+      "method": "aligned instruction in mapped function",
+      "review_required": true,
+      "normalized_function_identical": false,
+      "status": "mapped-offline",
+      "address": "0xc4afac1",
+      "file_offset": 206236353,
+      "bytes": "4157415641554154534883ec28488b47084885c00f84e50100004889fb488b38"
+    }
+  ],
+  "source_reference": {
+    "bds": "1.26.52.3",
+    "endstone": "0.11.14",
+    "source_files": {
+      "src/native_item_bridge.cpp": "6515679d7650587d95547039bd29825dd41ef062ae58d177766206a41e84bf1d"
+    }
+  }
+}

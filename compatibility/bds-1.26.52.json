@@ -73,6 +73,6 @@
   "unqualified_platforms": {
     "windows-x64": "Native adapter port and live qualification required before release"
   },
-  "qualification_evidence": "compatibility/native-qualification.json",
+  "qualification_evidence": "compatibility/native-qualification-endstone-0.11.14.json",
   "network_protocol": 2193
 }
