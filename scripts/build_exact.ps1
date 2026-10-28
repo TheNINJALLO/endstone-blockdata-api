@@ -1,5 +1,5 @@
 param(
-  [ValidateSet("1.26.52")][string]$BdsBuild = "1.26.52",
+  [ValidateSet("1.26.60")][string]$BdsBuild = "1.26.60",
   [ValidateSet("windows-x64")][string]$Platform = "windows-x64"
 )
 $ErrorActionPreference = "Stop"

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import BinaryIO
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TARGET = ROOT / "compatibility" / "bds-1.26.52.json"
+DEFAULT_TARGET = ROOT / "compatibility" / "bds-1.26.60.json"
 
 
 def fingerprint(stream: BinaryIO) -> dict:
@@ -91,7 +91,7 @@ def inspect_archive(path: Path, platform: str) -> dict:
 
 
 def endstone_at_least(version: str, minimum: str) -> bool:
-    # Compare numeric components, never lexicographic strings (0.11.9 < 0.11.14).
+    # Compare numeric components, never lexicographic strings (0.11.9 < 0.11.15).
     # Development builds are eligible for preparation, not native qualification.
     pattern = r"v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:(?:\.dev[0-9]+|-dev(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     actual = re.fullmatch(pattern, version)
@@ -126,7 +126,10 @@ def prepare(target: dict, archive: Path, platform: str, endstone_version: str | 
         "profile_endstone_source_commit": target["endstone"].get("source_commit"),
         "server_files_verified": True,
         "native_adapter_qualified": (
-            platform in target.get("qualified_platforms", [])
+            endstone_version is not None
+            and target["endstone"].get("build_version") is not None
+            and target.get("native_release_ready", True)
+            and platform in target.get("qualified_platforms", [])
             and endstone_version.removeprefix("v") == target["endstone"].get("build_version")
         ),
         "status": target["status"],
@@ -139,7 +142,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--platform", choices=("linux-x64", "windows-x64"), required=True)
-    parser.add_argument("--endstone-version", help="Override the profile's selected Endstone release (default: 0.11.14)")
+    parser.add_argument("--endstone-version", help="Override the profile's selected Endstone release; pending targets may leave this unset")
     parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     parser.add_argument("--output", type=Path, help="Write the preparation report as JSON")
     parser.add_argument("--require-native", action="store_true", help="Fail unless a native adapter is qualified")

@@ -1,3 +1,11 @@
+# Minecraft 26.60 / Endstone 0.11.15 validation - 2026-10-28
+
+BDS **1.26.60.6**, runtime **26.60**, network protocol **2225**, CPython **3.14**, Linux x86-64. 6 CTest checks and 89 Python tests passed. The exact deployment binaries and wheels passed live behavior, save/query/resume, persisted-block restart and clean shutdown. Qualification used `enable-script=true` and no connected-player session.
+
+Current evidence: `compatibility/native-qualification.json`. Windows native API packages and `enable-script=false` remain unqualified. Historical records follow unchanged.
+
+---
+
 # Endstone 0.11.14 validation — 2026-10-12
 
 BDS remains 1.26.52.3 (protocol 2193). Linux native build, 85 Python tests, the recorded CTest suite and disposable live checks passed. Exact runtime guards remain enabled. Current evidence: `compatibility/native-qualification.json`. Windows native API ports remain unqualified. Release assets contain the qualified Linux build.

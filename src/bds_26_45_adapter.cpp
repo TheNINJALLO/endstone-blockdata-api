@@ -327,7 +327,7 @@ struct ActorLookup {
 };
 
 bool isSupportedVanillaActorType(BlockActorType type) {
-        // Endstone v0.11.14 declares the vanilla actor component as the second
+        // Endstone v0.11.15 declares the vanilla actor component as the second
     // base of VanillaBlockActor. Data-driven and sentinel actor values do not
     // carry that exact ABI contract and must never be reinterpreted as one.
     switch (type) {
@@ -613,7 +613,7 @@ public:
     explicit Bds2645BlockAdapter(endstone::Server &server)
         : server_(server), public_(makeEndstonePublicAdapter(server)) {}
 
-    std::string_view name() const noexcept override { return "bds-26.52-exact-nbt"; }
+    std::string_view name() const noexcept override { return "bds-26.60-exact-nbt"; }
     AdapterCapabilities capabilities() const noexcept override {
         AdapterCapabilities out;
         out.block_states = true;
@@ -995,7 +995,7 @@ public:
             }
             return {ApplyStatus::Applied,
                     updated
-                        ? "applied canonical block-actor NBT through exact BDS 26.52 adapter"
+                        ? "applied canonical block-actor NBT through exact BDS 26.60 adapter"
                         : "block-actor NBT was applied, but readback capture was unavailable",
                     updated ? updated->revision : 0};
         }
@@ -1101,7 +1101,7 @@ public:
         }
         return {ApplyStatus::Applied,
                 updated
-                    ? "applied canonical block-actor NBT through exact BDS 26.52 adapter"
+                    ? "applied canonical block-actor NBT through exact BDS 26.60 adapter"
                     : "container inventory was applied, but readback capture was unavailable",
                 updated ? updated->revision : 0};
     }

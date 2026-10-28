@@ -41,7 +41,7 @@ def windows_executable() -> bytes:
 
 class TestBdsTarget(unittest.TestCase):
     def test_endstone_minimum_has_no_upper_bound(self):
-        for version in ("0.11.11", "v0.11.11", "0.11.14", "0.11.110", "0.12.0", "1.0.0",
+        for version in ("0.11.11", "v0.11.11", "0.11.15", "0.11.110", "0.12.0", "1.0.0",
                         "0.11.11.dev1", "0.11.11-dev.2+build.7", "v0.11.11+local"):
             with self.subTest(version=version):
                 self.assertTrue(TARGET.endstone_at_least(version, "0.11.11"))
@@ -51,19 +51,19 @@ class TestBdsTarget(unittest.TestCase):
                 self.assertFalse(TARGET.endstone_at_least(version, "0.11.11"))
 
     def test_recorded_target_selects_known_endstone_and_keeps_native_qualification_explicit(self):
-        profile = json.loads((ROOT / "compatibility/bds-1.26.52.json").read_text())
-        self.assertEqual(profile["bds_package"], "1.26.52.3")
+        profile = json.loads((ROOT / "compatibility/bds-1.26.60.json").read_text())
+        self.assertEqual(profile["bds_package"], "1.26.60.6")
         self.assertEqual(profile["endstone"]["requirement"], ">=0.11.11")
         self.assertIsNone(profile["endstone"]["maximum_version"])
-        self.assertEqual(profile["endstone"]["build_version"], "0.11.14")
-        self.assertEqual(profile["endstone"]["source_commit"], "03f4189b1535af0870861748fc569f6deac0ad65")
-        self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.52.json")
-        self.assertEqual(profile["game_version"], "1.26.52")
+        self.assertEqual(profile["endstone"]["build_version"], "0.11.15")
+        self.assertEqual(profile["endstone"]["source_commit"], "b4aaa87d2c5305e7d340168f824ac2e2ea722e44")
+        self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.60.json")
+        self.assertEqual(profile["game_version"], "1.26.60")
         self.assertEqual(profile["status"], "qualified-linux-x64")
         self.assertEqual(profile["qualified_platforms"], ["linux-x64"])
         metadata = json.loads((ROOT / "compatibility/versions.json").read_text())
         self.assertEqual(metadata["endstone_requirement"], ">=0.11.11")
-        self.assertEqual(metadata["qualified_targets"][0]["bds_package"], "1.26.52.3")
+        self.assertEqual(metadata["qualified_targets"][0]["bds_package"], "1.26.60.6")
         wheel_projects = {
             "endstone-blockdata-api": "examples/python/block_data_inspector_plugin/pyproject.toml",
             "endstone-worldgen-api": "examples/python/world_gen_studio_plugin/pyproject.toml",
@@ -77,6 +77,31 @@ class TestBdsTarget(unittest.TestCase):
                 entry = profile["server_files"][platform][kind]
                 self.assertRegex(entry["sha256"], r"^[0-9a-f]{64}$")
                 self.assertGreater(entry["size_bytes"], 0)
+
+    def test_pending_target_requires_a_known_matching_endstone_runtime(self):
+        profile = json.loads((ROOT / "compatibility/bds-1.26.60-preparation.json").read_text())
+        self.assertEqual(profile["bds_package"], "1.26.60.6")
+        self.assertIsNone(profile["endstone"]["build_version"])
+        self.assertIsNone(profile["endstone"]["source_commit"])
+        self.assertFalse(profile["native_release_ready"])
+        self.assertEqual(profile["qualified_platforms"], [])
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / "pending.zip"
+            with zipfile.ZipFile(archive, "w") as zipped:
+                zipped.writestr("bedrock_server", linux_executable())
+            profile["server_files"]["linux-x64"] = TARGET.inspect_archive(archive, "linux-x64")
+            for version in (None, "0.11.14", "0.11.15", "0.12.0"):
+                with self.subTest(version=version):
+                    report = TARGET.prepare(profile, archive, "linux-x64", version)
+                    self.assertTrue(report["server_files_verified"])
+                    self.assertFalse(report["native_adapter_qualified"])
+                    self.assertIsNone(report["profile_endstone_version"])
+            # Accidentally listing a platform cannot qualify an unknown runtime.
+            profile["qualified_platforms"] = ["linux-x64"]
+            self.assertFalse(TARGET.prepare(profile, archive, "linux-x64", None)["native_adapter_qualified"])
+            # Even a selected runtime stays blocked by an explicit release hold.
+            profile["endstone"]["build_version"] = "0.11.15"
+            self.assertFalse(TARGET.prepare(profile, archive, "linux-x64", "0.11.15")["native_adapter_qualified"])
 
     def test_archive_identity_tampering_and_native_release_gate(self):
         scratch = ROOT / "build" / "target-tests"
@@ -95,7 +120,7 @@ class TestBdsTarget(unittest.TestCase):
                     if platform == "linux-x64":
                         self.assertEqual(identity["executable"]["gnu_build_id"], "ab" * 20)
                     profile = {
-                        "bds_package": "1.26.52.3", "bds_runtime": "26.52",
+                        "bds_package": "1.26.60.6", "bds_runtime": "26.60",
                         "endstone": {"requirement": ">=0.11.11", "minimum_version": "0.11.11", "build_version": "0.11.11"},
                         "status": "pending-native-adapter-qualification",
                         "qualification_required": ["matching Endstone runtime"],
@@ -119,7 +144,7 @@ class TestBdsTarget(unittest.TestCase):
                     qualified = copy.deepcopy(profile)
                     qualified["qualified_platforms"] = ["linux-x64"]
                     self.assertEqual(TARGET.prepare(qualified, archive, platform, "0.11.11")["native_adapter_qualified"], platform == "linux-x64")
-                    self.assertFalse(TARGET.prepare(qualified, archive, platform, "0.11.14")["native_adapter_qualified"])
+                    self.assertFalse(TARGET.prepare(qualified, archive, platform, "0.11.15")["native_adapter_qualified"])
                     profile_path = folder / "profile.json"
                     profile_path.write_text(json.dumps(profile))
                     command = [sys.executable, str(ROOT / "scripts/prepare_bds_target.py"),
