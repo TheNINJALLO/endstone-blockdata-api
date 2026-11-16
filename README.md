@@ -1,5 +1,13 @@
 # Endstone BlockData API
 
+## Endstone 0.11.16 update: v0.6.10
+
+The current source targets **Endstone 0.11.16**, **BDS 1.26.65.1 / runtime 26.65**, protocol **2225**, and **CPython 3.14** on Linux x86-64. Exact upstream checksums, native addresses and instruction fingerprints have been refreshed. Native compilation and disposable-server qualification are in progress; this candidate is not a published, qualified native release.
+
+See [update status](UPDATE_ENDSTONE_0.11.16.md) before building or installing. The prior release documentation below applies to Endstone 0.11.15.
+
+## Historical Endstone 0.11.15 release
+
 > Endstone 0.11.15 release 0.6.9: This release includes verified Linux native artifacts. Windows runtime qualification remains pending for this Endstone update. The recorded validation defines the tested scope.
 
 ## Endstone 0.11.15 update: v0.6.9

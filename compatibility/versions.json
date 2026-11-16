@@ -1,13 +1,13 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.6.9",
-  "adapter_family": "minecraft-bedrock-26.60",
+  "api": "0.6.10",
+  "adapter_family": "minecraft-bedrock-26.65",
   "adapters": [
     {
-      "bds": "1.26.60",
-      "endstone": "0.11.15",
-      "status": "qualified-linux-x64",
+      "bds": "1.26.65",
+      "endstone": "0.11.16",
+      "status": "pending-live-validation",
       "features": [
         "block_states",
         "block_writes",
@@ -26,9 +26,7 @@
         "endstone_service",
         "live_python_bridge"
       ],
-      "platforms": [
-        "linux-x64"
-      ]
+      "platforms": []
     }
   ],
   "not_claimed": [
@@ -37,7 +35,18 @@
   ],
   "policy": "fail-closed; exact runtime BDS build and mapped Endstone version required",
   "endstone_requirement": ">=0.11.11",
-  "pending_targets": [],
+  "pending_targets": [
+    {
+      "game_version": "1.26.65",
+      "bds_package": "1.26.65.1",
+      "endstone": "0.11.16",
+      "profile": "compatibility/bds-1.26.65.json",
+      "status": "pending-live-validation",
+      "platforms": [
+        "linux-x64"
+      ]
+    }
+  ],
   "historical_preparation_profiles": [
     "compatibility/bds-1.26.50.5.json",
     "compatibility/bds-1.26.60-preparation.json"

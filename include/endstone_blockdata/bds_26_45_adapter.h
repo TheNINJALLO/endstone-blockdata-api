@@ -7,7 +7,7 @@ namespace endstone { class Server; }
 
 namespace endstone_blockdata {
 // Exact Minecraft Bedrock server/Endstone pair supported by this adapter:
-//   BDS 1.26.60 -> Endstone v0.11.15
+//   BDS 1.26.65 -> Endstone v0.11.16
 [[nodiscard]] bool isSupportedBds2645Build(std::string_view build) noexcept;
 [[nodiscard]] bool isExpectedBds2645Build(std::string_view runtime_build,
                                           std::string_view packaged_build) noexcept;

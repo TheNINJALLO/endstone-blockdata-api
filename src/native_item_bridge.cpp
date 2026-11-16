@@ -39,7 +39,7 @@ namespace {
 thread_local Level *active_item_registry_level = nullptr;
 
 // These RVAs and instruction fingerprints are for the official BDS
-// 1.26.60.6 Linux executable; historical Windows profile is disabled. They deliberately stay here instead of in
+// 1.26.65.1 Linux executable; historical Windows profile is disabled. They deliberately stay here instead of in
 // Endstone's symbol table so the plugin never imports an unresolved private
 // Bedrock symbol.
 #if defined(_WIN32)
@@ -78,40 +78,36 @@ constexpr std::array<std::uint8_t, 32> ManagerGiveLifetimePrefix{
     0x48, 0x85, 0xC0, 0x74, 0x5A, 0xF0, 0xFF, 0x40,
 };
 #elif defined(__linux__)
-constexpr std::uintptr_t FlattenStorageItemRva = 0x0c4afa50;
-constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x0c4afac0;
+constexpr std::uintptr_t FlattenStorageItemRva = 0x0c4b0440;
+constexpr std::uintptr_t FlattenStorageItemCoreRva = 0x0c4b04b0;
 constexpr std::size_t StorageContextOffset = 0x25;
 constexpr std::size_t StorageCoreCallOffset = 0x2E;
 constexpr std::array<std::uint8_t, 7> StorageFunctionPrefix{
     0x41, 0x56, 0x53, 0x50, 0x49, 0x89, 0xfe,
-
 };
-constexpr std::uintptr_t CreateTrackerRva = 0x0bc50800;
-constexpr std::uintptr_t TrackStorageItemRva = 0x0bc4f1d0;
-constexpr std::uintptr_t ReceiveContainerLifetimesRva = 0x0b540220;
-constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x0bc2b970;
+constexpr std::uintptr_t CreateTrackerRva = 0x0bc511f0;
+constexpr std::uintptr_t TrackStorageItemRva = 0x0bc4fbc0;
+constexpr std::uintptr_t ReceiveContainerLifetimesRva = 0x0b540700;
+constexpr std::uintptr_t ManagerGiveLifetimeRva = 0x0bc2c360;
 constexpr std::ptrdiff_t ContainerOwnerOffset = 0x120;
 constexpr std::ptrdiff_t TrackerListOffset = 0x30;
 constexpr std::array<std::uint8_t, 29> CreateTrackerPrefix{
     0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54,
     0x53, 0x48, 0x83, 0xec, 0x10, 0x49, 0x89, 0xd4,
     0x49, 0x89, 0xf5, 0x48, 0x89, 0xfb, 0x48, 0x8b,
-    0x05, 0x6b, 0x47, 0x0e, 0x04,
-
+    0x05, 0xfb, 0x48, 0x0e, 0x04,
 };
 constexpr std::array<std::uint8_t, 30> TrackStorageItemPrefix{
     0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41,
     0x54, 0x53, 0x50, 0x48, 0x89, 0xfb, 0x48, 0x8b,
     0x42, 0x08, 0x48, 0x85, 0xc0, 0x0f, 0x84, 0xc1,
     0x00, 0x00, 0x00, 0x48, 0x8b, 0x38,
-
 };
 constexpr std::array<std::uint8_t, 32> ReceiveContainerLifetimesPrefix{
     0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54,
     0x53, 0x49, 0x89, 0xf6, 0x48, 0x89, 0xfb, 0x4c,
     0x8b, 0xa7, 0x20, 0x01, 0x00, 0x00, 0x4c, 0x8b,
     0xaf, 0x28, 0x01, 0x00, 0x00, 0x4d, 0x39, 0xec,
-
 };
 constexpr std::array<std::uint8_t, 36> ManagerGiveLifetimePrefix{
     0x53, 0x48, 0x83, 0xec, 0x20, 0x48, 0x89, 0xf3,
@@ -119,7 +115,6 @@ constexpr std::array<std::uint8_t, 36> ManagerGiveLifetimePrefix{
     0x10, 0x48, 0x8b, 0x57, 0x18, 0x48, 0x89, 0x54,
     0x24, 0x18, 0x48, 0x85, 0xd2, 0x74, 0x31, 0xf0,
     0x48, 0xff, 0x42, 0x08,
-
 };
 #else
 #error "The exact storage-item bridge supports only Windows and Linux"
@@ -536,7 +531,7 @@ bool replaceManagers(
 
 ::ItemInstance *endstoneNativeItem(endstone::ItemStack &item) noexcept
 {
-    // Endstone 0.11.15 ItemStack contains exactly one unique_ptr<Impl>. Its
+    // Endstone 0.11.16 ItemStack contains exactly one unique_ptr<Impl>. Its
     // concrete EndstoneItemStack begins with the Impl vptr and then stores an
     // ItemInstance. This is an intentionally pinned x64 layout bridge; using
     // private Endstone RTTI here previously made the plugin fail to load.
@@ -634,7 +629,7 @@ void flattenNativeStorageItem(ItemStackBase &item)
 {
     if (!verifyNativeStorageItemBridge()) {
         throw std::runtime_error(
-            "BDS 1.26.60 storage-item fingerprint verification failed");
+            "BDS 1.26.65 storage-item fingerprint verification failed");
     }
     invokeStorageFunction(FlattenStorageItemRva, item);
 }

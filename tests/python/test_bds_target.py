@@ -51,19 +51,19 @@ class TestBdsTarget(unittest.TestCase):
                 self.assertFalse(TARGET.endstone_at_least(version, "0.11.11"))
 
     def test_recorded_target_selects_known_endstone_and_keeps_native_qualification_explicit(self):
-        profile = json.loads((ROOT / "compatibility/bds-1.26.60.json").read_text())
-        self.assertEqual(profile["bds_package"], "1.26.60.6")
+        profile = json.loads((ROOT / "compatibility/bds-1.26.65.json").read_text())
+        self.assertEqual(profile["bds_package"], "1.26.65.1")
         self.assertEqual(profile["endstone"]["requirement"], ">=0.11.11")
         self.assertIsNone(profile["endstone"]["maximum_version"])
-        self.assertEqual(profile["endstone"]["build_version"], "0.11.15")
-        self.assertEqual(profile["endstone"]["source_commit"], "b4aaa87d2c5305e7d340168f824ac2e2ea722e44")
-        self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.60.json")
-        self.assertEqual(profile["game_version"], "1.26.60")
-        self.assertEqual(profile["status"], "qualified-linux-x64")
-        self.assertEqual(profile["qualified_platforms"], ["linux-x64"])
+        self.assertEqual(profile["endstone"]["build_version"], "0.11.16")
+        self.assertEqual(profile["endstone"]["source_commit"], "23cb5758bdc070888cb89ecd1541ef25c4305b5c")
+        self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.65.json")
+        self.assertEqual(profile["game_version"], "1.26.65")
+        self.assertEqual(profile["status"], "mapped-offline-linux-x64")
+        self.assertEqual(profile["qualified_platforms"], [])
         metadata = json.loads((ROOT / "compatibility/versions.json").read_text())
         self.assertEqual(metadata["endstone_requirement"], ">=0.11.11")
-        self.assertEqual(metadata["qualified_targets"][0]["bds_package"], "1.26.60.6")
+        self.assertEqual(metadata["pending_targets"][0]["bds_package"], "1.26.65.1")
         wheel_projects = {
             "endstone-blockdata-api": "examples/python/block_data_inspector_plugin/pyproject.toml",
             "endstone-worldgen-api": "examples/python/world_gen_studio_plugin/pyproject.toml",

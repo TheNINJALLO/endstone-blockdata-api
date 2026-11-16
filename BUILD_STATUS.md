@@ -1,5 +1,17 @@
 # Build status
 
+Version: **0.6.10**
+
+Target: Endstone **0.11.16**, BDS **1.26.65.1 / 26.65**, protocol **2225**, CPython **3.14**.
+
+SDK commit: `23cb5758bdc070888cb89ecd1541ef25c4305b5c`.
+
+Exact upstream binaries have been verified and Linux native addresses/fingerprints refreshed. Native compilation, live feature qualification, persisted-data restart and clean shutdown are pending. Candidate metadata keeps `native_release_ready: false`; previous qualification does not qualify these new binaries.
+
+## Historical baseline
+
+# Build status
+
 Version: **0.6.9**
 
 Release target: Endstone **0.11.15**, Minecraft **1.26.60**,

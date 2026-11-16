@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import BinaryIO
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TARGET = ROOT / "compatibility" / "bds-1.26.60.json"
+DEFAULT_TARGET = ROOT / "compatibility" / "bds-1.26.65.json"
 
 
 def fingerprint(stream: BinaryIO) -> dict:
@@ -91,7 +91,7 @@ def inspect_archive(path: Path, platform: str) -> dict:
 
 
 def endstone_at_least(version: str, minimum: str) -> bool:
-    # Compare numeric components, never lexicographic strings (0.11.9 < 0.11.15).
+    # Compare numeric components, never lexicographic strings (0.11.9 < 0.11.16).
     # Development builds are eligible for preparation, not native qualification.
     pattern = r"v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:(?:\.dev[0-9]+|-dev(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     actual = re.fullmatch(pattern, version)

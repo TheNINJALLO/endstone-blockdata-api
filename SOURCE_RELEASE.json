@@ -1,27 +1,27 @@
 {
   "name": "endstone-blockdata-api",
-  "version": "0.6.9",
-  "adapter_family": "minecraft-bedrock-26.60",
+  "version": "0.6.10",
+  "adapter_family": "minecraft-bedrock-26.65",
   "supported_bds": [
-    "1.26.60"
+    "1.26.65"
   ],
   "endstone_tags": [
-    "v0.11.15"
+    "v0.11.16"
   ],
   "verified_bds_archives": {
-    "linux-x64": {
-      "version": "1.26.60.6",
-      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.60.6.zip",
-      "sha256": "cbbd5414fa6a310353ed1fc76a0ba691c3fd1ea852fd04bb76764ee4c1afdb98"
-    },
     "windows-x64": {
-      "version": "1.26.60.6",
-      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.60.6.zip",
-      "sha256": "21620db4f80d0fe206f21cb08f52f4e5f14252ce865ec49ccfbe0d9f93ce88b0"
+      "version": "1.26.65.1",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-win/bedrock-server-1.26.65.1.zip",
+      "sha256": "c98b9824783b000b8a8d602e6f58467725316c8f635739b1e31998871995621e"
+    },
+    "linux-x64": {
+      "version": "1.26.65.1",
+      "url": "https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-1.26.65.1.zip",
+      "sha256": "4443e58064f5fa96f3464ab46c20cd89b631f7117e4c94d327f48c4eb64f9969"
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "Endstone 0.11.15 / BDS 1.26.60.6: 6 CTest checks, 89 Python tests, exact packaged-artifact live checks, persisted-block restart and clean shutdown passed. No connected-player session. See compatibility/native-qualification.json.",
+  "native_validation": "Exact upstream binaries verified and native addresses mapped offline. Native compilation and disposable-server qualification are pending.",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,
@@ -29,7 +29,7 @@
       "linux-x64"
     ],
     "bds": [
-      "1.26.60"
+      "1.26.65"
     ],
     "linux_runner": "ubuntu-22.04 + clang-20 + libc++20 + Ninja",
     "windows_toolchain": "Visual Studio environment + clang-cl + lld-link + Ninja + Conan 2",
@@ -41,22 +41,22 @@
     "compatibility/bds-1.26.50.5.json",
     "compatibility/bds-1.26.60-preparation.json"
   ],
-  "python_version": "0.6.9",
-  "release_channel": "native-release",
-  "native_release_ready": true,
-  "qualified_targets": [
+  "python_version": "0.6.10",
+  "release_channel": "native-candidate",
+  "native_release_ready": false,
+  "qualified_targets": [],
+  "publication_status": "candidate-under-validation",
+  "release_tag": "v0.6.10",
+  "pending_targets": [
     {
-      "game_version": "1.26.60",
-      "bds_package": "1.26.60.6",
-      "endstone": "0.11.15",
-      "profile": "compatibility/bds-1.26.60.json",
-      "status": "qualified-linux-x64",
+      "game_version": "1.26.65",
+      "bds_package": "1.26.65.1",
+      "endstone": "0.11.16",
+      "profile": "compatibility/bds-1.26.65.json",
+      "status": "pending-live-validation",
       "platforms": [
         "linux-x64"
       ]
     }
-  ],
-  "publication_status": "release-prepared",
-  "release_tag": "v0.6.9",
-  "pending_targets": []
+  ]
 }
