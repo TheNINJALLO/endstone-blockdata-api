@@ -533,8 +533,6 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
     root.putInt("z", location.z);
     root.putInt("_endstone_actor_type", static_cast<std::int32_t>(access.actor->getType()));
     root.putString("_endstone_bds_build", std::string(build));
-    if (access.main->hasCustomName()) root.putString("CustomName", access.main->getName());
-
     if (access.container) {
         access.container->addAdditionalSaveData(root);
         root.putInt("_endstone_container_size", access.container_size);
@@ -547,6 +545,21 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
             }
         }
         root.put("Items", items.copy());
+    }
+    // getName() returns a type/translation label (for example container.barrel).
+    // VanillaBlockActor owns the persisted custom name, independently of the
+    // Container presentation fields written by addAdditionalSaveData above.
+    if (access.main->hasCustomName()) {
+        using NativeName = Bedrock::Safety::RedactableString;
+        static_assert(std::is_standard_layout_v<NativeName>);
+        // The pinned SDK declares std::string unredacted_string_ first. A
+        // standard-layout object and its first member are pointer-interconvertible.
+        const auto &name = access.main->getCustomName();
+        root.putString("CustomName", *reinterpret_cast<const std::string *>(&name));
+        root.putByte("HasCustomName", 1);
+    } else {
+        root.remove("CustomName");
+        root.putByte("HasCustomName", 0);
     }
     return root;
 }
