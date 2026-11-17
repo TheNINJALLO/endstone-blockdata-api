@@ -88,7 +88,9 @@ class Probe(Plugin):
             assert inventory[0]["Name"] == "minecraft:diamond" and inventory[0]["Count"] == 4, inventory
             assert inventory[0]["tag"]["display"]["Name"] == "Verified native item", inventory
             contents = inventory[1]["tag"]["storage_item_component_content"]
-            assert len(contents) == 1 and contents[0]["Name"] == "minecraft:diamond" and contents[0]["Count"] == 2, contents
+            occupied = [entry for entry in contents if entry.get("Name") and entry.get("Count", 0) > 0]
+            assert len(occupied) == 1 and occupied[0]["Name"] == "minecraft:diamond" and occupied[0]["Count"] == 2, contents
+            assert occupied[0]["Slot"] == 0, occupied
             checks.update(container_item_and_user_nbt=True, native_bundle_roundtrip=True)
             report = {"passed": True, "mode": MODE.read_text(), "checks": checks,
                       "native_version": bridge.__version__, "capabilities": bridge.capabilities(self.server)}
