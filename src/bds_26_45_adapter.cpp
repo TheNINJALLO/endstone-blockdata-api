@@ -27,6 +27,12 @@
 
 namespace endstone_blockdata {
 namespace {
+// The native name setter does not enable persistence. Expose the exact SDK's
+// virtual save-policy method without casting the object to an invented layout.
+struct VanillaNameSavePolicy : IVanillaMainBlockActorComponent {
+    using IVanillaMainBlockActorComponent::_setCustomNameSaved;
+};
+
 bool isExactRuntimeBuild(const endstone::Server &server) {
     return isExpectedBds2645Build(server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
            isExpectedEndstoneVersion(server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
@@ -327,7 +333,7 @@ struct ActorLookup {
 };
 
 bool isSupportedVanillaActorType(BlockActorType type) {
-        // Endstone v0.11.15 declares the vanilla actor component as the second
+        // Endstone v0.11.16 declares the vanilla actor component as the second
     // base of VanillaBlockActor. Data-driven and sentinel actor values do not
     // carry that exact ABI contract and must never be reinterpreted as one.
     switch (type) {
@@ -527,8 +533,6 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
     root.putInt("z", location.z);
     root.putInt("_endstone_actor_type", static_cast<std::int32_t>(access.actor->getType()));
     root.putString("_endstone_bds_build", std::string(build));
-    if (access.main->hasCustomName()) root.putString("CustomName", access.main->getName());
-
     if (access.container) {
         access.container->addAdditionalSaveData(root);
         root.putInt("_endstone_container_size", access.container_size);
@@ -541,6 +545,21 @@ CompoundTag captureCanonicalActorTag(const ActorAccess &access, const BlockLocat
             }
         }
         root.put("Items", items.copy());
+    }
+    // getName() returns a type/translation label (for example container.barrel).
+    // VanillaBlockActor owns the persisted custom name, independently of the
+    // Container presentation fields written by addAdditionalSaveData above.
+    if (access.main->hasCustomName()) {
+        using NativeName = Bedrock::Safety::RedactableString;
+        static_assert(std::is_standard_layout_v<NativeName>);
+        // The pinned SDK declares std::string unredacted_string_ first. A
+        // standard-layout object and its first member are pointer-interconvertible.
+        const auto &name = access.main->getCustomName();
+        root.putString("CustomName", *reinterpret_cast<const std::string *>(&name));
+        root.putByte("HasCustomName", 1);
+    } else {
+        root.remove("CustomName");
+        root.putByte("HasCustomName", 0);
     }
     return root;
 }
@@ -613,7 +632,7 @@ public:
     explicit Bds2645BlockAdapter(endstone::Server &server)
         : server_(server), public_(makeEndstonePublicAdapter(server)) {}
 
-    std::string_view name() const noexcept override { return "bds-26.60-exact-nbt"; }
+    std::string_view name() const noexcept override { return "bds-26.65-exact-nbt"; }
     AdapterCapabilities capabilities() const noexcept override {
         AdapterCapabilities out;
         out.block_states = true;
@@ -978,8 +997,15 @@ public:
             try {
                 if (!plan.additional_updates.empty())
                     access->container->readAdditionalSaveData(candidate);
-                if (plan.custom_name)
+                if (plan.custom_name) {
+                    // Container's presentation name and VanillaBlockActor's
+                    // persisted name are separate native fields.
                     access->container->setCustomName(*plan.custom_name);
+                    access->main->setCustomName(*plan.custom_name);
+                    constexpr auto set_saved =
+                        &VanillaNameSavePolicy::_setCustomNameSaved;
+                    (access->main->*set_saved)(!plan.custom_name->empty());
+                }
                 signalContainerChanged(*access, {});
             }
             catch (...) {
@@ -995,7 +1021,7 @@ public:
             }
             return {ApplyStatus::Applied,
                     updated
-                        ? "applied canonical block-actor NBT through exact BDS 26.60 adapter"
+                        ? "applied canonical block-actor NBT through exact BDS 26.65 adapter"
                         : "block-actor NBT was applied, but readback capture was unavailable",
                     updated ? updated->revision : 0};
         }
@@ -1101,7 +1127,7 @@ public:
         }
         return {ApplyStatus::Applied,
                 updated
-                    ? "applied canonical block-actor NBT through exact BDS 26.60 adapter"
+                    ? "applied canonical block-actor NBT through exact BDS 26.65 adapter"
                     : "container inventory was applied, but readback capture was unavailable",
                 updated ? updated->revision : 0};
     }

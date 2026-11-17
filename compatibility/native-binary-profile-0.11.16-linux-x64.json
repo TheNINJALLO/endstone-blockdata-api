@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "bds_package": "1.26.65.1",
+  "endstone": "0.11.16",
+  "platform": "linux-x64",
+  "endstone_commit": "23cb5758bdc070888cb89ecd1541ef25c4305b5c",
+  "native_adapter_qualified": false,
+  "images": {
+    "BdsOffsets": {
+      "filename": "bedrock_server",
+      "sha256": "ae606d06f9803b4e56b6af7ae15fdc149736fb27096221a0ec082881e897b067",
+      "size_bytes": 265503224,
+      "sites": [
+        {
+          "previous_address": "0xb540220",
+          "address": "0xb540700",
+          "method": "unique-normalized-function",
+          "old_function": "0xb540220",
+          "new_function": "0xb540700",
+          "offset": 0,
+          "size_bytes": 160,
+          "file_offset": 190052096,
+          "bytes": "4157415641554154534989f64889fb4c8ba7200100004c8baf280100004d39ec"
+        },
+        {
+          "previous_address": "0xbc2b970",
+          "address": "0xbc2c360",
+          "method": "unique-normalized-function",
+          "old_function": "0xbc2b970",
+          "new_function": "0xbc2c360",
+          "offset": 0,
+          "size_bytes": 256,
+          "file_offset": 197309280,
+          "bytes": "534883ec204889f3488b4f1048894c2410488b571848895424184885d27431f0"
+        },
+        {
+          "previous_address": "0xbc4f1d0",
+          "address": "0xbc4fbc0",
+          "method": "unique-normalized-function",
+          "old_function": "0xbc4f1d0",
+          "new_function": "0xbc4fbc0",
+          "offset": 0,
+          "size_bytes": 448,
+          "file_offset": 197454784,
+          "bytes": "55415741564155415453504889fb488b42084885c00f84c1000000488b384885"
+        },
+        {
+          "previous_address": "0xbc50800",
+          "address": "0xbc511f0",
+          "method": "unique-normalized-function",
+          "old_function": "0xbc50800",
+          "new_function": "0xbc511f0",
+          "offset": 0,
+          "size_bytes": 400,
+          "file_offset": 197460464,
+          "bytes": "4157415641554154534883ec104989d44989f54889fb488b05fb480e04488d3d"
+        },
+        {
+          "previous_address": "0xc4afa50",
+          "address": "0xc4b0440",
+          "method": "unique-normalized-function",
+          "old_function": "0xc4afa50",
+          "new_function": "0xc4b0440",
+          "offset": 0,
+          "size_bytes": 112,
+          "file_offset": 206238784,
+          "bytes": "415653504989fe488b05ba568803488d3db3568803be01000000ff50104889c3"
+        },
+        {
+          "previous_address": "0xc4afac0",
+          "address": "0xc4b04b0",
+          "method": "unique-normalized-function",
+          "old_function": "0xc4afac0",
+          "new_function": "0xc4b04b0",
+          "offset": 0,
+          "size_bytes": 736,
+          "file_offset": 206238896,
+          "bytes": "554157415641554154534883ec28488b47084885c00f84e50100004889fb488b"
+        }
+      ]
+    },
+    "EndstoneOffsets": {
+      "filename": "libendstone_runtime.so",
+      "sha256": "3ca5f570e38de2faeba579187ba943c1afc6cfdc9f62762b8306ed728c1486d3",
+      "size_bytes": 84188657,
+      "sites": []
+    }
+  }
+}

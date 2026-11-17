@@ -96,14 +96,14 @@ class TestNativeSourceGuards(unittest.TestCase):
             "server.getMinecraftVersion() == ENDSTONE_BLOCKDATA_BDS_BUILD",
             adapter,
         )
-        self.assertIn('canonicalBdsBuild(build) == "26.60"', version_gate)
+        self.assertIn('canonicalBdsBuild(build) == "26.65"', version_gate)
         self.assertIn("runtime BDS={} Endstone={}; expected BDS={} Endstone={}", plugin)
         self.assertIn("verification={}; runtime BDS={}", plugin)
         self.assertIn("nativeStorageItemBridgeStatusName", plugin)
 
     def test_exact_result_patch_and_install_components_are_guarded(self):
         cmake = (ROOT / "CMakeLists.txt").read_text(encoding="utf-8")
-        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.15")', cmake)
+        self.assertIn('set(ENDSTONE_EXACT_TAG "v0.11.16")', cmake)
         self.assertIn('std::string(\\"Error: \\") + error', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_FORMAT "std::format(\\"{}\\", error_info.error)")', cmake)
         self.assertIn('set(ENDSTONE_RESULT_ERROR_MESSAGE "error_info.error.message()")', cmake)
@@ -143,16 +143,16 @@ class TestNativeSourceGuards(unittest.TestCase):
             "CreateTrackerRva = 0x02379870",
             "TrackStorageItemRva = 0x02377160",
             "ManagerGiveLifetimeRva = 0x02DFF120",
-            'FlattenStorageItemRva = 0x0c4afa50',
-            'FlattenStorageItemCoreRva = 0x0c4afac0',
-            'CreateTrackerRva = 0x0bc50800',
-            'TrackStorageItemRva = 0x0bc4f1d0',
-            'ReceiveContainerLifetimesRva = 0x0b540220',
-            'ManagerGiveLifetimeRva = 0x0bc2b970',
+            'FlattenStorageItemRva = 0x0c4b0440',
+            'FlattenStorageItemCoreRva = 0x0c4b04b0',
+            'CreateTrackerRva = 0x0bc511f0',
+            'TrackStorageItemRva = 0x0bc4fbc0',
+            'ReceiveContainerLifetimesRva = 0x0b540700',
+            'ManagerGiveLifetimeRva = 0x0bc2c360',
         ):
             self.assertIn(expected, bridge)
-        self.assertIn("1.26.60.6", bridge)
-        self.assertIn("0x05, 0x6b, 0x47, 0x0e, 0x04", bridge)
+        self.assertIn("1.26.65.1", bridge)
+        self.assertIn("0x05, 0xfb, 0x48, 0x0e, 0x04", bridge)
         self.assertNotIn("0x05, 0xEB, 0x3A, 0x55, 0x03", bridge)
         self.assertIn("CreateTrackerMismatch", bridge)
         self.assertIn('return "create-tracker-mismatch"', bridge)

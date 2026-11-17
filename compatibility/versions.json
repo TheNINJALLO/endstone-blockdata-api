@@ -1,12 +1,12 @@
 {
   "schema": 3,
   "project": "endstone-blockdata-api",
-  "api": "0.6.9",
-  "adapter_family": "minecraft-bedrock-26.60",
+  "api": "0.6.10",
+  "adapter_family": "minecraft-bedrock-26.65",
   "adapters": [
     {
-      "bds": "1.26.60",
-      "endstone": "0.11.15",
+      "bds": "1.26.65",
+      "endstone": "0.11.16",
       "status": "qualified-linux-x64",
       "features": [
         "block_states",
@@ -43,6 +43,18 @@
     "compatibility/bds-1.26.60-preparation.json"
   ],
   "qualified_targets": [
+    {
+      "game_version": "1.26.65",
+      "bds_package": "1.26.65.1",
+      "endstone": "0.11.16",
+      "profile": "compatibility/bds-1.26.65.json",
+      "status": "qualified-linux-x64",
+      "platforms": [
+        "linux-x64"
+      ],
+      "evidence": "evidence/endstone-0.11.16/probe.json",
+      "workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
+    },
     {
       "game_version": "1.26.60",
       "bds_package": "1.26.60.6",
