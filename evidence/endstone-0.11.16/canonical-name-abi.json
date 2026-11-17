@@ -1,0 +1,47 @@
+{
+  "endstone": "0.11.16",
+  "bds": "1.26.65.1",
+  "bds_sha256": "ae606d06f9803b4e56b6af7ae15fdc149736fb27096221a0ec082881e897b067",
+  "sdk_commit": "23cb5758bdc070888cb89ecd1541ef25c4305b5c",
+  "sdk_header": "src/bedrock/safety/redactable_string.h",
+  "sdk_first_member": "std::string unredacted_string_",
+  "main_component_vtable": "0xfbfce08",
+  "main_component_offset": 56,
+  "barrel_get_name": "Returns the constant translation label container.barrel; it is not the stored custom name.",
+  "get_custom_name": "Returns the RedactableString at main-component offset 0x58.",
+  "custom_name_saved": "Virtual slot 26 writes mask 0x08 in properties at main-component offset 0x1c; slot 11 reads that bit.",
+  "capture_contract": "The exact SDK standard-layout class and its first member are pointer-interconvertible. A compile-time standard-layout assertion guards the native string view. Runtime qualification must independently verify the saved name after restart.",
+  "virtual_sites": [
+    {
+      "slot": 5,
+      "address": "0xd42f830",
+      "bytes": "4889f8c607200f1005de9fddf30f114701c6471100c3cccccccccccccccccccc"
+    },
+    {
+      "slot": 8,
+      "address": "0xd3f1ef0",
+      "bytes": "0fb64758a801740b488b47604885c00f95c0c3d1e84885c00f95c0c3cccccccc"
+    },
+    {
+      "slot": 9,
+      "address": "0xd3f1f20",
+      "bytes": "488d4758c3cccccccccccccccccccccc415653504889fb4881c7900000004839"
+    },
+    {
+      "slot": 10,
+      "address": "0xd3f1fe0",
+      "bytes": "415653504889fb4883c7584839f77455f607010fb6167515f6c2017532488b46"
+    },
+    {
+      "slot": 11,
+      "address": "0xd3f20a0",
+      "bytes": "0fb6471c2408c0e803c3cccccccccccc4156534883ec184989f64889fb488b06"
+    },
+    {
+      "slot": 26,
+      "address": "0xd3f26e0",
+      "bytes": "0fb6471c24f740c0e6034008c64088771cc3cccccccccccccccccccccccccccc"
+    }
+  ],
+  "native_adapter_qualified": false
+}

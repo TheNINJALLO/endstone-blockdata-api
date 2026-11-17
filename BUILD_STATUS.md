@@ -6,7 +6,9 @@ Target: Endstone **0.11.16**, BDS **1.26.65.1 / 26.65**, protocol **2225**, CPyt
 
 SDK commit: `23cb5758bdc070888cb89ecd1541ef25c4305b5c`.
 
-Exact upstream binaries have been verified and Linux native addresses/fingerprints refreshed. Native compilation, live feature qualification, persisted-data restart and clean shutdown are pending. Candidate metadata keeps `native_release_ready: false`; previous qualification does not qualify these new binaries.
+Linux exact native compilation, complete-wheel live writes and bundle roundtrip, full persisted restart and clean shutdown passed. Portable C++ passed on Linux and Windows, and all 89 Python tests passed. `native_release_ready: true` describes the recorded Linux artifact qualification; publication is separate. Windows native runtime qualification remains pending.
+
+Evidence: [evidence/endstone-0.11.16/probe.json](evidence/endstone-0.11.16/probe.json), [workflow](https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497). The recorded native commit is `f59ec599ac4d67930987669557a226de2c081160`.
 
 ## Historical baseline
 

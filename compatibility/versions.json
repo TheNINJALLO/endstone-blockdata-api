@@ -7,7 +7,7 @@
     {
       "bds": "1.26.65",
       "endstone": "0.11.16",
-      "status": "pending-live-validation",
+      "status": "qualified-linux-x64",
       "features": [
         "block_states",
         "block_writes",
@@ -26,7 +26,9 @@
         "endstone_service",
         "live_python_bridge"
       ],
-      "platforms": []
+      "platforms": [
+        "linux-x64"
+      ]
     }
   ],
   "not_claimed": [
@@ -35,23 +37,24 @@
   ],
   "policy": "fail-closed; exact runtime BDS build and mapped Endstone version required",
   "endstone_requirement": ">=0.11.11",
-  "pending_targets": [
-    {
-      "game_version": "1.26.65",
-      "bds_package": "1.26.65.1",
-      "endstone": "0.11.16",
-      "profile": "compatibility/bds-1.26.65.json",
-      "status": "pending-live-validation",
-      "platforms": [
-        "linux-x64"
-      ]
-    }
-  ],
+  "pending_targets": [],
   "historical_preparation_profiles": [
     "compatibility/bds-1.26.50.5.json",
     "compatibility/bds-1.26.60-preparation.json"
   ],
   "qualified_targets": [
+    {
+      "game_version": "1.26.65",
+      "bds_package": "1.26.65.1",
+      "endstone": "0.11.16",
+      "profile": "compatibility/bds-1.26.65.json",
+      "status": "qualified-linux-x64",
+      "platforms": [
+        "linux-x64"
+      ],
+      "evidence": "evidence/endstone-0.11.16/probe.json",
+      "workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
+    },
     {
       "game_version": "1.26.60",
       "bds_package": "1.26.60.6",

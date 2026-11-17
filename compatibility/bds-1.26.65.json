@@ -4,7 +4,7 @@
   "game_version": "1.26.65",
   "bds_package": "1.26.65.1",
   "bds_runtime": "26.65",
-  "bds_runtime_status": "Official BDS binaries verified; native update awaits disposable-server qualification.",
+  "bds_runtime_status": "Validated with the exact Endstone 0.11.16 runtime and BDS 1.26.65.1 package.",
   "endstone": {
     "minimum_version": "0.11.11",
     "requirement": ">=0.11.11",
@@ -31,7 +31,7 @@
       "gnu_build_id": "215d0b46034f63772f19793c19b121e004d3b8cd"
     }
   },
-  "status": "mapped-offline-linux-x64",
+  "status": "qualified-linux-x64",
   "server_files": {
     "windows-x64": {
       "archive": {
@@ -69,19 +69,23 @@
     },
     "archive_checksums_verified": true
   },
-  "qualification_required": [
-    "Compile exact native plugins and CPython 3.14 bridges.",
-    "Run disposable-server feature, persistence, restart and shutdown checks on the exact packaged binaries."
-  ],
+  "qualification_required": [],
   "policy": "Endstone dependency has no upper version bound. Native hooks remain exact-build gated until independently qualified; matching server files and SDK identification do not qualify the native adapter.",
-  "qualified_platforms": [],
+  "qualified_platforms": [
+    "linux-x64"
+  ],
   "unqualified_platforms": {
     "windows-x64": "Native adapter port and live qualification required before release"
   },
   "network_protocol": 2225,
-  "native_release_ready": false,
-  "publication_status": "candidate-under-validation",
+  "native_release_ready": true,
+  "publication_status": "qualified-unpublished",
   "runtime_configuration": {
     "enable-script": true
-  }
+  },
+  "qualification_evidence": [
+    "evidence/endstone-0.11.16/probe.json"
+  ],
+  "qualification_workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497",
+  "qualification_scope": "Headless complete-wheel startup, dependent AntiGrief adapter, invalid NBT rejection, block and canonical container NBT writes, stale revision rejection, native bundle/item roundtrip, persisted named container and items after full restart, and clean shutdown. No connected client was used."
 }

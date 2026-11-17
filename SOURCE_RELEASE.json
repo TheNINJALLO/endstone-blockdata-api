@@ -21,7 +21,7 @@
     }
   },
   "portable_tests": "included in GitHub Actions",
-  "native_validation": "Exact upstream binaries verified and native addresses mapped offline. Native compilation and disposable-server qualification are pending.",
+  "native_validation": "Linux exact native build and complete wheel passed live block, named-container, native bundle/item, dependent adapter, invalid NBT and stale-revision checks, full persisted restart, and clean shutdown. Portable Linux/Windows C++ and 89 Python tests passed.",
   "github_actions": {
     "push_artifacts": true,
     "tagged_releases": true,
@@ -42,21 +42,25 @@
     "compatibility/bds-1.26.60-preparation.json"
   ],
   "python_version": "0.6.10",
-  "release_channel": "native-candidate",
-  "native_release_ready": false,
-  "qualified_targets": [],
-  "publication_status": "candidate-under-validation",
-  "release_tag": "v0.6.10",
-  "pending_targets": [
+  "release_channel": "native-qualified",
+  "native_release_ready": true,
+  "qualified_targets": [
     {
       "game_version": "1.26.65",
       "bds_package": "1.26.65.1",
       "endstone": "0.11.16",
       "profile": "compatibility/bds-1.26.65.json",
-      "status": "pending-live-validation",
+      "status": "qualified-linux-x64",
       "platforms": [
         "linux-x64"
-      ]
+      ],
+      "evidence": "evidence/endstone-0.11.16/probe.json",
+      "workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
     }
-  ]
+  ],
+  "publication_status": "qualified-unpublished",
+  "release_tag": "v0.6.10",
+  "pending_targets": [],
+  "qualification_evidence": "evidence/endstone-0.11.16/probe.json",
+  "qualification_workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
 }

@@ -59,11 +59,11 @@ class TestBdsTarget(unittest.TestCase):
         self.assertEqual(profile["endstone"]["source_commit"], "23cb5758bdc070888cb89ecd1541ef25c4305b5c")
         self.assertEqual(TARGET.DEFAULT_TARGET.name, "bds-1.26.65.json")
         self.assertEqual(profile["game_version"], "1.26.65")
-        self.assertEqual(profile["status"], "mapped-offline-linux-x64")
-        self.assertEqual(profile["qualified_platforms"], [])
+        self.assertEqual(profile["status"], "qualified-linux-x64")
+        self.assertEqual(profile["qualified_platforms"], ["linux-x64"])
         metadata = json.loads((ROOT / "compatibility/versions.json").read_text())
         self.assertEqual(metadata["endstone_requirement"], ">=0.11.11")
-        self.assertEqual(metadata["pending_targets"][0]["bds_package"], "1.26.65.1")
+        self.assertEqual(metadata["qualified_targets"][0]["bds_package"], "1.26.65.1")
         wheel_projects = {
             "endstone-blockdata-api": "examples/python/block_data_inspector_plugin/pyproject.toml",
             "endstone-worldgen-api": "examples/python/world_gen_studio_plugin/pyproject.toml",

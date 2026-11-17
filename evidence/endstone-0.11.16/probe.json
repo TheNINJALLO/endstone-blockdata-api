@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "endstone": "0.11.16",
+  "bds": "1.26.65.1",
+  "wheel_sha256": "a05774c16a32a465953848604b221465d9d124147fd3c79a314b1b2ad1252aeb",
+  "persisted_restart": true,
+  "clean_shutdown": true,
+  "connected_client_tested": false,
+  "phases": [
+    {
+      "passed": true,
+      "mode": "write",
+      "checks": {
+        "service_and_bridge": true,
+        "dependent_antigrief_adapter": true,
+        "invalid_nbt_rejected": true,
+        "block_write": true,
+        "canonical_actor_nbt_write": true,
+        "native_container_and_bundle_write": true,
+        "stale_snapshot_rejected": true,
+        "container_item_and_user_nbt": true,
+        "native_bundle_roundtrip": true
+      },
+      "native_version": "0.6.10",
+      "capabilities": {
+        "adapter": "bds-26.65-exact-nbt",
+        "block_states": true,
+        "block_writes": true,
+        "block_entity_nbt": true,
+        "block_entity_nbt_write": true,
+        "canonical_actor_nbt": true,
+        "item_user_nbt": true,
+        "inventory": true,
+        "container_save_nbt": true,
+        "raw_block_entity_nbt": false,
+        "storage_item_reads": true,
+        "storage_item_writes": true,
+        "shelf_reads": true,
+        "shelf_writes": true
+      }
+    },
+    {
+      "passed": true,
+      "mode": "verify",
+      "checks": {
+        "service_and_bridge": true,
+        "dependent_antigrief_adapter": true,
+        "invalid_nbt_rejected": true,
+        "container_item_and_user_nbt": true,
+        "native_bundle_roundtrip": true
+      },
+      "native_version": "0.6.10",
+      "capabilities": {
+        "adapter": "bds-26.65-exact-nbt",
+        "block_states": true,
+        "block_writes": true,
+        "block_entity_nbt": true,
+        "block_entity_nbt_write": true,
+        "canonical_actor_nbt": true,
+        "item_user_nbt": true,
+        "inventory": true,
+        "container_save_nbt": true,
+        "raw_block_entity_nbt": false,
+        "storage_item_reads": true,
+        "storage_item_writes": true,
+        "shelf_reads": true,
+        "shelf_writes": true
+      }
+    }
+  ],
+  "source_commit": "f59ec599ac4d67930987669557a226de2c081160",
+  "workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
+}

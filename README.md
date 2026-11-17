@@ -2,53 +2,15 @@
 
 ## Endstone 0.11.16 update: v0.6.10
 
-The current source targets **Endstone 0.11.16**, **BDS 1.26.65.1 / runtime 26.65**, protocol **2225**, and **CPython 3.14** on Linux x86-64. Exact upstream checksums, native addresses and instruction fingerprints have been refreshed. Native compilation and disposable-server qualification are in progress; this candidate is not a published, qualified native release.
+Detached block snapshots, canonical container NBT and native item/bundle writes for **Endstone 0.11.16**, **BDS 1.26.65.1 / runtime 26.65**, protocol **2225**, and **CPython 3.14** on Linux x86-64. The SDK is pinned to `23cb5758bdc070888cb89ecd1541ef25c4305b5c`. Native hooks require this exact binary pair; the public package dependency remains `endstone>=0.11.11`.
 
-See [update status](UPDATE_ENDSTONE_0.11.16.md) before building or installing. The prior release documentation below applies to Endstone 0.11.15.
+Linux native compilation and the complete-wheel disposable-server test passed. The test checks live block and named-container writes, nested item NBT, native bundle contents, stale revision rejection, dependent AntiGrief service access, and invalid NBT rejection, then verifies the container name and items after a full server restart. This update also fixes custom names being lost on restart by synchronizing the container and block-actor fields, enabling native name persistence, and reading the saved name instead of the default container label. The 89 Python tests and portable Linux/Windows C++ checks passed. Windows native binaries remain unqualified.
 
-## Historical Endstone 0.11.15 release
+## Install
 
-> Endstone 0.11.15 release 0.6.9: This release includes verified Linux native artifacts. Windows runtime qualification remains pending for this Endstone update. The recorded validation defines the tested scope.
+Download the complete `endstone_blockdata_inspector-0.6.10-cp314-cp314-linux_x86_64.whl` from [the successful workflow](https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497). Stop the server, replace older inspector wheels and loose BlockData providers with this single wheel in `plugins/`, preserve plugin data, then restart. The wheel installs its matching native provider before dependent plugins load. The standalone `.so` is available for manual native-only installations.
 
-## Endstone 0.11.15 update: v0.6.9
-
-This release targets **Endstone 0.11.15**, **BDS 1.26.60.6 / runtime 26.60**, and **CPython 3.14** on Linux x86-64. Network protocol is **2225**. See [build status](BUILD_STATUS.md) for validation. Qualification uses the default `enable-script=true`; `enable-script=false` is unqualified for this release.
-
-The package requirement remains **Endstone >=0.11.11** without an upper bound; these native binaries require the exact **0.11.15** runtime. Install the complete inspector bundle wheel, which includes the matching native provider.
-
-Download [v0.6.9](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.9) for **Endstone 0.11.15**.
-
-[![Version](https://img.shields.io/badge/version-v0.6.9-blue.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.9)
-[![Endstone](https://img.shields.io/badge/Endstone-v0.11.15-emerald.svg?style=for-the-badge)](https://github.com/EndstoneMC/endstone)
-[![BDS Version](https://img.shields.io/badge/BDS-1.26.60-purple.svg?style=for-the-badge)](https://www.minecraft.net/en-us/download/server/bedrock)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](https://github.com/TheNINJALLO/endstone-blockdata-api/actions)
-[![Platform](https://img.shields.io/badge/platform-Linux-orange.svg?style=for-the-badge)](#-direct-release-downloads-v067)
-[![Language](https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Python-3776AB.svg?style=for-the-badge)](#-c--python-api-quickstart)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg?style=for-the-badge)](LICENSE)
-
-A high-performance, detached **Block State**, **Block Entity**, and **Canonical NBT** manipulation API for Endstone Bedrock Dedicated Servers (BDS).
-
-Designed for complex inventory handling, container snapshots, anti-grief transaction diffing, and live block trait modification without risking world corruption or looper thread lockups.
-
----
-
-## 📚 Documentation & Technical Wiki
-
-Comprehensive guides, architecture diagrams, container audit tutorials, and full API specifications are available on the [**Docsify Documentation Site**](docs/README.md).
-
----
-
-## 📦 Direct Release Downloads (`v0.6.9`)
-
-Use the **complete ZIP** matching BDS 1.26.60 and the server platform. It contains the self-contained `/bd` wheel with its matching native provider inside. The raw library is for native-API-only/manual installations.
-
-| Platform | BDS Version | Artifact Filename | Direct Download |
-| :--- | :--- | :--- | :--- |
-| **Linux x64 ZIP (recommended)** | `1.26.60` | `endstone-blockdata-api-v0.6.9-bds-1.26.60-linux-x64.zip` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.9/endstone-blockdata-api-v0.6.9-bds-1.26.60-linux-x64.zip) |
-| **Linux x64 raw plugin** | `1.26.60` | `endstone-blockdata-api-v0.6.9-bds-1.26.60-linux-x64.so` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.9/endstone-blockdata-api-v0.6.9-bds-1.26.60-linux-x64.so) |
-| **Linux `/bd` wheel** | `CPython 3.14` | `endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl` | [Download](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/download/v0.6.9/endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl) |
-
----
+This update is qualified and unpublished; no public v0.6.10 release was created. See [build status](BUILD_STATUS.md), [update details](UPDATE_ENDSTONE_0.11.16.md), [runtime evidence](evidence/endstone-0.11.16/probe.json), and [the documentation index](docs/README.md). The previous release documentation is preserved [here](docs/history/endstone-0.11.15.md).
 
 ## 🏛️ Architecture Overview
 
@@ -126,16 +88,9 @@ void onContainerTouch(endstone::Server &server) {
 
 ---
 
-## 🎮 In-Game Inspector Test Suite (`/bd`)
+## In-game inspector (`/bd`)
 
-The repository includes the [`endstone_blockdata_inspector`](examples/python/block_data_inspector_plugin/) command plugin. Choose the platform-specific **CPython 3.14** wheel from the same exact build as the native plugin; its `_endstone_blockdata_live` bridge is bundled inside the wheel.
-
-Stop the server and remove older BlockData inspector wheels before copying v0.6.9; leaving multiple versions in `plugins/` can make Endstone install them in an undefined order.
-
-```bash
-# Linux example: copy both files from the complete ZIP's plugins/ directory.
-cp endstone_blockdata_inspector-0.6.9-cp314-cp314-linux_x86_64.whl /path/to/endstone/plugins/
-```
+The complete inspector wheel contains both its Python bridge and matching native provider. See [installation](docs/INSTALL.md).
 
 ### In-Game Command Reference
 | Command | Usage | Description |
@@ -176,6 +131,6 @@ Full technical documentation, architecture deep dives, and API reference manuals
 
 Distributed under the [Apache License 2.0](LICENSE).
 
-## 0.6.9 dependency repair
+## Bundled provider
 
 The inspector wheel now bundles and loads the matching native `blockdata_api` provider. Install that complete wheel by itself in `plugins/`; remove older loose BlockData libraries and inspector wheels while stopped. The deployment ZIP uses the same wheel. See [installation](docs/INSTALL.md). The standalone native library is an optional advanced artifact, not an additional dependency to copy alongside the bundle.

@@ -7,7 +7,7 @@
 | anything else | none | refused |
 
 The native entry points and instruction fingerprints were verified against the
-official `1.26.65.1` Linux and Windows server executables. The source-release
+official `1.26.65.1` Linux executable and Endstone runtime. The Windows archive identity is retained for provenance; Windows native qualification remains pending. The source-release
 metadata records the exact archive URLs and SHA-256 checksums. The downloaded
 server archives are not redistributed by this project.
 
