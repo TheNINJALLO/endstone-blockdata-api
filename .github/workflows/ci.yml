@@ -186,6 +186,7 @@ jobs:
             ${{ runner.temp }}/blockdata-bundle-server/probe.json
 
       - name: Upload compiled plugin package
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.PROJECT_SLUG }}-exact-${{ matrix.bds }}-${{ matrix.platform }}

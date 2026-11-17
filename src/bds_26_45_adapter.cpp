@@ -985,7 +985,10 @@ public:
                 if (!plan.additional_updates.empty())
                     access->container->readAdditionalSaveData(candidate);
                 if (plan.custom_name) {
+                    // Container's presentation name and VanillaBlockActor's
+                    // persisted name are separate native fields.
                     access->container->setCustomName(*plan.custom_name);
+                    access->main->setCustomName(*plan.custom_name);
                     constexpr auto set_saved =
                         &VanillaNameSavePolicy::_setCustomNameSaved;
                     (access->main->*set_saved)(!plan.custom_name->empty());
@@ -1144,4 +1147,3 @@ std::shared_ptr<IBedrockBlockAdapter> makeBds2645Adapter(endstone::Server &serve
     return adapter->verifySymbols() ? adapter : nullptr;
 }
 }
-

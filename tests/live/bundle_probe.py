@@ -83,7 +83,7 @@ class Probe(Plugin):
             snapshot = bridge.capture(self.server, **LOCATION)
             actor = snapshot["block_entity"]
             assert snapshot["type"] == "minecraft:barrel"
-            assert actor["canonical"] and actor["nbt"]["CustomName"] == NAME, actor
+            assert actor["canonical"] and actor["nbt"].get("CustomName") == NAME, {"mode": MODE.read_text(), "actor": actor}
             inventory = {entry["slot"]: entry["item"] for entry in actor["inventory"]}
             assert inventory[0]["Name"] == "minecraft:diamond" and inventory[0]["Count"] == 4, inventory
             assert inventory[0]["tag"]["display"]["Name"] == "Verified native item", inventory
@@ -95,5 +95,5 @@ class Probe(Plugin):
             report = {"passed": True, "mode": MODE.read_text(), "checks": checks,
                       "native_version": bridge.__version__, "capabilities": bridge.capabilities(self.server)}
         except Exception:
-            report = {"passed": False, "error": traceback.format_exc()}
+            report = {"passed": False, "mode": MODE.read_text(), "error": traceback.format_exc()}
         RESULT.write_text(json.dumps(report, indent=2), encoding="utf-8")
