@@ -1,3 +1,9 @@
+## 0.6.10 ? Endstone 0.11.16 update (under validation)
+
+- Target BDS 1.26.65.1 / runtime 26.65 and the exact Endstone 0.11.16 SDK/runtime.
+- Refresh native binary identities, private hook addresses and instruction fingerprints from verified upstream inputs.
+- Keep previous exact profiles as historical evidence and require fresh native/live qualification before publication.
+
 # Changelog
 
 ## 0.6.9 - 2026-10-28

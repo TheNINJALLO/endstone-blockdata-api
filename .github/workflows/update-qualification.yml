@@ -1,0 +1,46 @@
+name: Qualify the pinned Endstone 0.11.16 bundle
+
+on:
+  push:
+    branches: [update/endstone-0.11.16]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  qualification:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Require the exact native sources used by the pinned build
+        run: >-
+          git diff --exit-code b3987e8c7e7c2f9555ec1d3aadd66d43b214245f --
+          src include cmake CMakeLists.txt conanfile.py pyproject.toml
+          examples/python/block_data_inspector_plugin
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: python -m pip install endstone==0.11.16
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          repository: TheNINJALLO/endstone-blockdata-api
+          run-id: 43982785400
+          name: endstone-blockdata-api-exact-1.26.65-linux-x64
+          path: dist/release
+      - name: Verify the pinned native package and run the extended live probe
+        run: |
+          python scripts/verify_release_assets.py --slug endstone-blockdata-api --version 0.6.10 --bds 1.26.65 --platform linux-x64
+          python tests/live/test_bundle_startup.py dist/release/*-cp314-cp314-linux_x86_64.whl --server "$RUNNER_TEMP/blockdata-qualification"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: blockdata-0.6.10-persistence-qualification
+          path: |
+            ${{ runner.temp }}/blockdata-qualification/*server*.log
+            ${{ runner.temp }}/blockdata-qualification/probe.json
+          if-no-files-found: warn
