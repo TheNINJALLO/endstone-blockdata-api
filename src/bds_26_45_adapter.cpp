@@ -27,6 +27,12 @@
 
 namespace endstone_blockdata {
 namespace {
+// The native name setter does not enable persistence. Expose the exact SDK's
+// virtual save-policy method without casting the object to an invented layout.
+struct VanillaNameSavePolicy : IVanillaMainBlockActorComponent {
+    using IVanillaMainBlockActorComponent::_setCustomNameSaved;
+};
+
 bool isExactRuntimeBuild(const endstone::Server &server) {
     return isExpectedBds2645Build(server.getMinecraftVersion(), ENDSTONE_BLOCKDATA_BDS_BUILD) &&
            isExpectedEndstoneVersion(server.getVersion(), ENDSTONE_BLOCKDATA_ENDSTONE_VERSION);
@@ -978,8 +984,12 @@ public:
             try {
                 if (!plan.additional_updates.empty())
                     access->container->readAdditionalSaveData(candidate);
-                if (plan.custom_name)
+                if (plan.custom_name) {
                     access->container->setCustomName(*plan.custom_name);
+                    constexpr auto set_saved =
+                        &VanillaNameSavePolicy::_setCustomNameSaved;
+                    (access->main->*set_saved)(!plan.custom_name->empty());
+                }
                 signalContainerChanged(*access, {});
             }
             catch (...) {
@@ -1134,3 +1144,4 @@ std::shared_ptr<IBedrockBlockAdapter> makeBds2645Adapter(endstone::Server &serve
     return adapter->verifySymbols() ? adapter : nullptr;
 }
 }
+
