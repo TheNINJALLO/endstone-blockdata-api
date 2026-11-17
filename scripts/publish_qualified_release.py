@@ -144,9 +144,9 @@ def prepare(config, incoming, source, stage):
 
 def api(repo, suffix, *, missing_ok=False, method="GET", fields=None):
     args = ["gh", "api", f"repos/{repo}/{suffix}", "--method", method]
-    for key, value in (fields or {}).items():
-        args.extend(["-f", f"{key}={value}"])
-    result = subprocess.run(args, text=True, capture_output=True)
+    if fields is not None:
+        args.extend(["--input", "-"])
+    result = subprocess.run(args, input=json.dumps(fields) if fields is not None else None, text=True, capture_output=True)
     if result.returncode:
         if missing_ok and "404" in result.stderr:
             return None
@@ -154,7 +154,17 @@ def api(repo, suffix, *, missing_ok=False, method="GET", fields=None):
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
+def find_release(repo, tag):
+    published = api(repo, "releases/tags/" + tag, missing_ok=True)
+    if published:
+        return published
+    # The tag endpoint returns published releases; drafts are available by ID.
+    return next((r for r in api(repo, "releases?per_page=100") if r["tag_name"] == tag), None)
+
+
 def main():
+    global ROOT
+    job_root = ROOT
     config = read(ROOT / ".github/release-approval.json")
     repo = os.environ["GITHUB_REPOSITORY"]
     require(os.environ.get("GITHUB_REF") == "refs/heads/main", "Publish only from main")
@@ -162,15 +172,28 @@ def main():
     if metadata and metadata.get("version") != config["version"]:
         print("This version has no matching release approval; skipping.")
         return
-    existing = api(repo, "releases/tags/" + config["tag"], missing_ok=True)
+    existing = find_release(repo, config["tag"])
     if existing and not existing["draft"]:
         require(existing["prerelease"] is False, "Existing release is a prerelease")
         print("Stable release already exists; preserving its assets:", existing["html_url"])
         return
-    parents = run("git", "rev-list", "--parents", "-n", "1", "HEAD").split()
-    source = parents[2] if len(parents) == 3 else parents[0]
-    require(run("git", "rev-parse", "HEAD^{tree}") == run("git", "rev-parse", source + "^{tree}"), "Merged tree differs from the tested source")
+    tag = api(repo, "git/ref/tags/" + config["tag"], missing_ok=True)
+    if tag:
+        obj = tag["object"]
+        while obj["type"] == "tag":
+            obj = api(repo, "git/tags/" + obj["sha"])["object"]
+        require(obj["type"] == "commit", "Release tag is not a commit")
+        source = obj["sha"]
+        require(json.loads(run("git", "show", source + ":.github/release-approval.json")) == config, "Existing tag has a different release approval")
+    else:
+        parents = run("git", "rev-list", "--parents", "-n", "1", "HEAD").split()
+        source = parents[2] if len(parents) == 3 else parents[0]
+        require(run("git", "rev-parse", "HEAD^{tree}") == run("git", "rev-parse", source + "^{tree}"), "Merged tree differs from the tested source")
     run("git", "merge-base", "--is-ancestor", source, "origin/main")
+    # Always package the exact immutable, qualified source, including on retries
+    # after a publisher-only repair. Never move an existing release tag.
+    ROOT = job_root / "release-source"
+    run("git", "worktree", "add", "--detach", str(ROOT), source)
     deadline = time.monotonic() + 1800
     qualified = None
     while time.monotonic() < deadline:
@@ -185,10 +208,10 @@ def main():
         print("Waiting for the exact source CI run to complete.", flush=True)
         time.sleep(15)
     require(qualified is not None, "No successful source CI run available")
-    incoming = ROOT / "release-inputs"
+    incoming = job_root / "release-inputs"
     for name in config["artifacts"]:
         run("gh", "run", "download", str(qualified["id"]), "--repo", repo, "--name", name, "--dir", str(incoming / name))
-    stage = ROOT / "release-assets"
+    stage = job_root / "release-assets"
     files = prepare(config, incoming, source, stage)
     tag = api(repo, "git/ref/tags/" + config["tag"], missing_ok=True)
     if tag:
@@ -203,8 +226,8 @@ def main():
     note_path = ROOT / "release-notes.txt"
     note_path.write_text(notes, encoding="utf-8")
     if not existing:
-        run("gh", "release", "create", config["tag"], "--repo", repo, "--verify-tag", "--draft", "--title", config["title"], "--notes-file", str(note_path))
-    release = api(repo, "releases/tags/" + config["tag"])
+        existing = api(repo, "releases", method="POST", fields={"tag_name": config["tag"], "name": config["title"], "body": notes, "draft": True, "prerelease": False})
+    release = api(repo, "releases/" + str(existing["id"]))
     assets = {a["name"]: a for a in release["assets"]}
     expected = {p.name: p for p in files}
     require(set(assets) <= set(expected), "Draft has unexpected assets")
@@ -213,13 +236,13 @@ def main():
     missing = [str(p) for p in files if p.name not in assets]
     if missing:
         run("gh", "release", "upload", config["tag"], *missing, "--repo", repo)
-    release = api(repo, "releases/tags/" + config["tag"])
+    release = api(repo, "releases/" + str(existing["id"]))
     require({a["name"] for a in release["assets"]} == set(expected), "Incomplete release upload")
     for asset in release["assets"]:
         path = expected[asset["name"]]
         require(asset["size"] == path.stat().st_size and asset.get("digest") == "sha256:" + sha(path), "Uploaded bytes differ: " + path.name)
     run("gh", "release", "edit", config["tag"], "--repo", repo, "--draft=false", "--prerelease=false", "--latest")
-    release = api(repo, "releases/tags/" + config["tag"])
+    release = api(repo, "releases/" + str(existing["id"]))
     require(not release["draft"] and not release["prerelease"], "Release was not published")
     print("Published", release["html_url"], flush=True)
 
