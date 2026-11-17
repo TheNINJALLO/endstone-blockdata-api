@@ -248,6 +248,21 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  # main's protected-branch status context predates the runtime update.
+  # Preserve its name, but fail it unless every current 1.26.65 gate passed.
+  legacy-required-exact:
+    name: Exact BDS 1.26.60 (linux-x64)
+    if: always()
+    needs: [metadata, portable, exact, test-wheel]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Require successful BDS 1.26.65 qualification and matching wheel
+        env:
+          GATE_RESULTS: ${{ toJSON(needs) }}
+        run: >-
+          python -c "import json, os; results=json.loads(os.environ['GATE_RESULTS']);
+          assert len(results)==4 and all(v['result']=='success' for v in results.values()), results"
+
   release:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v') && needs.metadata.outputs.release_channel != 'compatibility-prerelease'

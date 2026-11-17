@@ -42,7 +42,7 @@
     "compatibility/bds-1.26.60-preparation.json"
   ],
   "python_version": "0.6.10",
-  "release_channel": "native-qualified",
+  "release_channel": "stable",
   "native_release_ready": true,
   "qualified_targets": [
     {
@@ -58,7 +58,7 @@
       "workflow": "https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497"
     }
   ],
-  "publication_status": "qualified-unpublished",
+  "publication_status": "stable",
   "release_tag": "v0.6.10",
   "pending_targets": [],
   "qualification_evidence": "evidence/endstone-0.11.16/probe.json",

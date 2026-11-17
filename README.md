@@ -8,9 +8,9 @@ Linux native compilation and the complete-wheel disposable-server test passed. T
 
 ## Install
 
-Download the complete `endstone_blockdata_inspector-0.6.10-cp314-cp314-linux_x86_64.whl` from [the successful workflow](https://github.com/TheNINJALLO/endstone-blockdata-api/actions/runs/43991081497). Stop the server, replace older inspector wheels and loose BlockData providers with this single wheel in `plugins/`, preserve plugin data, then restart. The wheel installs its matching native provider before dependent plugins load. The standalone `.so` is available for manual native-only installations.
+Download the complete `endstone_blockdata_inspector-0.6.10-cp314-cp314-linux_x86_64.whl` from [the stable release](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.10). Stop the server, replace older inspector wheels and loose BlockData providers with this single wheel in `plugins/`, preserve plugin data, then restart. The wheel installs its matching native provider before dependent plugins load. The standalone `.so` is available for manual native-only installations.
 
-This update is qualified and unpublished; no public v0.6.10 release was created. See [build status](BUILD_STATUS.md), [update details](UPDATE_ENDSTONE_0.11.16.md), [runtime evidence](evidence/endstone-0.11.16/probe.json), and [the documentation index](docs/README.md). The previous release documentation is preserved [here](docs/history/endstone-0.11.15.md).
+Stable release: [v0.6.10](https://github.com/TheNINJALLO/endstone-blockdata-api/releases/tag/v0.6.10). See [build status](BUILD_STATUS.md), [update details](UPDATE_ENDSTONE_0.11.16.md), [runtime evidence](evidence/endstone-0.11.16/probe.json), and [the documentation index](docs/README.md). The previous release documentation is preserved [here](docs/history/endstone-0.11.15.md).
 
 ## 🏛️ Architecture Overview
 

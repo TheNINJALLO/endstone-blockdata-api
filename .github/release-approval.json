@@ -1,0 +1,11 @@
+{
+  "kind": "blockdata",
+  "version": "0.6.10",
+  "tag": "v0.6.10",
+  "title": "Endstone BlockData API v0.6.10",
+  "workflow": "ci.yml",
+  "artifacts": [
+    "endstone-blockdata-api-exact-1.26.65-linux-x64",
+    "blockdata-bundle-startup-linux-x64"
+  ]
+}
